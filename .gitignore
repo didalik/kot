@@ -1,5 +1,4 @@
-# Logs
-
+# Logs {{{1
 logs
 _.log
 npm-debug.log_
@@ -8,18 +7,22 @@ yarn-error.log*
 lerna-debug.log*
 .pnpm-debug.log*
 
-# Diagnostic reports (https://nodejs.org/api/report.html)
-
+# Diagnostic reports (https://nodejs.org/api/report.html) {{{1
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
-# Runtime data
-
+# Runtime data {{{1
 pids
 _.pid
 _.seed
 \*.pid.lock
 
-# wrangler project
-
+# wrangler project {{{1
 .dev.vars
 .wrangler/
+
+# Vim {{{1
+.*.sw?
+*.session
+
+# Node {{{1
+node_modules/
