@@ -1,4 +1,4 @@
-import { DurableObject } from "cloudflare:workers";
+import { DurableObject } from "cloudflare:workers"; // {{{1
 
 /**
  * Welcome to Cloudflare Workers! This is your first Durable Objects application.
@@ -17,7 +17,7 @@ import { DurableObject } from "cloudflare:workers";
  * @property {DurableObjectNamespace} MY_DURABLE_OBJECT - The Durable Object namespace binding
  */
 
-/** A Durable Object's behavior is defined in an exported Javascript class */
+/** A Durable Object's behavior is defined in an exported Javascript class */ // {{{1
 export class MyDurableObject extends DurableObject {
 	/**
 	 * The constructor is invoked once upon creation of the Durable Object, i.e. the first call to
@@ -42,7 +42,7 @@ export class MyDurableObject extends DurableObject {
 	}
 }
 
-export default {
+export default { // {{{1
 	/**
 	 * This is the standard fetch handler for a Cloudflare Worker
 	 *
@@ -52,19 +52,33 @@ export default {
 	 * @returns {Promise<Response>} The response to be sent back to the client
 	 */
 	async fetch(request, env, ctx) {
-		// We will create a `DurableObjectId` using the pathname from the Worker request
-		// This id refers to a unique instance of our 'MyDurableObject' class above
     let pathname = new URL(request.url).pathname;
-		let id = env.MY_DURABLE_OBJECT.idFromName(pathname);
-
-		// This stub creates a communication channel with the Durable Object instance
-		// The Durable Object constructor will be invoked upon the first call for a given id
-		let stub = env.MY_DURABLE_OBJECT.get(id);
-
-		// We call the `sayHello()` RPC method on the stub to invoke the method on the remote
-		// Durable Object instance
-		let greeting = await stub.sayHello("world");
-
-		return new Response(greeting);
+    return await dispatch.call(pathname, request, env, ctx);
 	},
 };
+
+function dispatch (request, env, ctx) { // {{{1
+  switch (this) {
+    case '/cf': { // {{{2
+      request.cf ??= { error: "The `cf` object is not available." };
+      return new Response(JSON.stringify(request.cf, null, 2), {
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+        },
+      });
+    }
+    case '/my_durable_object': { // {{{2
+      // We will create a `DurableObjectId` using the pathname from the Worker request
+      // This id refers to a unique instance of our 'MyDurableObject' class above
+      let id = env.MY_DURABLE_OBJECT.idFromName(this);
+      let stub = env.MY_DURABLE_OBJECT.get(id);
+      // This stub creates a communication channel with the Durable Object instance
+      // The Durable Object constructor will be invoked upon the first call for a given id
+      // We call the `sayHello()` RPC method on the stub to invoke the method on the remote
+      // Durable Object instance
+      return stub.sayHello("world").then(greeting => new Response(greeting));
+    }
+    default: // {{{2
+      return new Response('Not Found', { status: 404 }); // }}}2
+  }
+}
