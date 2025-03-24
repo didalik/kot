@@ -9,7 +9,7 @@
 	"compatibility_date": "2025-03-21",
 	"assets": {
 		"binding": "ASSETS",
-		"directory": "./public"
+		"directory": "./public/static"
 	},
 	"durable_objects": {
 		"bindings": [

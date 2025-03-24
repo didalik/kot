@@ -67,10 +67,18 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     }
+    case '/ip': { // {{{2
+      return new Response(JSON.stringify({ ip: request.headers.get('CF-Connecting-IP') }, null, 2), {
+        headers: {
+          "content-type": "application/json;charset=UTF-8",
+        },
+      });
+    }
     case '/my_durable_object': { // {{{2
       // We will create a `DurableObjectId` using the pathname from the Worker request
       // This id refers to a unique instance of our 'MyDurableObject' class above
       let id = env.MY_DURABLE_OBJECT.idFromName(this);
+
       let stub = env.MY_DURABLE_OBJECT.get(id);
       // This stub creates a communication channel with the Durable Object instance
       // The Durable Object constructor will be invoked upon the first call for a given id

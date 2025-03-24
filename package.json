@@ -1,10 +1,11 @@
 {
+  "author": "Дід Alik",
 	"name": "kot",
 	"version": "0.0.0",
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
-		"dev": "wrangler dev --ip 0.0.0.0"
+		"dev": "bin/dev"
 	},
 	"devDependencies": {
 		"wrangler": "^4.4.0"
