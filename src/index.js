@@ -1,4 +1,8 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
+//import { DurableObject } from "./node_modules/workerd/worker.mjs"
+//import favicon from '../public/static/favicon.ico'
+import style from '../public/static/style.css'
+import template from '../public/template.html'
 
 /**
  * Welcome to Cloudflare Workers! This is your first Durable Objects application.
@@ -67,6 +71,8 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     }
+    case '/favicon.ico': // {{{2
+      return new Response('OK', /*favicon,*/ { headers: { 'content-type': 'image/x-icon' } });
     case '/ip': { // {{{2
       return new Response(JSON.stringify({ ip: request.headers.get('CF-Connecting-IP') }, null, 2), {
         headers: {
@@ -86,6 +92,13 @@ function dispatch (request, env, ctx) { // {{{1
       // Durable Object instance
       return stub.sayHello("world").then(greeting => new Response(greeting));
     }
+    case '/style.css': // {{{2
+      return new Response(style, { headers: { 'content-type': 'text/css' } });
+    case '/template': // {{{2
+      return new Response(
+        template.replace('IPADDRESS', request.headers.get('CF-Connecting-IP')).
+          replace('DATETIME', new Date().toISOString()),
+        { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     default: // {{{2
       return new Response('Not Found', { status: 404 }); // }}}2
   }

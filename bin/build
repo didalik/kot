@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+log () { # {{{1
+  local blue=$(git config --get-color color.diff.whitespace "blue")
+  local reset=$(git config --get-color "" "reset")
+  echo "${blue}$@${reset}"
+}
+
+log "$0 started; PWD should be project root: $PWD" # {{{1
+
+## Reset dist/CFW {{{1
+#
+rm -rf dist
+mkdir -p dist
+npx esbuild --bundle \
+  --external:cloudflare:workers \
+  --loader:.css=text --loader:.html=text --loader:.ico=binary \
+  --inject:public/shim.js --minify \
+  --outfile=dist/index.js --format=esm src/index.js #> dist/out 2>dist/err

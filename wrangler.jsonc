@@ -11,6 +11,11 @@
 		"binding": "ASSETS",
 		"directory": "./public/static"
 	},
+  /*
+  "build": {
+    "command": "./bin/build"
+  },
+  */
 	"durable_objects": {
 		"bindings": [
 			{
