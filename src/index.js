@@ -1,28 +1,16 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-//import { DurableObject } from "./node_modules/workerd/worker.mjs"
-//import favicon from '../public/static/favicon.ico'
 import style from '../public/static/style.css'
 import template from '../public/template.html'
-
-/**
- * Welcome to Cloudflare Workers! This is your first Durable Objects application.
- *
- * - Run `npm run dev` in your terminal to start a development server
- * - Open a browser tab at http://localhost:8787/ to see your Durable Object in action
- * - Run `npm run deploy` to publish your application
- *
- * Learn more at https://developers.cloudflare.com/durable-objects
- */
 
 /**
  * Env provides a mechanism to reference bindings declared in wrangler.jsonc within JavaScript
  *
  * @typedef {Object} Env
- * @property {DurableObjectNamespace} MY_DURABLE_OBJECT - The Durable Object namespace binding
+ * @property {DurableObjectNamespace} KOT_DO - The Durable Object namespace binding
  */
 
-/** A Durable Object's behavior is defined in an exported Javascript class */ // {{{1
-export class MyDurableObject extends DurableObject {
+/** A Durable Object's behavior is defined in an exported Javascript class */
+export class KoT_Do extends DurableObject {
 	/**
 	 * The constructor is invoked once upon creation of the Durable Object, i.e. the first call to
 	 * 	`DurableObjectStub::get` for a given identifier (no-op constructors can be omitted)
@@ -71,8 +59,8 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     }
-    case '/favicon.ico': // {{{2
-      return new Response('OK', /*favicon,*/ { headers: { 'content-type': 'image/x-icon' } });
+    //case '/favicon.ico': // {{{2
+      //return new Response('OK', /*favicon,*/ { headers: { 'content-type': 'image/x-icon' } });
     case '/ip': { // {{{2
       return new Response(JSON.stringify({ ip: request.headers.get('CF-Connecting-IP') }, null, 2), {
         headers: {
@@ -80,17 +68,17 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     }
-    case '/my_durable_object': { // {{{2
+    case '/kot_do': { // {{{2
       // We will create a `DurableObjectId` using the pathname from the Worker request
-      // This id refers to a unique instance of our 'MyDurableObject' class above
-      let id = env.MY_DURABLE_OBJECT.idFromName(this);
+      // This id refers to a unique instance of our 'KoT_Do' class above
+      let id = env.KOT_DO.idFromName(this);
 
-      let stub = env.MY_DURABLE_OBJECT.get(id);
+      let stub = env.KOT_DO.get(id);
       // This stub creates a communication channel with the Durable Object instance
       // The Durable Object constructor will be invoked upon the first call for a given id
       // We call the `sayHello()` RPC method on the stub to invoke the method on the remote
       // Durable Object instance
-      return stub.sayHello("world").then(greeting => new Response(greeting));
+      return stub.sayHello("Kloud Of Trust").then(greeting => new Response(greeting));
     }
     case '/style.css': // {{{2
       return new Response(style, { headers: { 'content-type': 'text/css' } });

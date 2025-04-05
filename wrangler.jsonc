@@ -19,15 +19,15 @@
 	"durable_objects": {
 		"bindings": [
 			{
-				"class_name": "MyDurableObject",
-				"name": "MY_DURABLE_OBJECT"
+				"class_name": "KoT_Do",
+				"name": "KOT_DO"
 			}
 		]
 	},
 	"migrations": [
 		{
 			"new_classes": [
-				"MyDurableObject"
+				"KoT_Do"
 			],
 			"tag": "v1"
 		}
