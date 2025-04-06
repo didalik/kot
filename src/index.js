@@ -1,49 +1,28 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
+import { IpState, } from '../lib/util.js'
 import style from '../public/static/style.css'
 import template from '../public/template.html'
 
-/**
- * Env provides a mechanism to reference bindings declared in wrangler.jsonc within JavaScript
- *
- * @typedef {Object} Env
- * @property {DurableObjectNamespace} KOT_DO - The Durable Object namespace binding
- */
-
-/** A Durable Object's behavior is defined in an exported Javascript class */
 export class KoT_Do extends DurableObject {
-	/**
-	 * The constructor is invoked once upon creation of the Durable Object, i.e. the first call to
-	 * 	`DurableObjectStub::get` for a given identifier (no-op constructors can be omitted)
-	 *
-	 * @param {DurableObjectState} ctx - The interface for interacting with Durable Object state
-	 * @param {Env} env - The interface to reference bindings declared in wrangler.jsonc
-	 */
 	constructor(ctx, env) {
 		super(ctx, env);
 	}
-
-	/**
-	 * The Durable Object exposes an RPC method homepage which will be invoked when when a Durable
-	 *  Object instance receives a request from a Worker via the same method invocation on the stub
-	 *
-	 * @param {string} name - The name provided to a Durable Object instance from a Worker
-	 * @returns {Promise<string>} The greeting to be sent back to the Worker
-	 */
   async get (key) {
     let value = await this.ctx.storage.get(key)
     console.log('get', key, value)
     return value
   }
 	async homepage(name, ip) {
-    let ipState = await this.get('IP')
-    ipState ??= {}
-    ipState.homepage = true
-    await this.put('IP', ipState)
+    let ipState = await this.get('IPs')
+    IpState.use(ipState)
+    IpState.set(ip, 'homepage', true) // homepage = true
+    await this.put('IPs', IpState.ips)
 		return `Hello, ${name}!`;
 	}
   async put (key, value) {
     console.log('put', key, value)
     await this.ctx.storage.put(key, value)
+    return true;
   }
 }
 
@@ -93,10 +72,11 @@ function dispatch (request, env, ctx) { // {{{1
       return new Response(style, { headers: { 'content-type': 'text/css' } });
     case '/template': // {{{2
       let ip = request.headers.get('CF-Connecting-IP');
-      return stub.get('IP').then(ipState => ipState.homepage ? new Response(
+      return stub.get('IPs').then(ipState => IpState.use(ipState) && IpState.get(ip, 'homepage') ?
+        IpState.set(ip, 'homepage', false) && stub.put('IPs', IpState.ips) && new Response(
           template.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()),
           { headers: { 'content-type': 'text/html;charset=UTF-8' } }) :
-        new Response('OK')
+        new Response('Please go to the home page of this site and reload it.')
       );
     default: // {{{2
       return new Response('Not Found', { status: 404 }); // }}}2
