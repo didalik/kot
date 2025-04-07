@@ -1,6 +1,7 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
 import { IpState, } from '../lib/util.js'
 import style from '../public/static/style.css'
+import sandbox from '../public/sandbox.html'
 import template from '../public/template.html'
 
 export class KoT_Do extends DurableObject {
@@ -15,9 +16,9 @@ export class KoT_Do extends DurableObject {
 	async homepage(name, ip) {
     let ipState = await this.get('IPs')
     IpState.use(ipState)
-    IpState.set(ip, 'homepage', true) // homepage = true
+    IpState.set(ip, 'homepage', true)
     await this.put('IPs', IpState.ips)
-		return `Hello, ${name}!`;
+		return `${name}`;
 	}
   async put (key, value) {
     console.log('put', key, value)
@@ -43,40 +44,40 @@ export default { // {{{1
 
 function dispatch (request, env, ctx) { // {{{1
   let id = env.KOT_DO_ID
+  let ip = request.headers.get('CF-Connecting-IP');
   let stub = id ? env.KOT_DO.get(id) : null
   switch (this) {
-    case '/cf': { // {{{2
+    case '/cf': // {{{2
       request.cf ??= { error: "The `cf` object is not available." };
       return new Response(JSON.stringify(request.cf, null, 2), {
         headers: {
           "content-type": "application/json;charset=UTF-8",
         },
       });
-    }
-    case '/ip': { // {{{2
-      return new Response(JSON.stringify({ ip: request.headers.get('CF-Connecting-IP') }, null, 2), {
+    case '/ip': // {{{2
+      return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {
           "content-type": "application/json;charset=UTF-8",
         },
       });
-    }
-    case '/kot_do': { // {{{2
+    case '/kot_do': // {{{2
       // We will create a `DurableObjectId` using the pathname from the Worker request
       // This id refers to a unique instance of our 'KoT_Do' class above
-      let id = env.KOT_DO.idFromName(this); env.KOT_DO_ID = id
-      let ip = request.headers.get('CF-Connecting-IP');
+      id = env.KOT_DO.idFromName(this); env.KOT_DO_ID = id
       stub = env.KOT_DO.get(id)
       return stub.homepage("Kloud Of Trust", ip).then(greeting => new Response(greeting));
-    }
     case '/style.css': // {{{2
       return new Response(style, { headers: { 'content-type': 'text/css' } });
+    case '/sandbox': // {{{2
+      return new Response(
+        sandbox.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()), 
+        { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     case '/template': // {{{2
-      let ip = request.headers.get('CF-Connecting-IP');
       return stub.get('IPs').then(ipState => IpState.use(ipState) && IpState.get(ip, 'homepage') ?
         IpState.set(ip, 'homepage', false) && stub.put('IPs', IpState.ips) && new Response(
           template.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()),
           { headers: { 'content-type': 'text/html;charset=UTF-8' } }) :
-        new Response('Please go to the home page of this site and reload it.')
+        new Response('Please reload the home page of this site.')
       );
     default: // {{{2
       return new Response('Not Found', { status: 404 }); // }}}2

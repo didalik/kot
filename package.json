@@ -9,6 +9,6 @@
 	},
 	"devDependencies": {
     "@stellar/stellar-sdk": "^11.2.0",
-		"wrangler": "^4.7.2"
+		"wrangler": "^4.8.0"
 	}
 }
