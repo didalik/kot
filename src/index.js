@@ -1,10 +1,11 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
 import { IpState, } from '../lib/util.js'
 import style from '../public/static/style.css'
+import datacurator from '../public/datacurator.html'
 import sandbox from '../public/sandbox.html'
 import template from '../public/template.html'
 
-export class KoT_Do extends DurableObject {
+export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) {
 		super(ctx, env);
 	}
@@ -54,6 +55,10 @@ function dispatch (request, env, ctx) { // {{{1
           "content-type": "application/json;charset=UTF-8",
         },
       });
+    case '/datacurator': // {{{2
+      return new Response(
+        datacurator.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()), 
+        { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     case '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {

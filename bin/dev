@@ -11,7 +11,7 @@ log "$0 started; PWD should be project root: $PWD" # {{{1
 ## Update public DHTM {{{1
 #
 cd public
-for dhtm in sandbox stellar_test_monitor template; do
+for dhtm in datacurator sandbox stellar_test_monitor template; do
   [ $dhtm.html -nt $dhtm-head.html -a $dhtm.html -nt $dhtm.mjs ] && continue
   npx esbuild --bundle --minify --inject:./shim.js \
     --outfile=$dhtm.minified.mjs --format=esm $dhtm.mjs
