@@ -1,9 +1,11 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-import { IpState, } from '../lib/util.js'
+import { IpState, Page, } from '../lib/util.js'
+
 import style from '../public/static/style.css'
 import datacurator from '../public/datacurator.html'
 import sandbox from '../public/sandbox.html'
 import template from '../public/template.html'
+Page.use({ style, datacurator, sandbox, template, })
 
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) {
@@ -46,7 +48,13 @@ export default { // {{{1
 function dispatch (request, env, ctx) { // {{{1
   let id = env.KOT_DO_ID
   let ip = request.headers.get('CF-Connecting-IP');
+  let page = new Page(this, env)
   let stub = id ? env.KOT_DO.get(id) : null
+
+  let content = { // {{{2
+    IPADDRESS: ip, 
+    DATETIME: new Date().toISOString()} // }}}2
+
   switch (this) {
     case '/cf': // {{{2
       request.cf ??= { error: "The `cf` object is not available." };
@@ -56,8 +64,8 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     case '/datacurator': // {{{2
-      return new Response(
-        datacurator.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()), 
+      content.KVDOTOTALS = replaceKVDOTOTALS(env)
+      return new Response(page.set(content),
         { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     case '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
@@ -74,17 +82,21 @@ function dispatch (request, env, ctx) { // {{{1
     case '/style.css': // {{{2
       return new Response(style, { headers: { 'content-type': 'text/css' } });
     case '/sandbox': // {{{2
-      return new Response(
-        sandbox.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()), 
+      return new Response(page.set(content),
         { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     case '/template': // {{{2
       return stub.get('IPs').then(ipState => IpState.use(ipState) && IpState.get(ip, 'homepage') ?
         IpState.set(ip, 'homepage', false) && stub.put('IPs', IpState.ips) && new Response(
-          template.replace('IPADDRESS', ip).replace('DATETIME', new Date().toISOString()),
+          page.set(content),
           { headers: { 'content-type': 'text/html;charset=UTF-8' } }) :
         new Response('Please reload the home page of this site.')
       );
     default: // {{{2
       return new Response('Not Found', { status: 404 }); // }}}2
   }
+}
+function replaceKVDOTOTALS (env) { // {{{1
+  console.log('replaceKVDOTOTALS', env)
+  let pattern = 'KVDOTOTALS'
+  return pattern.replace(pattern, `no KVs and 1 DO with id ${env.KOT_DO_ID}`)
 }
