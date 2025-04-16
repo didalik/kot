@@ -11,11 +11,10 @@
 		"binding": "ASSETS",
 		"directory": "./public/static"
 	},
-  /*
   "build": {
-    "command": "./bin/build"
+    "command": "./bin/build",
+    "watch_dir": [ "./lib", "./public", "./src" ]
   },
-  */
 	"durable_objects": {
 		"bindings": [
 			{
@@ -57,12 +56,6 @@
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-
-	/**
-	 * Static Assets
-	 * https://developers.cloudflare.com/workers/static-assets/binding/
-	 */
-	// "assets": { "directory": "./public/", "binding": "ASSETS" },
 
 	/**
 	 * Service Bindings (communicate between multiple Workers)

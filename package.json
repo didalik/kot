@@ -5,10 +5,10 @@
 	"private": true,
 	"scripts": {
 		"deploy": "wrangler deploy",
-		"dev": "bin/dev"
+		"dev": "wrangler dev --ip 0.0.0.0"
 	},
 	"devDependencies": {
     "@stellar/stellar-sdk": "^11.2.0",
-		"wrangler": "^4.10.0"
+		"wrangler": "^4.11.1"
 	}
 }

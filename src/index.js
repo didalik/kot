@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-import { IpState, Page, } from '../lib/util.js'
+import { DataCurator, IpState, Page, } from '../lib/util.js'
 
 import style from '../public/static/style.css'
 import datacurator from '../public/datacurator.html'
@@ -23,6 +23,11 @@ export class KoT_Do extends DurableObject { // {{{1
     await this.put('IPs', IpState.ips)
 		return `${name}`;
 	}
+  async list () {
+    let value = await this.ctx.storage.list()
+    console.log('list', value)
+    return value
+  }
   async put (key, value) {
     console.log('put', key, value)
     await this.ctx.storage.put(key, value)
@@ -64,9 +69,16 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     case '/datacurator': // {{{2
-      content.KVDOTOTALS = replaceKVDOTOTALS(env)
-      return new Response(page.set(content),
-        { headers: { 'content-type': 'text/html;charset=UTF-8' } });
+      content.KVDOTOTALS = replaceKVDOTOTALS.call(page, env)
+      {
+        let dc = new DataCurator(page)
+        content.KVDETAILS = dc.ppKVs()
+        return dc.ppDOs().then(text => {
+          content.DODETAILS = text
+          return new Response(page.set(content),
+            { headers: { 'content-type': 'text/html;charset=UTF-8' } })
+        })
+      }
     case '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {
@@ -96,7 +108,8 @@ function dispatch (request, env, ctx) { // {{{1
   }
 }
 function replaceKVDOTOTALS (env) { // {{{1
-  console.log('replaceKVDOTOTALS', env)
+  this.data.KVs = [] // no KVs
+  this.data.DOs = [[env.KOT_DO_ID, env.KOT_DO.get(env.KOT_DO_ID)]] // 1 DO
   let pattern = 'KVDOTOTALS'
-  return pattern.replace(pattern, `no KVs and 1 DO with id ${env.KOT_DO_ID}`)
+  return pattern.replace(pattern, `no KVs and 1 DO with id <b>${env.KOT_DO_ID.name}</b>`)
 }
