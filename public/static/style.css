@@ -14,6 +14,11 @@ h1, p, pre {
   padding: 5px;
 }
 
+pre:hover {
+  text-decoration: none;
+  background: #cdfeaa;
+}
+
 a {
   outline-color: transparent;
 }
