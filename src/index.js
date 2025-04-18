@@ -11,6 +11,11 @@ export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) {
 		super(ctx, env);
 	}
+  async delete (key) {
+    let value = await this.ctx.storage.get(key)
+    console.log('delete', key, value)
+    return value
+  }
   async get (key) {
     let value = await this.ctx.storage.get(key)
     console.log('get', key, value)
@@ -69,6 +74,10 @@ function dispatch (request, env, ctx) { // {{{1
         },
       });
     case /\/datacurator/.test(this): { // {{{2
+      let a = this.split('/')
+      console.log('datacurator', a)
+      a[2] && console.log(new URL(request.url).searchParams.get('k'))
+
       let dc = new DataCurator(page)
       if (this != '/datacurator') {
         return new Response(`${this} is not implemented yet. Working on it...`, { status: 404 }); // }}}2
