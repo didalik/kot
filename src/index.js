@@ -60,15 +60,18 @@ function dispatch (request, env, ctx) { // {{{1
     IPADDRESS: ip, 
     DATETIME: new Date().toISOString()} // }}}2
 
-  switch (this) {
-    case '/cf': // {{{2
+  switch (true) {
+    case this == '/cf': // {{{2
       request.cf ??= { error: "The `cf` object is not available." };
       return new Response(JSON.stringify(request.cf, null, 2), {
         headers: {
           "content-type": "application/json;charset=UTF-8",
         },
       });
-    case '/datacurator': // {{{2
+    case /\/datacurator/.test(this): // {{{2
+      if (this != '/datacurator') {
+        return new Response(`${this} is not implemented yet. Working on it...`, { status: 404 }); // }}}2
+      }
       content.KVDOTOTALS = replaceKVDOTOTALS.call(page, env)
       {
         let dc = new DataCurator(page)
@@ -79,24 +82,24 @@ function dispatch (request, env, ctx) { // {{{1
             { headers: { 'content-type': 'text/html;charset=UTF-8' } })
         })
       }
-    case '/ip': // {{{2
+    case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {
           "content-type": "application/json;charset=UTF-8",
         },
       });
-    case '/kot_do': // {{{2
+    case this == '/kot_do': // {{{2
       // We will create a `DurableObjectId` using the pathname from the Worker request
       // This id refers to a unique instance of our 'KoT_Do' class above
       id = env.KOT_DO.idFromName(this); env.KOT_DO_ID = id
       stub = env.KOT_DO.get(id)
       return stub.homepage("Kloud Of Trust", ip).then(greeting => new Response(greeting));
-    case '/style.css': // {{{2
+    case this == '/style.css': // {{{2
       return new Response(style, { headers: { 'content-type': 'text/css' } });
-    case '/sandbox': // {{{2
+    case this == '/sandbox': // {{{2
       return new Response(page.set(content),
         { headers: { 'content-type': 'text/html;charset=UTF-8' } });
-    case '/template': // {{{2
+    case this == '/template': // {{{2
       return stub.get('IPs').then(ipState => IpState.use(ipState) && IpState.get(ip, 'homepage') ?
         IpState.set(ip, 'homepage', false) && stub.put('IPs', IpState.ips) && new Response(
           page.set(content),
