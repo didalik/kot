@@ -68,20 +68,19 @@ function dispatch (request, env, ctx) { // {{{1
           "content-type": "application/json;charset=UTF-8",
         },
       });
-    case /\/datacurator/.test(this): // {{{2
+    case /\/datacurator/.test(this): { // {{{2
+      let dc = new DataCurator(page)
       if (this != '/datacurator') {
         return new Response(`${this} is not implemented yet. Working on it...`, { status: 404 }); // }}}2
       }
       content.KVDOTOTALS = replaceKVDOTOTALS.call(page, env)
-      {
-        let dc = new DataCurator(page)
-        content.KVDETAILS = dc.ppKVs()
-        return dc.ppDOs().then(text => {
-          content.DODETAILS = text
-          return new Response(page.set(content),
-            { headers: { 'content-type': 'text/html;charset=UTF-8' } })
-        })
-      }
+      content.KVDETAILS = dc.ppKVs()
+      return dc.ppDOs().then(text => {
+        content.DODETAILS = text
+        return new Response(page.set(content),
+          { headers: { 'content-type': 'text/html;charset=UTF-8' } })
+      })
+    }
     case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {

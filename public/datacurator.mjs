@@ -4,11 +4,8 @@ document.oncut = (event) => {
   if (text != 'y') {
     return;
   }
-  let href = `${location.origin}${location.pathname}/delete/${a[0]}${a[2]}?k=${a[1]}`
-  console.log(href);
-  fetch(href).then(response => response.text()).then(text => {
-    console.log(text);
-  })
+  let href = `${location.origin}${location.pathname}/delete${a[0]}${a[2]}?k=${a[1]}`
+  location.href = href
 };
 
 let c = document.getElementById('update')
