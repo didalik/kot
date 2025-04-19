@@ -1,18 +1,18 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-import { DataCurator, IpState, Page, } from '../lib/util.js'
+import { DOpad, IpState, Page, } from '../lib/util.js'
 
 import style from '../public/static/style.css'
-import datacurator from '../public/datacurator.html'
+import dopad from '../public/dopad.html'
 import sandbox from '../public/sandbox.html'
 import template from '../public/template.html'
-Page.use({ style, datacurator, sandbox, template, })
+Page.use({ style, dopad, sandbox, template, })
 
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) {
 		super(ctx, env);
 	}
   async delete (key) {
-    let value = await this.ctx.storage.get(key)
+    let value = await this.ctx.storage.delete(key)
     console.log('delete', key, value)
     return value
   }
@@ -73,22 +73,13 @@ function dispatch (request, env, ctx) { // {{{1
           "content-type": "application/json;charset=UTF-8",
         },
       });
-    case /\/datacurator/.test(this): { // {{{2
-      let a = this.split('/')
-      console.log('datacurator', a)
-      a[2] && console.log(new URL(request.url).searchParams.get('k'))
-
-      let dc = new DataCurator(page)
-      if (this != '/datacurator') {
-        return new Response(`${this} is not implemented yet. Working on it...`, { status: 404 }); // }}}2
-      }
-      content.KVDOTOTALS = replaceKVDOTOTALS.call(page, env)
-      content.KVDETAILS = dc.ppKVs()
-      return dc.ppDOs().then(text => {
+    case /\/dopad/.test(this): { // {{{2
+      let page = new Page('/dopad', env) // TODO remove duplicate?
+      content.DOTOTALS = replaceDOTOTALS.call(page, env)
+      return new DOpad(page).serve(new URL(request.url)).then(text => {
         content.DODETAILS = text
-        return new Response(page.set(content),
-          { headers: { 'content-type': 'text/html;charset=UTF-8' } })
-      })
+        return new Response(page.set(content), { headers: { 'content-type': 'text/html;charset=UTF-8' } })
+      });
     }
     case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
@@ -118,9 +109,8 @@ function dispatch (request, env, ctx) { // {{{1
       return new Response('Not Found', { status: 404 }); // }}}2
   }
 }
-function replaceKVDOTOTALS (env) { // {{{1
-  this.data.KVs = [] // no KVs
+function replaceDOTOTALS (env) { // TODO store DO ids in a KV pair {{{1
   this.data.DOs = [[env.KOT_DO_ID, env.KOT_DO.get(env.KOT_DO_ID)]] // 1 DO
-  let pattern = 'KVDOTOTALS'
-  return pattern.replace(pattern, `no KVs and 1 DO with id <b>${env.KOT_DO_ID.name}</b>`)
+  let pattern = 'DOTOTALS'
+  return pattern.replace(pattern, `1 DO with id <b>${env.KOT_DO_ID.name}</b>`)
 }

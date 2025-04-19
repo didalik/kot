@@ -1,10 +1,10 @@
 document.oncut = (event) => {
   let a = event.target.id.split('-')
-  let text = prompt(`Delete KV pair for key ${a[1]} in ${a[0]} ${a[2]} [y/n]?`, 'n')
+  let text = prompt(`Delete KV pair for key ${a[2]} in ${a[0]} ${a[1]} [y/n]?`, 'n')
   if (text != 'y') {
     return;
   }
-  let href = `${location.origin}${location.pathname}/delete${a[0]}${a[2]}?k=${a[1]}`
+  let href = `${location.origin}${location.pathname}/cut${a[1]}?k=${a[2]}`
   location.href = href
 };
 
