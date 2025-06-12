@@ -1,4 +1,5 @@
-# kot
+# Stellar Help Exchange + Cloudflare Job Fair = kloudoftrust.org!
+
 Kloud Of Trust: sharing code for fun and profit
 
 # Raw stuff
