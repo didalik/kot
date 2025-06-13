@@ -1,0 +1,158 @@
+#!/bin/bash
+#
+# Setup for $USER@$HOSTNAME - both sudoer and root
+##
+
+ARCH=$([ "$(arch)" = 'aarch64' ] && echo 'arm64' || echo 'amd64')
+GO_VERSION=1.24.3
+NODE_MAJOR_VERSION=20
+NODE_VERSION=v20.19.2
+NVM_VERSION=v0.40.3
+
+config_git () { # {{{1
+  git config --global user.email "didalik.aim@gmail.com"
+  git config --global user.name "Дід Alik"
+  git config --global pull.rebase false
+  git config --global core.editor "vim"
+  git config --global init.defaultBranch main
+}
+
+help () { # {{{1
+	echo -e "ERROR $?\n\tRequired arguments are username, hostname of the target box, this repo name. Usage example:\n\n\t$0 alik t2 mod-talos\n"
+}
+
+install_docker () { # {{{1
+  [ -e "$HOME/get-docker.sh" ] && echo "file $HOME/get-docker.sh found" && return
+  echo "file $HOME/get-docker.sh NOT found, installing Docker Engine..."
+  cd $HOME
+  curl -fsSL https://get.docker.com -o get-docker.sh
+  sh get-docker.sh
+  docker buildx create --driver docker-container --name local --buildkitd-flags '--allow-insecure-entitlement security.insecure' --use
+  cd -
+}
+
+install_go () { # {{{1
+  . /etc/profile
+  which go && return
+  curl -OL https://go.dev/dl/go$GO_VERSION.linux-$ARCH.tar.gz
+  rm -rf /usr/local/go && tar -C /usr/local -xzf go$GO_VERSION.linux-$ARCH.tar.gz && rm go$GO_VERSION.linux-$ARCH.tar.gz
+  echo 'export PATH=$PATH:/usr/local/go/bin' > /etc/profile.d/gopath.sh
+  . /etc/profile
+  go version
+}
+
+install_node () { # {{{1
+  which node && return
+  [ -e $HOME/.bashrc.uh.saved ] && mv $HOME/.bashrc.uh.saved $HOME/.bashrc && rm -rf $HOME/.nvm # debug/teardown
+  cp $HOME/.bashrc $HOME/.bashrc.uh.saved
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/$NVM_VERSION/install.sh | bash
+  export NVM_DIR="$HOME/.nvm"
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+  [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+  nvm install $NODE_MAJOR_VERSION
+  nvm use $NODE_MAJOR_VERSION
+  [ -e /usr/local/bin/node ] || sudo ln $HOME/.nvm/versions/node/$NODE_VERSION/bin/node /usr/local/bin/node
+}
+
+run () { # {{{1
+	echo "run $# $@"
+  if [ "$(uname)" != 'Linux' ]; then
+    local user=$1 box=$2 repo=$3
+    echo "user $user, box $box, repo $repo"
+    scp $HOME/.ssh/id_ed25519.pub $user@$box:.ssh/authorized_keys
+    scp $HOME/.ssh/id_ed25519.pub $user@$box:.ssh/id_ed25519.pub
+    scp $HOME/.ssh/id_ed25519 $user@$box:.ssh/id_ed25519
+    local cmd="chmod 600 .ssh/*;rm -rf project;mkdir -p project;cd project;git clone https://github.com/didalik/$repo.git;cd $repo;$0 $repo"
+    ssh $user@$box "$cmd"
+    return 0
+  fi
+  config_git
+  setup_vim
+  if [ "$USER" = 'root' ]; then
+    cd $HOME && . .profile
+    mkdir -p $HOME/people/didalik
+    cd $HOME/people/didalik
+    install_docker
+    install_go
+    which make || apt install make
+    which tree || apt install tree
+    [ -d $HOME/people/didalik/$1 ] && return || echo "Cloning $1..."
+    git clone --recurse-submodules git@github.com:didalik/$1.git # TODO handle msg The authenticity of host 'github.com (140.82.114.4)' can't be established.
+  else
+    install_node
+    sudo ln -s $HOME/.nvm/versions/node/$NODE_VERSION/bin/npm /usr/local/bin/npm
+    sudo ln -s $HOME/.nvm/versions/node/$NODE_VERSION/bin/node /usr/local/bin/node
+    [ -z "$(sudo -u root cat /root/.ssh/authorized_keys)" ] && sudo cp $HOME/.ssh/authorized_keys /root/.ssh || echo '/root/.ssh/authorized_keys preserved'
+    sudo [ -e /root/.ssh/id_ed25519 ] && echo 'root SSH identity preserved' || sudo cp $HOME/.ssh/id_ed25519* /root/.ssh
+    sudo -u root $0 $@
+    sudo groupadd docker
+    sudo usermod -aG docker $USER
+  fi
+}
+
+setup_vim () { # {{{1
+  [ -d $HOME/.vim/autoload ] && echo "vim for $USER is set up" && return
+  [ -e $HOME/.vimrc.uh.saved ] && mv $HOME/.vimrc.uh.saved $HOME/.vimrc && rm -rf $HOME/.vim/autoload # debug/teardown
+  [ -e $HOME/.vimrc ] && cp $HOME/.vimrc $HOME/.vimrc.uh.saved || touch $HOME/.vimrc.uh.saved
+  cat << HD > $HOME/.vimrc # {{{2
+syntax on
+filetype plugin indent on
+
+set number
+set tabstop=2     " show existing tab with 2 spaces width
+set shiftwidth=2  " when indenting with '>', use 2 spaces width
+set expandtab     " on pressing tab, insert 2 spaces
+set updatecount=0 " the writing to the swap file is not wanted
+set backspace=indent,eol,start
+set foldmethod=marker
+set mouse-=a
+
+" To make Vim insert a literal tab character when you press <S-Tab>:
+inoremap <S-Tab> <C-V><Tab>
+" Like this t2  t3 - this line holds 3 tabs
+
+colorscheme default
+
+" See also:
+" - https://superuser.com/questions/768894/mapping-s-tab-in-vim
+" - https://github.com/amix/vimrc.git
+""
+
+let data_dir = has('nvim') ? stdpath('data') . '/site' : '~/.vim'
+if empty(glob(data_dir . '/autoload/plug.vim'))
+  silent execute '!curl -fLo '.data_dir.'/autoload/plug.vim --create-dirs  https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+
+call plug#begin()
+
+  Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
+  Plug 'augmentcode/augment.vim'
+
+call plug#end()
+
+let g:augment_workspace_folders = ['$HOME/people/didalik']
+" See also:
+" https://github.com/junegunn/vim-plug/wiki/tips#automatic-installation
+" https://github.com/junegunn/vim-plug?tab=readme-ov-file
+" https://github.com/fatih/vim-go?tab=readme-ov-file
+" https://github.com/augmentcode/augment.vim
+""
+HD
+# }}}2
+  echo -e "\n\tsetup_vim: DONE for $USER, please restart open vim sessions!\n"
+}
+
+validate () { # {{{1
+	echo "$USER validate $# $@"
+  if [ "$(uname)" != 'Linux' ]; then
+    if [ $# -ne 3 ]; then
+      return 1
+    fi
+    return 0
+  fi
+}
+
+echo "$0 started for $USER@$HOSTNAME on $(date) in $PWD" # {{{1
+validate $@ && run $@ || help $@
+echo "$0 DONE for $USER@$HOSTNAME"
