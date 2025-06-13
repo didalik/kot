@@ -87,7 +87,7 @@ run () { # {{{1
     [ -z "$(sudo -u root cat /root/.ssh/authorized_keys)" ] && sudo cp $HOME/.ssh/authorized_keys /root/.ssh || echo '/root/.ssh/authorized_keys preserved'
     sudo [ -e /root/.ssh/id_ed25519 ] && echo 'root SSH identity preserved' || sudo cp $HOME/.ssh/id_ed25519* /root/.ssh
     sudo -u root $0 $@
-    sudo groupadd docker
+    #sudo groupadd docker
     sudo usermod -aG docker $USER
   fi
 }
