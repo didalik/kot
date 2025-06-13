@@ -62,7 +62,8 @@ run () { # {{{1
     scp $HOME/.ssh/id_ed25519.pub $user@$box:.ssh/authorized_keys
     scp $HOME/.ssh/id_ed25519.pub $user@$box:.ssh/id_ed25519.pub
     scp $HOME/.ssh/id_ed25519 $user@$box:.ssh/id_ed25519
-    local cmd="chmod 600 .ssh/*;rm -rf project;mkdir -p project;cd project;git clone https://github.com/didalik/$repo.git;cd $repo;$0 $repo"
+    local kh="ssh-keyscan github.com > /home/$user/.ssh/known_hosts"
+    local cmd="$kh;chmod 600 .ssh/*;rm -rf project;mkdir -p project;cd project;git clone https://github.com/didalik/$repo.git;cd $repo;$0 $repo"
     ssh $user@$box "$cmd"
     return 0
   fi
