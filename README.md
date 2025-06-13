@@ -32,5 +32,6 @@ exit
 and complete the setup with
 
 ```
+chmod +x bin/uh-setup
 bin/uh-setup alik ko kot
 ```
