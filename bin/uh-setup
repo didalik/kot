@@ -77,7 +77,8 @@ run () { # {{{1
     which make || apt install make
     which tree || apt install tree
     [ -d $HOME/people/didalik/$1 ] && return || echo "Cloning $1..."
-    git clone --recurse-submodules git@github.com:didalik/$1.git # TODO handle msg The authenticity of host 'github.com (140.82.114.4)' can't be established.
+    #ssh-keyscan github.com > $HOME/.ssh/known_hosts
+    #git clone --recurse-submodules git@github.com:didalik/$1.git
   else
     install_node
     sudo ln -s $HOME/.nvm/versions/node/$NODE_VERSION/bin/npm /usr/local/bin/npm
