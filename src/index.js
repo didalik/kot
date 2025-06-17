@@ -55,7 +55,7 @@ export default { // {{{1
 	},
 };
 
-function dispatch (request, env, ctx) { // {{{1
+async function dispatch (request, env, ctx) { // {{{1
   let id = env.KOT_DO_ID
   let ip = request.headers.get('CF-Connecting-IP');
   let page = new Page(this, env)
