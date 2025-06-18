@@ -1,23 +1,20 @@
 #!/usr/bin/env node
 
-import path from 'path';
+import path from 'path'; // {{{1
 import fs from 'fs';
 import https from 'https';
 import fetch from 'node-fetch';
-import { fileURLToPath } from 'url';
+import os from 'os'
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const reqUrl = 'https://jag.kloudoftrust.org/cf';
-const mTLS_public_cert_pem = path.resolve(__dirname, '../cloudflare-job-fair/jag/certificate.pem')
-const mTLS_private_key_key = path.resolve(__dirname, '../cloudflare-job-fair/jag/certificate.key')
+const reqUrl = 'https://jag.kloudoftrust.org/cf'; // {{{1
+const mTLS_private_key_key = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.key`
+const mTLS_public_cert_pem = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.pem`
 
 const headers = {
   Accept: 'application/json',
 };
 
-async function makeRequest() {
+async function makeRequest() { // {{{1
   const options = {
     cert: fs.readFileSync(mTLS_public_cert_pem, 'utf-8',),
     key: fs.readFileSync(mTLS_private_key_key, 'utf-8',),
@@ -37,10 +34,27 @@ async function makeRequest() {
     console.log(error);
   }
 }
+//makeRequest();
 
-makeRequest();
+const execute = { // {{{1
+  get_job_done: async (node, run, job, ...args) => { //2
+    console.log('- args', args)
+  },
+  post_job_agent: async (node, run, job, ...args) => { //2
+    console.log('- args', args)
+  },
+}
 
-/**
+switch (process.argv[2]) { // {{{1
+  default: // {{{2
+    console.log('execute', process.argv[2])
+    await execute[process.argv[2]](...process.argv)
+    console.log('executed')
+
+    // }}}2
+}
+
+/** {{{1
  * Thanks to:
  * https://sebtrif.xyz/blog/2019-10-03-client-side-ssl-in-node-js-with-fetch/
  **/

@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+##
+# This ./bin/dev script adds public DHTM update to 'npm run dev'.
+##
+
 log () { # {{{1
   local blue=$(git config --get-color color.diff.whitespace "blue")
   local reset=$(git config --get-color "" "reset")
