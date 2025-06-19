@@ -1,9 +1,7 @@
-import { makeBuyOffer, trustAssets, } from '../lib/sdk.mjs' // {{{1
-import { postBody, } from '../lib/aux.mjs'
-import { retrieveItem, storeItem, } from '../../lib/util.mjs'
-import { 
-  Asset, Keypair, Horizon, Networks, TransactionBuilder,
-} from '@stellar/stellar-sdk'
+import { makeBuyOffer, trustAssets, } from './lib/sdk.mjs' // {{{1
+import { postBody, } from './lib/aux.mjs'
+import { retrieveItem, storeItem, } from './lib/util.mjs' // XO
+import { Asset, Keypair, Horizon, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 
 let vm = { // {{{1
   s: [], 

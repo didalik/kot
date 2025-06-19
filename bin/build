@@ -2,7 +2,6 @@
 
 ##
 # This ./bin/build script CAN be referenced in ./wrangler.jsonc
-# (presently commented out).
 ##
 
 log () { # {{{1

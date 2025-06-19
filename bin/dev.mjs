@@ -14,7 +14,11 @@ const headers = {
   Accept: 'application/json',
 };
 
-async function makeRequest() { // {{{1
+async function makeRequest(url) { // {{{1
+  if (url.startsWith('http:')) {
+    fetch(url).then(response => response.text()).then(responseBody => console.log(responseBody)).catch(err => console.log(err))
+    return;
+  }
   const options = {
     cert: fs.readFileSync(mTLS_public_cert_pem, 'utf-8',),
     key: fs.readFileSync(mTLS_private_key_key, 'utf-8',),
@@ -24,7 +28,7 @@ async function makeRequest() { // {{{1
   const sslConfiguredAgent = new https.Agent(options);
 
   try {
-    const response = await fetch(reqUrl, {
+    const response = await fetch(url, {
       headers: headers, // ... pass everything just as you usually would
       agent: sslConfiguredAgent, // ... but add the agent we initialised
     });
@@ -34,11 +38,12 @@ async function makeRequest() { // {{{1
     console.log(error);
   }
 }
-//makeRequest();
+makeRequest(reqUrl);
 
 const execute = { // {{{1
   get_job_done: async (node, run, job, ...args) => { //2
     console.log('- args', args)
+    makeRequest(args[0])
   },
   post_job_agent: async (node, run, job, ...args) => { //2
     console.log('- args', args)

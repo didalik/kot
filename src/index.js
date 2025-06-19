@@ -50,7 +50,9 @@ export default { // {{{1
 	 * @returns {Promise<Response>} The response to be sent back to the client
 	 */
 	async fetch(request, env, ctx) {
-    let pathname = new URL(request.url).pathname;
+    let url = new URL(request.url)
+    console.log('fetch request.url:', url)
+    let pathname = url.pathname;
     return await dispatch.call(pathname, request, env, ctx);
 	},
 };

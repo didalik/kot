@@ -11,11 +11,11 @@
 		"binding": "ASSETS",
 		"directory": "./public/static"
 	},
-  /*
   "build": {
     "command": "./bin/build",
     "watch_dir": [ "./lib", "./public", "./src" ]
   },
+  /*
   "mtls_certificates": [
     {
       "binding": "MY_CERT",
