@@ -6,7 +6,7 @@
 
 ## Getting Started
 
-Here,I just reflect the steps I make - ymmv, but not much.
+Here, I just reflect the steps I make - ymmv, but not much.
 
 On my Macbook Air M1 (RAM 8Gb, SSD 256Gb) with UTM, I create QEMU 7.2 Virtual Machine:
 
