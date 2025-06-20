@@ -38,15 +38,22 @@ async function makeRequest(url) { // {{{1
     console.log(error);
   }
 }
-makeRequest(reqUrl);
+//makeRequest(reqUrl);
 
 const execute = { // {{{1
   get_job_done: async (node, run, job, ...args) => { //2
     console.log('- args', args)
     makeRequest(args[0])
   },
-  post_job_agent: async (node, run, job, ...args) => { //2
+  post_job: async (node, run, job, ...args) => { //2
     console.log('- args', args)
+    fetch('https://job.kloudoftrust.org', { method: 'POST', body: args[0], }).then(response => response.text()).
+    then(responseBody => console.log(responseBody)).catch(err => console.log(err))
+  },
+  put_agent: async (node, run, job, ...args) => { //2
+    console.log('- args', args)
+    fetch(args[0], { method: 'PUT', body: args[1], }).then(response => console.log(response)) //response.text()).
+    //then(responseBody => console.log(responseBody)).catch(err => console.log(err))
   },
 }
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##
-# This ./bin/build script CAN be referenced in ./wrangler.jsonc
+# This ./bin/build script CAN be referenced from ./wrangler.jsonc
 ##
 
 log () { # {{{1

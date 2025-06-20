@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-import { DOpad, IpState, Page, } from '../lib/util.js'
+import { DOpad, IpState, JobFair, Page, log_method_and_url, } from '../lib/util.js'
 
 import style from '../public/static/style.css'
 import dopad from '../public/dopad.html'
@@ -22,7 +22,7 @@ export class KoT_Do extends DurableObject { // {{{1
     return value
   }
 	async homepage(name, ip) {
-    let ipState = await this.get('IPs')
+    let ipState = await this.get('IPs'); ipState ??= []
     IpState.use(ipState)
     IpState.set(ip, 'homepage', true)
     await this.put('IPs', IpState.ips)
@@ -50,10 +50,14 @@ export default { // {{{1
 	 * @returns {Promise<Response>} The response to be sent back to the client
 	 */
 	async fetch(request, env, ctx) {
-    let url = new URL(request.url)
-    console.log('fetch request.url:', url)
-    let pathname = url.pathname;
-    return await dispatch.call(pathname, request, env, ctx);
+    let [method, url] = log_method_and_url('fetch', request, false)
+    switch (true) {
+      case method == 'POST' || url.pathname == '/job':
+      case method == 'PUT' || url.pathname == '/jag':
+        return await new JobFair().add(request, env, ctx);
+      default:
+        return await dispatch.call(url.pathname, request, env, ctx);
+    }
 	},
 };
 
@@ -62,6 +66,7 @@ async function dispatch (request, env, ctx) { // {{{1
   let ip = request.headers.get('CF-Connecting-IP');
   let page = new Page(this, env)
   let stub = id ? env.KOT_DO.get(id) : null
+  console.log('dispatch stub', stub)
 
   let content = { // {{{2
     IPADDRESS: ip, 
