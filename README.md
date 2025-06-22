@@ -60,3 +60,25 @@ alik@ko:~/project/kot$
 alik@ko:~$ curl 'http://localhost:8976/oauth/callback?code=CAjrwRz_qi30ceDOLTAqTwuQaQwWrTUFW6f-mCxJDno.XdTjngi89l63S8z50FnKn0Ct0jjia1IkmqUKRg2aACU&scope=account%3Aread%20user%3Aread%20workers%3Awrite%20workers_kv%3Awrite%20workers_routes%3Awrite%20workers_scripts%3Awrite%20workers_tail%3Aread%20d1%3Awrite%20pages%3Awrite%20zone%3Aread%20ssl_certs%3Awrite%20ai%3Awrite%20queues%3Awrite%20pipelines%3Awrite%20secrets_store%3Awrite%20offline_access&state=YVyQSn0r~oTHZP3zR73nv5B9~JpkcDXX'
 alik@ko:~$ 
 ```
+
+## Take 1
+
+```
+alik@ko:~/project/kot$ bin/dev.mjs post_job 'reset_testnet->reset_testnet_monitor->start_testnet_monitor'
+execute post_job
+- args [ 'reset_testnet->reset_testnet_monitor->start_testnet_monitor' ]
+executed
+{
+  XA: XO,
+}
+
+alik@ko:~/project/kot$ # An agent can take a job request if it can run all jobs in the request.
+
+alik@ko:~/project/kot$ bin/dev.mjs put_agent '*testnet*' # runs *testnet* jobs
+execute put_agent
+- args [ '*testnet*' ]
+executed
+{
+  XA: XO,
+}
+```
