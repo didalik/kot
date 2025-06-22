@@ -72,7 +72,7 @@ executed
   XA: XO,
 }
 
-alik@ko:~/project/kot$ # An agent can take a job request if it can run all jobs in the request.
+alik@ko:~/project/kot$ # An agent can take a job request if it can run all the jobs in the request.
 
 alik@ko:~/project/kot$ bin/dev.mjs put_agent '*testnet*' # runs *testnet* jobs
 execute put_agent
