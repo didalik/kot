@@ -5,20 +5,27 @@ import fs from 'fs';
 import https from 'https';
 import fetch from 'node-fetch';
 import os from 'os'
-import { jagURLparameters, jobURLparameters, } from '../cloudflare-job-fair/lib/util.mjs'
+import {
+  configuration, jagURLparameters, jobURLparameters, post_jcl,
+} from '../cloudflare-job-fair/lib/util.mjs'
 
-const reqUrl = 'https://jag.kloudoftrust.org/cf'; // {{{1
-const mTLS_private_key_key = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.key`
-const mTLS_public_cert_pem = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.pem`
+const mTLS_private_key_key 
+  = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.key`
+const mTLS_public_cert_pem 
+  = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.pem`
 
 const options = {
   cert: fs.readFileSync(mTLS_public_cert_pem, 'utf-8',),
   key: fs.readFileSync(mTLS_private_key_key, 'utf-8',),
-  keepAlive: false, // switch to true if you're making a lot of calls from this client
+  keepAlive: false,
 };
 
+Object.assign(configuration, {
+  fetch_options: { agent: new https.Agent(options), },
+})
 
 const execute = { // {{{1
+  post_jcl,
   post_job: async (node, run, cmd, ...args) => { // {{{2
     console.log('- args', args)
     let parameters = jobURLparameters(args)

@@ -52,6 +52,7 @@ export default { // {{{1
 	async fetch(request, env, ctx) {
     let [method, url] = log_method_and_url('fetch', request, false)
     switch (true) {
+      case method == 'POST' || url.pathname == '/jcl':
       case method == 'POST' || url.pathname == '/job':
       case method == 'PUT' || url.pathname == '/jag':
         return await new JobFair().add(request, env, ctx);

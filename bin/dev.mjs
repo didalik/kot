@@ -4,9 +4,12 @@ import path from 'path'; // {{{1
 import fs from 'fs';
 import https from 'https';
 import fetch from 'node-fetch';
-import { jagURLparameters, jobURLparameters, } from '../cloudflare-job-fair/lib/util.mjs'
+import { 
+  jagURLparameters, jobURLparameters, post_jcl, 
+} from '../cloudflare-job-fair/lib/util.mjs'
 
 const execute = { // {{{1
+  post_jcl,
   post_job: async (node, run, cmd, ...args) => { // {{{2
     console.log('- args', args)
     let parameters = jobURLparameters(args)

@@ -64,21 +64,7 @@ alik@ko:~$
 ## Take 1
 
 ```
-alik@ko:~/project/kot$ bin/dev.mjs post_job 'reset_testnet->reset_testnet_monitor->start_testnet_monitor'
-execute post_job
-- args [ 'reset_testnet->reset_testnet_monitor->start_testnet_monitor' ]
-executed
-{
-  XA: XO,
-}
-
-alik@ko:~/project/kot$ # An agent can take a job request if it can run all the jobs in the request.
-
-alik@ko:~/project/kot$ bin/dev.mjs put_agent '*testnet*' # runs *testnet* jobs
-execute put_agent
-- args [ '*testnet*' ]
-executed
-{
-  XA: XO,
-}
+bin/run.mjs post_jcl 'reset_testnet; reset_testnet_monitor; setup_testnet_monitor'
+bin/run.mjs put_agent '*testnet*' # runs *testnet* jobs; agent can take a job request if it can run all the jobs in the request
+bin/run.mjs post_job 'hx_selftest' browser=true
 ```
