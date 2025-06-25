@@ -70,3 +70,56 @@ bin/run.mjs post_job 'hx_selftest' browser=true
 bin/run.mjs put_agent 'setup_hx_selftest'
 bin/run.mjs post_job 'setup_hx_selftest'
 ```
+
+Here is the dir structure for submodules:
+
+```
+alik@ko:~/project/kot/cloudflare-job-fair$ tree
+.
+├── jag
+│   ├── certificate
+│   └── NOTES.md
+├── jcl
+│   └── src
+│       ├── module-topjob-declaration -> /home/alik/project/kot/cloudflare-job-fair/module-topjob-agent/src/module-topjob-declaration
+│       └── module-topjob-hx-declaration -> /home/alik/project/kot/cloudflare-job-fair/module-topjob-hx-agent/src/module-topjob-hx-declaration
+├── job
+│   └── src
+│       ├── module-job-declaration -> /home/alik/project/kot/cloudflare-job-fair/module-job-agent/src/module-job-declaration
+│       └── module-job-hx-declaration -> /home/alik/project/kot/cloudflare-job-fair/module-job-hx-agent/src/module-job-hx-declaration
+├── lib
+│   └── util.mjs
+├── module-job-agent
+│   ├── lib
+│   │   └── module-job-definition
+│   │       └── README.md
+│   └── src
+│       └── module-job-declaration
+│           └── README.md
+├── module-job-hx-agent
+│   ├── lib
+│   │   └── module-job-hx-definition
+│   │       └── README.md
+│   └── src
+│       └── module-job-hx-declaration
+│           └── README.md
+├── module-topjob-agent
+│   ├── lib
+│   │   └── module-topjob-definition
+│   │       └── README.md
+│   └── src
+│       └── module-topjob-declaration
+│           └── README.md
+├── module-topjob-hx-agent
+│   ├── lib
+│   │   └── module-topjob-hx-definition
+│   │       └── README.md
+│   └── src
+│       └── module-topjob-hx-declaration
+│           └── README.md
+└── src
+    └── util.js
+
+32 directories, 12 files
+alik@ko:~/project/kot/cloudflare-job-fair$ 
+```
