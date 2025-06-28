@@ -51,6 +51,9 @@ export default { // {{{1
 	 */
 	async fetch(request, env, ctx) {
     let [method, url] = log_method_and_url('fetch', request, false)
+    if (method != 'GET') {
+      return new Response('OK');
+    }
     switch (true) {
       case method == 'POST' || url.pathname == '/jcl':
       case method == 'POST' || url.pathname == '/job':

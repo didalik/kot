@@ -7,10 +7,9 @@
     "deploy": "wrangler deploy",
     "dev": "wrangler dev --ip 0.0.0.0"
   },
-  "devDependencies": {
+  "dependencies": {
     "@stellar/stellar-sdk": "^11.2.0",
-    "esbuild": "^0.25.5",
-    "node-fetch": "^3.2.3",
-    "wrangler": "^4.20.3"
+    "node-fetch": "^3.3.2",
+    "wrangler": "^4.22.0"
   }
 }
