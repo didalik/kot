@@ -64,8 +64,9 @@ alik@ko:~$
 ## Take 1
 
 ```
-bin/run.mjs post_jcl 'reset_testnet; reset_testnet_monitor'
-bin/run.mjs put_agent '*testnet*' # runs *testnet* jobs; agent can take a job request if it can run all the jobs in the request
+bin/run.mjs post_jcl reset_testnet
+bin/run.mjs post_jcl reset_testnet_monitor
+bin/run.mjs put_agent '*testnet*' # runs *testnet* jobs
 bin/run.mjs post_job 'hx_selftest' browser=true
 bin/run.mjs put_agent 'setup_hx_selftest'
 bin/run.mjs post_job 'setup_hx_selftest'

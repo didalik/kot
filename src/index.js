@@ -1,5 +1,5 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-import { DOpad, IpState, JobFair, Page, log_method_and_url, } from '../lib/util.js'
+import { DOpad, IpState, JobFair, Page, log_method_and_url, } from './util.js'
 
 import style from '../public/static/style.css'
 import dopad from '../public/dopad.html'
