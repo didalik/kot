@@ -66,7 +66,8 @@ class JobFair { // {{{1
   }
 
   add (request, env, ctx) { // {{{2
-    log_method_and_url('JobFair.add', request)
+    //log_method_and_url('JobFair.add', request)
+    console.log('JobFair.add env', env)
     return this.impl.add(request, env, ctx, pp);
   }
 

@@ -1,4 +1,5 @@
 import fetch from 'node-fetch' // // CLIENT {{{1
+import WebSocket from 'ws'
 
 const configuration = {} // CLIENT {{{1
 
@@ -24,8 +25,9 @@ async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
     : 'https://jag.kloudoftrust.org/jcl'
   let url = `${urlJcl}${parameters}`
   log('- post_jcl args', args, 'url', url, 'configuration', configuration)
-  fetch(url, configuration.fetch_options ?? {}).then(response => response.text()).
-    then(responseBody => console.log(responseBody)).catch(err => console.log(err))
+  //fetch(url, configuration.fetch_options ?? {}).then(response => response.text()).
+    //then(responseBody => console.log(responseBody)).catch(err => console.log(err))
+  websocketLoop(url)
 }
 
 async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
@@ -48,6 +50,38 @@ async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
   fetch(url, configuration.fetch_options ?? {}).then(response => response.text()).
     then(responseBody => console.log(responseBody)).
     catch(err => console.log(err))
+}
+
+async function websocketLoop (url, loop = true) { // keep re-connecting to the websocket {{{1
+  while (loop) {
+    let websocket = new WebSocket(url.replace('http', 'ws'))
+    let resolve, reject;
+    const promise = new Promise((res, rej) => {
+      resolve = res;
+      reject = rej;
+    });
+    websocket.on('error', err => {
+      console.log('websocket error', err)
+      reject(err)
+    })
+    websocket.on('close', response => {
+      console.log('websocket close', response)
+      resolve(false)
+    })
+    websocket.on('open', response => {
+      console.log('websocket open', response)
+      websocket.send('test message')
+    })
+    websocket.on('message', response => {
+      console.log('websocket message', response.toString())
+      websocket.close()
+    })
+    await promise.then(result => {
+      console.log('promise result', result)
+      loop = result
+    }).catch(e => console.error(e))
+  }
+  console.log('DONE')
 }
 
 export { configuration, post_jcl, post_job, put_agent, } // {{{1

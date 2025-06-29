@@ -16,6 +16,12 @@ export class KoT_Do extends DurableObject { // {{{1
     console.log('delete', key, value)
     return value
   }
+  async fetch(request) {
+    const webSocketPair = new WebSocketPair()
+    const [client, server] = Object.values(webSocketPair)
+    this.ctx.acceptWebSocket(server)
+    return new Response(null, { status: 101, webSocket: client });
+  }
   async get (key) {
     let value = await this.ctx.storage.get(key)
     console.log('get', key, value)
@@ -38,6 +44,12 @@ export class KoT_Do extends DurableObject { // {{{1
     await this.ctx.storage.put(key, value)
     return true;
   }
+  async webSocketClose(ws, code, reason, wasClean) {
+    console.log('webSocketClose ws', ws, 'code', code, 'reason', reason, 'wasClean', wasClean)
+  }
+  async webSocketMessage(ws, message) {
+    console.log('webSocketMessage ws', ws, 'message', message)
+  }
 }
 
 export default { // {{{1
@@ -51,13 +63,10 @@ export default { // {{{1
 	 */
 	async fetch(request, env, ctx) {
     let [method, url] = log_method_and_url('fetch', request, false)
-    if (method != 'GET') {
-      return new Response('OK');
-    }
     switch (true) {
-      case method == 'POST' || url.pathname == '/jcl':
-      case method == 'POST' || url.pathname == '/job':
-      case method == 'PUT' || url.pathname == '/jag':
+      case url.pathname.startsWith('/jcl'):
+      case url.pathname.startsWith('/job'):
+      case url.pathname.startsWith('/jag'):
         return await new JobFair().add(request, env, ctx);
       default:
         return await dispatch.call(url.pathname, request, env, ctx);
