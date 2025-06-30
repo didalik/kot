@@ -8,48 +8,50 @@ import template from '../public/template.html'
 Page.use({ style, dopad, sandbox, template, })
 
 export class KoT_Do extends DurableObject { // {{{1
-	constructor(ctx, env) {
+	constructor(ctx, env) { // {{{2
 		super(ctx, env);
 	}
-  async delete (key) {
+  async delete (key) { // {{{2
     let value = await this.ctx.storage.delete(key)
     console.log('delete', key, value)
     return value
   }
-  async fetch(request) {
+  async fetch(request) { // {{{2
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
-    this.ctx.acceptWebSocket(server)
+    this.ctx.acceptWebSocket(server, ['tag1', 'tag2', 'tag3'])
     return new Response(null, { status: 101, webSocket: client });
   }
-  async get (key) {
+  async get (key) { // {{{2
     let value = await this.ctx.storage.get(key)
     console.log('get', key, value)
     return value
   }
-	async homepage(name, ip) {
+	async homepage(name, ip) { // {{{2
     let ipState = await this.get('IPs'); ipState ??= []
     IpState.use(ipState)
     IpState.set(ip, 'homepage', true)
     await this.put('IPs', IpState.ips)
 		return `${name}`;
 	}
-  async list () {
+  async list () { // {{{2
     let value = await this.ctx.storage.list()
     console.log('list', value)
     return value
   }
-  async put (key, value) {
+  async put (key, value) { // {{{2
     console.log('put', key, value)
     await this.ctx.storage.put(key, value)
     return true;
   }
-  async webSocketClose(ws, code, reason, wasClean) {
+  async webSocketClose(ws, code, reason, wasClean) { // {{{2
     console.log('webSocketClose ws', ws, 'code', code, 'reason', reason, 'wasClean', wasClean)
+    wasClean && ws.close()
   }
-  async webSocketMessage(ws, message) {
-    console.log('webSocketMessage ws', ws, 'message', message)
-  }
+  async webSocketMessage(ws, message) { // {{{2
+    console.log('webSocketMessage message', message, 'open', this.ctx.getWebSockets())
+    ws.send('OK')
+  } // }}}2
 }
 
 export default { // {{{1
