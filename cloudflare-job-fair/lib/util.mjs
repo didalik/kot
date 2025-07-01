@@ -4,15 +4,20 @@ import WebSocket from 'ws'
 const configuration = {} // CLIENT {{{1
 
 function jagURLpath (args) { // CLIENT {{{1
-  return '?json={"XA":"XO"}';
+  switch (args[0]) {
+    case '*testnet*':
+      return '/topjob/hx';
+    case 'setup_hx_selftest':
+      return '/job/hx';
+  }
 }
 
 function jclURLpath (args) { // CLIENT {{{1
-  return '?json={"XA":"XO"}';
+  return `/${args[0]}`;
 }
 
 function jobURLpath (args) { // CLIENT {{{1
-  return '?json={"XA":"XO"}';
+  return `/${args[0]}`;
 }
 
 function log (...args) { // CLIENT {{{1
@@ -21,21 +26,21 @@ function log (...args) { // CLIENT {{{1
 
 async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   let path = jclURLpath(args)
-  let urlJcl = process.env._ == 'bin/dev.mjs' ? 'http://127.0.0.1:8787/jcl'
-    : 'https://jag.kloudoftrust.org/jcl'
+  let urlJcl = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/jcl'
+    : 'wss://jag.kloudoftrust.org/jcl'
   let url = `${urlJcl}${path}`
   log('- post_jcl args', args, 'url', url, 'configuration', configuration)
   //fetch(url, configuration.fetch_options ?? {}).then(response => response.text()).then(responseBody => console.log(responseBody)).catch(err => console.log(err))
-  wsConnect(url.replace('http', 'ws'))
+  wsConnect(url)
 }
 
 async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
   let path = jobURLpath(args)
-  let urlJob = process.env._ == 'bin/dev.mjs' ? 'http://127.0.0.1:8787/job'
-    : 'https://job.kloudoftrust.org/job'
+  let urlJob = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/job'
+    : 'wss://job.kloudoftrust.org/job'
   let url = `${urlJob}${path}`
   log('- post_job args', args, 'url', url, 'configuration', configuration)
-  wsConnect(url.replace('http', 'ws'))
+  wsConnect(url)
 }
 
 function promiseWithResolvers () { // {{{1
@@ -49,11 +54,11 @@ function promiseWithResolvers () { // {{{1
 
 async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
   let path = jagURLpath(args)
-  let urlJag = process.env._ == 'bin/dev.mjs' ? 'http://127.0.0.1:8787/jag'
-    : 'https://jag.kloudoftrust.org/jag'
+  let urlJag = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/jag'
+    : 'wss://jag.kloudoftrust.org/jag'
   let url = `${urlJag}${path}`
   log('- put_agent args', args, 'url', url, 'configuration', configuration)
-  wsConnect(url.replace('http', 'ws'))
+  wsConnect(url)
 }
 
 function wsConnect (url) { // {{{1

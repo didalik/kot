@@ -1,0 +1,19 @@
+{
+ "certIssuerDNLegacy":"/C=US/ST=California/L=San Francisco/O=Cloudflare, Inc./OU=www.cloudflare.com/CN=Managed CA bdad930c09138487203077ef32b1ab7e",
+ "certIssuerSKI":"458021B9D293BE3FC231CD1688F8735A4FAF98F3",
+ "certSubjectDNRFC2253":"CN=jag.kloudoftrust.org,OU=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ,O=Kloud Of Trust QA,L=Aventura,ST=Florida,C=US",
+ "certSubjectDNLegacy":"/C=US/ST=Florida/L=Aventura/O=Kloud Of Trust QA/OU=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ/CN=jag.kloudoftrust.org",
+ "certFingerprintSHA256":"81eb740f7b8fb46236ef6b75c2efd7ef56cc48130333ba1724ec834af62de882",
+ "certNotBefore":"Jun 17 23:47:00 2025 GMT",
+ "certSKI":"5BA08294C63D1A877A5E637FD0937050C03B91D3",
+ "certSerial":"14BABA7F225B07BCB201FB024AE2E2520412F0D0",
+ "certIssuerDN":"CN=Managed CA bdad930c09138487203077ef32b1ab7e,OU=www.cloudflare.com,O=Cloudflare\\, Inc.,L=San Francisco,ST=California,C=US",
+ "certVerified":"SUCCESS",
+ "certNotAfter":"Jun 15 23:47:00 2035 GMT",
+ "certSubjectDN":"CN=jag.kloudoftrust.org,OU=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ,O=Kloud Of Trust QA,L=Aventura,ST=Florida,C=US",
+ "certPresented":"1",
+ "certRevoked":"0",
+ "certIssuerSerial":"64E274BC154B549776D9DF21F682ABEA48788414",
+ "certIssuerDNRFC2253":"CN=Managed CA bdad930c09138487203077ef32b1ab7e,OU=www.cloudflare.com,O=Cloudflare\\, Inc.,L=San Francisco,ST=California,C=US",
+ "certFingerprintSHA1":"50a0fbe60042bbad96c8b5bd607323f5b3cb6c48"
+}

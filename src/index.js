@@ -50,7 +50,7 @@ export class KoT_Do extends DurableObject { // {{{1
   }
   async webSocketMessage(ws, message) { // {{{2
     console.log('webSocketMessage message', message, 'open', this.ctx.getWebSockets())
-    ws.send('OK')
+    this.get('JOB_AGENT_ID').then(v => ws.send(v))
   } // }}}2
 }
 

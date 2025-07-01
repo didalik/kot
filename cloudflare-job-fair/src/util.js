@@ -9,7 +9,7 @@ const JobFairImpl = { // EDGE {{{1
       env.KOT_DO_WSH_ID = env.KOT_DO.idFromName('JobFair webSocket with Hibernation')
     }
     let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
-    return stub.fetch(request);
+    return stub.delete('JOB_AGENT_ID').then(_ => stub.put('JOB_AGENT_ID', JSON.stringify(request.cf.tlsClientAuth))).then(_ => stub.fetch(request)); // FIXME
   }
 }
 
