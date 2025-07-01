@@ -26,7 +26,7 @@ async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   let url = `${urlJcl}${path}`
   log('- post_jcl args', args, 'url', url, 'configuration', configuration)
   //fetch(url, configuration.fetch_options ?? {}).then(response => response.text()).then(responseBody => console.log(responseBody)).catch(err => console.log(err))
-  websocketLoop(url)
+  wsConnect(url.replace('http', 'ws'))
 }
 
 async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
@@ -35,7 +35,7 @@ async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
     : 'https://job.kloudoftrust.org/job'
   let url = `${urlJob}${path}`
   log('- post_job args', args, 'url', url, 'configuration', configuration)
-  websocketLoop(url)
+  wsConnect(url.replace('http', 'ws'))
 }
 
 function promiseWithResolvers () { // {{{1
@@ -53,11 +53,11 @@ async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
     : 'https://jag.kloudoftrust.org/jag'
   let url = `${urlJag}${path}`
   log('- put_agent args', args, 'url', url, 'configuration', configuration)
-  websocketLoop(url)
+  wsConnect(url.replace('http', 'ws'))
 }
 
-function websocketLoop (url) { // keep re-connecting to the websocket {{{1
-  let websocket = new WebSocket(url.replace('http', 'ws'))
+function wsConnect (url) { // {{{1
+  let websocket = new WebSocket(url, configuration.fetch_options ?? {})
   let [promise, resolve, reject] = promiseWithResolvers()
   websocket.on('error', err => {
     log('websocket error', err)
@@ -75,7 +75,7 @@ function websocketLoop (url) { // keep re-connecting to the websocket {{{1
     log('websocket message', data.toString())
     websocket.close()
   })
-  promise.then(loop => loop ? websocketLoop(url) : log('websocketLoop url', url, 'DONE')).catch(e => console.error(e))
+  promise.then(loop => loop ? wsConnect(url) : log('wsConnect url', url, 'DONE')).catch(e => console.error(e))
 }
 
 export { configuration, post_jcl, post_job, put_agent, } // {{{1
