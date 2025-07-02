@@ -67,6 +67,7 @@ class JobFair { // {{{1
   }
 
   addJob (request, env, ctx) { // {{{2
+    //log_method_and_url('JobFair.addJob', request)
     return this.impl.addJob(request, env, ctx, );
   }
 

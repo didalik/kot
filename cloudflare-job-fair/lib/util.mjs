@@ -3,6 +3,24 @@ import WebSocket from 'ws'
 
 const configuration = {} // CLIENT {{{1
 
+async function hack (node, run, cmd, ...args) { // CLIENT {{{1
+  let path = hackURLpath(args)
+  let urlHack = process.env._ == 'bin/dev.mjs' ? 'http://127.0.0.1:8787/hack'
+    : 'https://jag.kloudoftrust.org/hack'
+  let url = `${urlHack}${path}`
+  log('- hack args', args, 'url', url, 'configuration', configuration)
+  /*
+  wsConnect(url)
+  */
+  fetch(url, configuration.fetch_options ?? {}).
+    then(response => response.text()).then(responseBody => console.log(responseBody)).
+    catch(err => log(err))
+}
+
+function hackURLpath (args) { // CLIENT {{{1
+  return '/' + args[0];
+}
+
 function jagURLpath (args) { // CLIENT {{{1
   switch (args[0]) {
     case '*testnet*':
@@ -30,7 +48,6 @@ async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
     : 'wss://jag.kloudoftrust.org/jcl'
   let url = `${urlJcl}${path}`
   log('- post_jcl args', args, 'url', url, 'configuration', configuration)
-  //fetch(url, configuration.fetch_options ?? {}).then(response => response.text()).then(responseBody => console.log(responseBody)).catch(err => console.log(err))
   wsConnect(url)
 }
 
@@ -83,5 +100,5 @@ function wsConnect (url) { // {{{1
   promise.then(loop => loop ? wsConnect(url) : log('wsConnect url', url, 'DONE')).catch(e => console.error(e))
 }
 
-export { configuration, post_jcl, post_job, put_agent, } // {{{1
+export { configuration, hack, post_jcl, post_job, put_agent, } // {{{1
 

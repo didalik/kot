@@ -16,6 +16,11 @@ export class KoT_Do extends DurableObject { // {{{1
     console.log('delete', key, value)
     return value
   }
+  async deleteAll () { // {{{2
+    let value = await this.ctx.storage.deleteAll()
+    console.log('deleteAll', value)
+    return value
+  }
   async fetch(request) { // {{{2
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
@@ -49,7 +54,7 @@ export class KoT_Do extends DurableObject { // {{{1
     wasClean && ws.close()
   }
   async webSocketMessage(ws, message) { // {{{2
-    console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
+    console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets(),'this.env.URL_PATHNAME', this.env.URL_PATHNAME)
     this.get('JOB_AGENT_ID').then(v => ws.send(v))
   } // }}}2
 }
@@ -67,7 +72,9 @@ export default { // {{{1
     env.KOT_DO_ID ??= env.KOT_DO.idFromName('/kot_do')
     env.KOT_DO_WSH_ID ??= env.KOT_DO.idFromName('/JobFair webSocket with Hibernation')
     let [method, url] = log_method_and_url('fetch', request, false)
+    env.URL_PATHNAME = url.pathname
     switch (true) {
+      case url.pathname.startsWith('/hack'):
       case url.pathname.startsWith('/jcl'):
       case url.pathname.startsWith('/job'):
         return await new JobFair().addJob(request, env, ctx);
@@ -131,5 +138,5 @@ async function dispatch (request, env, ctx) { // {{{1
 function replaceDOTOTALS (env) { // TODO store DO ids in a KV pair {{{1
   this.data.DOs = [[env.KOT_DO_ID, env.KOT_DO.get(env.KOT_DO_ID)], [env.KOT_DO_WSH_ID, env.KOT_DO.get(env.KOT_DO_WSH_ID)]] // 2 DOs
   let pattern = 'DOTOTALS'
-  return pattern.replace(pattern, `2 DOs with ids <b>${env.KOT_DO_ID.name} ${env.KOT_DO_WSH_ID.name}</b>`)
+  return pattern.replace(pattern, `2 DOs with ids <b>${env.KOT_DO_ID.name}, ${env.KOT_DO_WSH_ID.name}</b>`)
 }

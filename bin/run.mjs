@@ -5,7 +5,7 @@ import fs from 'fs';
 import https from 'https';
 import os from 'os'
 import {
-  configuration, post_jcl, post_job, put_agent,
+  configuration, hack, post_jcl, post_job, put_agent,
 } from '../cloudflare-job-fair/lib/util.mjs'
 
 const mTLS_private_key // {{{1
@@ -24,7 +24,7 @@ Object.assign(configuration, {
 })
 
 const execute = { // {{{1
-  post_jcl, post_job, put_agent,
+  hack, post_jcl, post_job, put_agent,
 }
 
 switch (process.argv[2]) { // {{{1

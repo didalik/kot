@@ -72,6 +72,8 @@ bin/run.mjs put_agent 'setup_hx_selftest'
 bin/run.mjs post_job 'setup_hx_selftest'
 ```
 
+See also `bin/{dev,run}.mjs hack do0`
+
 Here is the dir structure for submodules:
 
 ```
