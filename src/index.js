@@ -49,7 +49,7 @@ export class KoT_Do extends DurableObject { // {{{1
     wasClean && ws.close()
   }
   async webSocketMessage(ws, message) { // {{{2
-    console.log('webSocketMessage message', message, 'open', this.ctx.getWebSockets())
+    console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
     this.get('JOB_AGENT_ID').then(v => ws.send(v))
   } // }}}2
 }
@@ -64,12 +64,15 @@ export default { // {{{1
 	 * @returns {Promise<Response>} The response to be sent back to the client
 	 */
 	async fetch(request, env, ctx) {
+    env.KOT_DO_ID ??= env.KOT_DO.idFromName('/kot_do')
+    env.KOT_DO_WSH_ID ??= env.KOT_DO.idFromName('/JobFair webSocket with Hibernation')
     let [method, url] = log_method_and_url('fetch', request, false)
     switch (true) {
       case url.pathname.startsWith('/jcl'):
       case url.pathname.startsWith('/job'):
+        return await new JobFair().addJob(request, env, ctx);
       case url.pathname.startsWith('/jag'):
-        return await new JobFair().add(request, env, ctx);
+        return await new JobFair().addJobAgent(request, env, ctx);
       default:
         return await dispatch.call(url.pathname, request, env, ctx);
     }
@@ -77,11 +80,9 @@ export default { // {{{1
 };
 
 async function dispatch (request, env, ctx) { // {{{1
-  let id = env.KOT_DO_ID
   let ip = request.headers.get('CF-Connecting-IP');
   let page = new Page(this, env)
-  let stub = id ? env.KOT_DO.get(id) : null
-  console.log('dispatch stub', stub)
+  let stub = env.KOT_DO.get(env.KOT_DO_ID)
 
   let content = { // {{{2
     IPADDRESS: ip, 
@@ -110,10 +111,6 @@ async function dispatch (request, env, ctx) { // {{{1
         },
       });
     case this == '/kot_do': // {{{2
-      // We will create a `DurableObjectId` using the pathname from the Worker request
-      // This id refers to a unique instance of our 'KoT_Do' class above
-      id = env.KOT_DO.idFromName(this); env.KOT_DO_ID = id
-      stub = env.KOT_DO.get(id)
       return stub.homepage("Kloud Of Trust", ip).then(greeting => new Response(greeting));
     case this == '/style.css': // {{{2
       return new Response(style, { headers: { 'content-type': 'text/css' } });
@@ -132,7 +129,7 @@ async function dispatch (request, env, ctx) { // {{{1
   }
 }
 function replaceDOTOTALS (env) { // TODO store DO ids in a KV pair {{{1
-  this.data.DOs = [[env.KOT_DO_ID, env.KOT_DO.get(env.KOT_DO_ID)]] // 1 DO
+  this.data.DOs = [[env.KOT_DO_ID, env.KOT_DO.get(env.KOT_DO_ID)], [env.KOT_DO_WSH_ID, env.KOT_DO.get(env.KOT_DO_WSH_ID)]] // 2 DOs
   let pattern = 'DOTOTALS'
-  return pattern.replace(pattern, `1 DO with id <b>${env.KOT_DO_ID.name}</b>`)
+  return pattern.replace(pattern, `2 DOs with ids <b>${env.KOT_DO_ID.name} ${env.KOT_DO_WSH_ID.name}</b>`)
 }

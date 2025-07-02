@@ -28,8 +28,9 @@ class DOpad { // {{{1
     return text;
   }
   async serve (url) { // {{{2
+    //console.log('serve url', url)
     let a = url.pathname.split('/')
-    a[2] == 'cut' && await this.cut('/' + a[3], url.searchParams.get('k'))
+    a[2] == 'cut' && await this.cut('/' + decodeURIComponent(a[3]), url.searchParams.get('k'))
     return await this.ppDOs();
   }
 }
@@ -65,10 +66,12 @@ class JobFair { // {{{1
     this.impl = impl
   }
 
-  add (request, env, ctx) { // {{{2
-    //log_method_and_url('JobFair.add', request)
-    //console.log('JobFair.add env', env)
-    return this.impl.add(request, env, ctx, pp);
+  addJob (request, env, ctx) { // {{{2
+    return this.impl.addJob(request, env, ctx, );
+  }
+
+  addJobAgent (request, env, ctx) { // {{{2
+    return this.impl.addJobAgent(request, env, ctx, );
   }
 
   // }}}2
