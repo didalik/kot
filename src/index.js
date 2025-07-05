@@ -1,4 +1,5 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
+import { JobFairDOImpl as impl, } from '../cloudflare-job-fair/src/util.js'
 import { DOpad, IpState, JobFair, Page, log_method_and_url, } from './util.js'
 
 import style from '../public/static/style.css'
@@ -22,9 +23,12 @@ export class KoT_Do extends DurableObject { // {{{1
     return value
   }
   async fetch(request) { // {{{2
+    //console.log('KoT_Do.fetch this.env', this.env)
+    this.env.jobAgentId && impl.addJobAgent(this.env.jobAgentId)
+    
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
-    this.ctx.acceptWebSocket(server, ['tag1', 'tag2', 'tag3'])
+    this.ctx.acceptWebSocket(server)
     return new Response(null, { status: 101, webSocket: client });
   }
   async get (key) { // {{{2
@@ -54,8 +58,8 @@ export class KoT_Do extends DurableObject { // {{{1
     wasClean && ws.close()
   }
   async webSocketMessage(ws, message) { // {{{2
-    console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets(),'this.env.URL_PATHNAME', this.env.URL_PATHNAME)
-    this.get('JOB_AGENT_ID').then(v => ws.send(v))
+    console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
+    ws.send(`this.env.URL_PATHNAME ${this.env.URL_PATHNAME}, this.env.jobAgentId ${this.env.jobAgentId}`)
   } // }}}2
 }
 
