@@ -1,6 +1,31 @@
+import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
+//import * as jobHxDeclarations from '../module-job-hx-agent/src/module-job-hx-declaration/list.js'
+import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
+
+const jobsHx = {}, topjobsHx = {} // Durable Object {{{1
+
 const JobFairDOImpl = { // Durable Object {{{1
-  addJobAgent: id => { // {{{2
-    console.log('JobFairDOImpl.addJobAgent id', id)
+  addJob: env => { // {{{2
+    let path = env.URL_PATHNAME.split('/')
+    console.log('JobFairDOImpl.addJob env', env, 'jobname', path[2])
+  },
+
+  addJobAgent: env => { // {{{2
+    console.log('JobFairDOImpl.addJobAgent env', env)
+    switch (env.URL_PATHNAME) {
+      case '/jag/topjob/hx':
+        for (let job of topjobHxAgents[env.jobAgentId].jobs) {
+          console.log(' job.name', job.name)
+        }
+        return true;
+      case '/jag/job/hx':
+        for (let job of jobHxAgents[env.jobAgentId].jobs) {
+          console.log(' job.name', job.name)
+        }
+        return true;
+      default:
+        throw Error(env.URL_PATHNAME);
+    }
   },
 
   // }}}2

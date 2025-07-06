@@ -25,7 +25,7 @@ function jagURLpath (args) { // CLIENT {{{1
   switch (args[0]) {
     case '*testnet*':
       return '/topjob/hx';
-    case 'setup_hx_selftest':
+    case '*hx_selftest':
       return '/job/hx';
   }
 }

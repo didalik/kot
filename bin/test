@@ -4,5 +4,5 @@ bin/dev.mjs put_agent '*testnet*' # runs *testnet* jobs
 bin/dev.mjs post_jcl reset_testnet
 bin/dev.mjs post_jcl reset_testnet_monitor
 bin/dev.mjs post_job 'hx_selftest' browser=true
-bin/dev.mjs put_agent 'setup_hx_selftest'
+bin/dev.mjs put_agent '*hx_selftest'
 bin/dev.mjs post_job 'setup_hx_selftest'
