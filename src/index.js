@@ -54,11 +54,11 @@ export class KoT_Do extends DurableObject { // {{{1
     return true;
   }
   async webSocketClose(ws, code, reason, wasClean) { // {{{2
-    console.log('webSocketClose ws', ws, 'code', code, 'reason', reason, 'wasClean', wasClean)
+    //console.log('webSocketClose ws', ws, 'code', code, 'reason', reason, 'wasClean', wasClean)
     wasClean && ws.close()
   }
   async webSocketMessage(ws, message) { // {{{2
-    console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
+    //console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
     ws.send(`this.env.URL_PATHNAME ${this.env.URL_PATHNAME}, this.env.jobAgentId ${this.env.jobAgentId}`)
   } // }}}2
 }

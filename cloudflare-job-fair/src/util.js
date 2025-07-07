@@ -2,25 +2,41 @@ import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
 //import * as jobHxDeclarations from '../module-job-hx-agent/src/module-job-hx-declaration/list.js'
 import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
-const jobsHx = {}, topjobsHx = {} // Durable Object {{{1
+const jobsHx = { set: 'jobsHx', }, topjobsHx = { set: 'topjobsHx', } // Durable Object {{{1
+
+class JobHub { // {{{1
+  constructor (jobs, jobname, opts) { // {{{2
+    console.log('new JobHub jobs', jobs, 'jobname', jobname, 'opts', opts)
+  }
+
+  // }}}2
+}
 
 const JobFairDOImpl = { // Durable Object {{{1
   addJob: env => { // {{{2
     let path = env.URL_PATHNAME.split('/')
-    console.log('JobFairDOImpl.addJob env', env, 'jobname', path[2])
+    //console.log('JobFairDOImpl.addJob path', path)
+    switch (path[1] + path[2]) {
+      case 'jclhx':
+        return new JobHub(topjobsHx, path[3], { type: 'SimpleType', });
+      case 'jobhx':
+        return new JobHub(jobsHx, path[3], { type: 'SimpleType', });
+      default:
+        throw Error(path);
+    }
   },
 
   addJobAgent: env => { // {{{2
-    console.log('JobFairDOImpl.addJobAgent env', env)
+    //console.log('JobFairDOImpl.addJobAgent env', env)
     switch (env.URL_PATHNAME) {
       case '/jag/topjob/hx':
         for (let job of topjobHxAgents[env.jobAgentId].jobs) {
-          console.log(' job.name', job.name)
+          new JobHub(topjobsHx, job.name, { kind: 'SimpleKind', });
         }
         return true;
       case '/jag/job/hx':
         for (let job of jobHxAgents[env.jobAgentId].jobs) {
-          console.log(' job.name', job.name)
+          new JobHub(jobsHx, job.name, { kind: 'SimpleKind', });
         }
         return true;
       default:

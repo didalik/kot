@@ -65,11 +65,11 @@ alik@ko:~$
 
 ```
 bin/run.mjs put_agent '*testnet*' # runs *testnet* jobs
-bin/run.mjs post_jcl reset_testnet
-bin/run.mjs post_jcl reset_testnet_monitor
-bin/run.mjs post_job 'hx_selftest' browser=true
+bin/run.mjs post_jcl 'hx/reset_testnet'
+bin/run.mjs post_jcl 'hx/reset_testnet_monitor'
+bin/run.mjs post_job 'hx/selftest' browser=true
 bin/run.mjs put_agent '*hx_selftest'
-bin/run.mjs post_job 'setup_hx_selftest'
+bin/run.mjs post_job 'hx/setup_selftest'
 ```
 
 See also `bin/{dev,run}.mjs hack do0`
