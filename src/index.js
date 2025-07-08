@@ -24,11 +24,11 @@ export class KoT_Do extends DurableObject { // {{{1
   }
   async fetch(request) { // {{{2
     //console.log('KoT_Do.fetch this.env', this.env)
-    this.env.jobAgentId && impl.addJobAgent(this.env) || impl.addJob(this.env)
-    
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
     this.ctx.acceptWebSocket(server)
+    this.env.ws = server
+    this.env.jobAgentId && impl.addJobAgent(this.env) || impl.addJob(this.env)
     return new Response(null, { status: 101, webSocket: client });
   }
   async get (key) { // {{{2

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-bin/dev.mjs put_agent '*testnet*' # runs *testnet* jobs
+bin/dev.mjs put_agent '*testnet*' &
 bin/dev.mjs post_jcl 'hx/reset_testnet'
 bin/dev.mjs post_jcl 'hx/reset_testnet_monitor'
 bin/dev.mjs post_job 'hx/selftest' browser=true

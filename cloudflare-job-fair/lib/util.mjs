@@ -95,9 +95,12 @@ function wsConnect (url) { // {{{1
   })
   websocket.on('message', data => {
     log('websocket message', data.toString())
-    websocket.close()
+    //websocket.close()
   })
-  promise.then(loop => loop ? wsConnect(url) : log('wsConnect url', url, 'DONE')).catch(e => console.error(e))
+  promise.then(loop => loop ? wsConnect(url) : log('wsConnect url', url, 'DONE')).
+    catch(e => {
+      console.error(e)
+    })
 }
 
 export { configuration, hack, post_jcl, post_job, put_agent, } // {{{1
