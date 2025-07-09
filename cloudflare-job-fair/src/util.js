@@ -45,27 +45,28 @@ const JobFairDOImpl = { // Durable Object {{{1
   addJob: env => { // {{{2
     let path = env.URL_PATHNAME.split('/')
     //console.log('JobFairDOImpl.addJob path', path)
-    switch (path[1] + path[2]) {
-      case 'jclhx':
-        return new JobHub(topjobsHx, path[3], { ws: env.ws, });
-      case 'jobhx':
-        return new JobHub(jobsHx, path[3], { ws: env.ws, });
+    switch (path[1] + '/' + path[2]) {
+      case 'jcl/hx':
+        return new JobHub(topjobsHx, path[3], { pk: decodeURIComponent(path[4]), ws: env.ws, });
+      case 'job/hx':
+        return new JobHub(jobsHx, path[3], { pk: decodeURIComponent(path[4]), ws: env.ws, });
       default:
         throw Error(path);
     }
   },
 
   addJobAgent: env => { // {{{2
+    let path = env.URL_PATHNAME.split('/')
     //console.log('JobFairDOImpl.addJobAgent env', env)
-    switch (env.URL_PATHNAME) {
-      case '/jag/topjob/hx':
+    switch (path[1] + '/' + path[2] + '/' + path[3]) {
+      case 'jag/topjob/hx':
         for (let job of topjobHxAgents[env.jobAgentId].jobs) {
-          new JobHub(topjobsHx, job.name, { jobAgentId: env.jobAgentId, ws: env.ws, });
+          new JobHub(topjobsHx, job.name, { jobAgentId: env.jobAgentId, pk: decodeURIComponent(path[4]), ws: env.ws, });
         }
         return true;
-      case '/jag/job/hx':
+      case 'jag/job/hx':
         for (let job of jobHxAgents[env.jobAgentId].jobs) {
-          new JobHub(jobsHx, job.name, { jobAgentId: env.jobAgentId, ws: env.ws, });
+          new JobHub(jobsHx, job.name, { jobAgentId: env.jobAgentId, pk: decodeURIComponent(path[4]), ws: env.ws, });
         }
         return true;
       default:

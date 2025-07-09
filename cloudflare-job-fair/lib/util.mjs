@@ -1,5 +1,6 @@
 import fetch from 'node-fetch' // // CLIENT {{{1
 import WebSocket from 'ws'
+import { generate_keypair, } from '../../public/lib/util.mjs'
 
 const configuration = {} // CLIENT {{{1
 
@@ -21,21 +22,21 @@ function hackURLpath (args) { // CLIENT {{{1
   return '/' + args[0];
 }
 
-function jagURLpath (args) { // CLIENT {{{1
+async function jagURLpath (args) { // CLIENT {{{1
   switch (args[0]) {
     case '*testnet*':
-      return '/topjob/hx';
+      return `/topjob/hx/${await pubkey()}`;
     case '*hx_selftest':
-      return '/job/hx';
+      return `/job/hx/${await pubkey()}`;
   }
 }
 
-function jclURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}`;
+async function jclURLpath (args) { // CLIENT {{{1
+  return `/${args[0]}/${await pubkey()}`;
 }
 
-function jobURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}`;
+async function jobURLpath (args) { // CLIENT {{{1
+  return `/${args[0]}/${await pubkey()}`;
 }
 
 function log (...args) { // CLIENT {{{1
@@ -43,7 +44,7 @@ function log (...args) { // CLIENT {{{1
 }
 
 async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = jclURLpath(args)
+  let path = await jclURLpath(args)
   let urlJcl = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/jcl'
     : 'wss://jag.kloudoftrust.org/jcl'
   let url = `${urlJcl}${path}`
@@ -52,7 +53,7 @@ async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
 }
 
 async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = jobURLpath(args)
+  let path = await jobURLpath(args)
   let urlJob = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/job'
     : 'wss://job.kloudoftrust.org/job'
   let url = `${urlJob}${path}`
@@ -69,8 +70,13 @@ function promiseWithResolvers () { // {{{1
   return [promise, resolve, reject];
 }
 
+async function pubkey () { // {{{1
+  let pair = await generate_keypair.call(crypto.subtle, )
+  return encodeURIComponent(pair.split(' ')[1]);
+}
+
 async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = jagURLpath(args)
+  let path = await jagURLpath(args)
   let urlJag = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/jag'
     : 'wss://jag.kloudoftrust.org/jag'
   let url = `${urlJag}${path}`

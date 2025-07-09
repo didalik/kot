@@ -1,0 +1,35 @@
+#!/bin/bash
+#
+# Set sign/verify keys for Cloudflare Job Fair user/agent
+##
+
+help () { # {{{1
+  local error=$?
+  local red=$(git config --get-color color.diff.whitespace "red")
+  local reset=$(git config --get-color "" "reset")
+  echo "${red}"
+	echo -e "ERROR $error\n\tRequired argument is job side - 'user' or 'agent'. Usage examples:\n\n\t$0 user\n\t$0 agent\n"
+  echo "${reset}"
+}
+
+log () { # {{{1
+  local blue=$(git config --get-color color.diff.whitespace "blue")
+  local reset=$(git config --get-color "" "reset")
+  echo "${blue}$@${reset}"
+}
+
+run () { # {{{1
+	log "run $# $@"
+}
+
+validate () { # {{{1
+	log "$USER validate $# $@"
+  if [ $# -ne 1 ]; then
+    return 1
+  fi
+  return 0
+}
+
+log "$0 started for $USER@$HOSTNAME on $(date) in $PWD" # {{{1
+validate $@ && run $@ || help $@
+log "$0 DONE for $USER@$HOSTNAME"

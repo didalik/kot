@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import path from 'path'; // {{{1
-import fs from 'fs';
 import { 
   hack, post_jcl, post_job, put_agent,
 } from '../cloudflare-job-fair/lib/util.mjs'
