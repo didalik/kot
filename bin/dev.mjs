@@ -13,7 +13,7 @@ switch (process.argv[2]) { // {{{1
   default: // {{{2
     console.log('execute', process.argv[2])
     await execute[process.argv[2]](...process.argv)
-    console.log('executed')
+    console.log('started', process.argv[2])
 
     // }}}2
 }

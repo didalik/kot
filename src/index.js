@@ -23,7 +23,7 @@ export class KoT_Do extends DurableObject { // {{{1
     return value
   }
   async fetch(request) { // {{{2
-    //console.log('KoT_Do.fetch this.env', this.env)
+    console.log('KoT_Do.fetch request.cf', request.cf)
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
     this.ctx.acceptWebSocket(server)

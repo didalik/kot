@@ -25,18 +25,18 @@ function hackURLpath (args) { // CLIENT {{{1
 async function jagURLpath (args) { // CLIENT {{{1
   switch (args[0]) {
     case '*testnet*':
-      return `/topjob/hx/${await pubkey()}`;
+      return `/topjob/hx/${await pubkey('JOBAGENT_PK')}`;
     case '*hx_selftest':
-      return `/job/hx/${await pubkey()}`;
+      return `/job/hx/${await pubkey('JOBAGENT_PK')}`;
   }
 }
 
 async function jclURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}/${await pubkey()}`;
+  return `/${args[0]}/${await pubkey('JOBUSER_PK')}`;
 }
 
 async function jobURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}/${await pubkey()}`;
+  return `/${args[0]}/${await pubkey('JOBUSER_PK')}`;
 }
 
 function log (...args) { // CLIENT {{{1
@@ -70,9 +70,10 @@ function promiseWithResolvers () { // {{{1
   return [promise, resolve, reject];
 }
 
-async function pubkey () { // {{{1
-  let pair = await generate_keypair.call(crypto.subtle, )
-  return encodeURIComponent(pair.split(' ')[1]);
+async function pubkey (pk) { // {{{1
+  //let pair = await generate_keypair.call(crypto.subtle, )
+  //return encodeURIComponent(pair.split(' ')[1]);
+  return encodeURIComponent(process.env[pk]);
 }
 
 async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
@@ -84,30 +85,38 @@ async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
   wsConnect(url)
 }
 
+function setkeys() { // {{{1
+  generate_keypair.call(crypto.subtle, ).then(keys => console.log(keys))
+}
+
 function wsConnect (url) { // {{{1
   let websocket = new WebSocket(url, configuration.fetch_options ?? {})
   let [promise, resolve, reject] = promiseWithResolvers()
+  let tag = _ => {
+    return 'ws ' + process.argv[2];
+  }
   websocket.on('error', err => {
-    log('websocket error', err)
+    log(`${tag()} error`, err)
     reject(err)
   })
   websocket.on('close', data => {
-    log('websocket close', data)
+    log(`${tag()} close`, data)
     resolve(false)
   })
   websocket.on('open', _ => {
-    log('websocket open')
+    log(`${tag()} open`)
     websocket.send('test message')
   })
   websocket.on('message', data => {
-    log('websocket message', data.toString())
+    log(`${tag()} message`, data.toString())
     //websocket.close()
   })
-  promise.then(loop => loop ? wsConnect(url) : log('wsConnect url', url, 'DONE')).
+  promise.then(loop => loop ? wsConnect(url) : log(`${tag()}`, 'DONE')).
     catch(e => {
       console.error(e)
     })
 }
 
-export { configuration, hack, post_jcl, post_job, put_agent, } // {{{1
-
+export { // {{{1
+  configuration, hack, post_jcl, post_job, put_agent, setkeys,
+}

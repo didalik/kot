@@ -7,9 +7,9 @@ help () { # {{{1
   local error=$?
   local red=$(git config --get-color color.diff.whitespace "red")
   local reset=$(git config --get-color "" "reset")
-  echo "${red}"
+  echo -n "${red}"
 	echo -e "ERROR $error\n\tRequired argument is job side - 'user' or 'agent'. Usage examples:\n\n\t$0 user\n\t$0 agent\n"
-  echo "${reset}"
+  echo -n "${reset}"
 }
 
 log () { # {{{1
@@ -20,6 +20,8 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
+  bin/run.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
+  tree $HOME/.cloudflare-job-fair
 }
 
 validate () { # {{{1

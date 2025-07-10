@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+#bin/setkeys agent
+#bin/setkeys user
+
+read JOBAGENT_SK JOBAGENT_PK < $HOME/.cloudflare-job-fair/agent.keys
+export JOBAGENT_SK JOBAGENT_PK
+read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/user.keys
+export JOBUSER_SK JOBUSER_PK
+
 bin/dev.mjs put_agent '*testnet*' &
 bin/dev.mjs post_jcl 'hx/reset_testnet'
 bin/dev.mjs post_jcl 'hx/reset_testnet_monitor'

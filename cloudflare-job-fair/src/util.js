@@ -95,14 +95,14 @@ const JobFairImpl = { // EDGE {{{1
 
   addJobAgent: (request, env, ctx, ) => { // {{{2
     let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
-    env.jobAgentId = agentPK(request.cf.tlsClientAuth.certSubjectDN) 
+    env.jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
     return stub.fetch(request);
   },
 
   // }}}2
 }
 
-function agentPK (certSubjectDN) { // {{{1
+function agentId (certSubjectDN) { // {{{1
   if (certSubjectDN.length == 0) {
     return 'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ'; // local dev
   } //      ....:....1....:....2....:....3....:....4....:....5....:.
