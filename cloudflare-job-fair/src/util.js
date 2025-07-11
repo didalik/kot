@@ -2,7 +2,8 @@ import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
 //import * as jobHxDeclarations from '../module-job-hx-agent/src/module-job-hx-declaration/list.js'
 import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
-const jobsHx = { _set: 'jobsHx', }, topjobsHx = { _set: 'topjobsHx', } // Durable Object {{{1
+let durableObject; // {{{1
+const jobsHx = { _set: 'jobsHx', }, topjobsHx = { _set: 'topjobsHx', }
 
 class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
@@ -41,43 +42,7 @@ class JobHub { // {{{1
   // }}}2
 }
 
-const JobFairDOImpl = { // Durable Object {{{1
-  addJob: env => { // {{{2
-    let path = env.URL_PATHNAME.split('/')
-    //console.log('JobFairDOImpl.addJob path', path)
-    switch (path[1] + '/' + path[2]) {
-      case 'jcl/hx':
-        return new JobHub(topjobsHx, path[3], { pk: decodeURIComponent(path[4]), ws: env.ws, });
-      case 'job/hx':
-        return new JobHub(jobsHx, path[3], { pk: decodeURIComponent(path[4]), ws: env.ws, });
-      default:
-        throw Error(path);
-    }
-  },
-
-  addJobAgent: env => { // {{{2
-    let path = env.URL_PATHNAME.split('/')
-    //console.log('JobFairDOImpl.addJobAgent env', env)
-    switch (path[1] + '/' + path[2] + '/' + path[3]) {
-      case 'jag/topjob/hx':
-        for (let job of topjobHxAgents[env.jobAgentId].jobs) {
-          new JobHub(topjobsHx, job.name, { jobAgentId: env.jobAgentId, pk: decodeURIComponent(path[4]), ws: env.ws, });
-        }
-        return true;
-      case 'jag/job/hx':
-        for (let job of jobHxAgents[env.jobAgentId].jobs) {
-          new JobHub(jobsHx, job.name, { jobAgentId: env.jobAgentId, pk: decodeURIComponent(path[4]), ws: env.ws, });
-        }
-        return true;
-      default:
-        throw Error(env.URL_PATHNAME);
-    }
-  },
-
-  // }}}2
-}
-
-const JobFairImpl = { // EDGE {{{1
+const JobFairImpl = { // {{{1
   addJob: (request, env, ctx, ) => { // {{{2
     if (env.URL_PATHNAME == '/hack/do0') { // DONE
       try {
@@ -99,7 +64,77 @@ const JobFairImpl = { // EDGE {{{1
     return stub.fetch(request);
   },
 
+  dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
+    let pathname = new URL(request.url).pathname
+    let agent = pathname.startsWith('/jag')
+    if (ctx_OR_null) { // EDGE
+      let ctx = ctx_OR_null, env = env_OR_ws
+      if (agent) {
+        return addJobAgent(request, env, ctx, );
+      } else {
+        return addJob(request, env, ctx, pathname);
+      }
+    }
+    durableObject ??= this
+    let ws = env_OR_ws
+    let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
+    let path = pathname.split('/')
+    let pk = decodeURIComponent(path[4])
+    if (agent) {
+      addJobAgentDO(ws, path, pk, jobAgentId)
+    } else {
+      addJobDO(ws, path, pk)
+    }
+  }
+
   // }}}2
+}
+
+function addJob (request, env, ctx, pathname) { // {{{1
+  if (pathname == '/hack/do0') { // DONE
+    try {
+      let stub = env.KOT_DO.get(env.KOT_DO.idFromName('JobFair webSocket with Hibernation'))
+      return stub.deleteAll().then(r => new Response(`- stub.deleteAll ${r}`));
+    }
+    catch (err) {
+      return new Response(`${err}`);
+    }
+  }
+  let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
+  return stub.fetch(request);
+}
+
+function addJobAgent (request, env, ctx) { // {{{1
+  let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
+  return stub.fetch(request);
+}
+
+function addJobDO (ws, path, pk) { // {{{1
+  switch (path[1] + '/' + path[2]) {
+    case 'jcl/hx':
+      return new JobHub(topjobsHx, path[3], { pk, ws, });
+    case 'job/hx':
+      return new JobHub(jobsHx, path[3], { pk, ws, });
+    default:
+      throw Error(path);
+  }
+}
+
+function addJobAgentDO (ws, path, pk, jobAgentId) { // {{{1
+  switch (path[1] + '/' + path[2] + '/' + path[3]) {
+    case 'jag/topjob/hx':
+      for (let job of topjobHxAgents[jobAgentId].jobs) {
+        new JobHub(topjobsHx, job.name, { jobAgentId, pk, ws, });
+      }
+      break
+    case 'jag/job/hx':
+      for (let job of jobHxAgents[jobAgentId].jobs) {
+        new JobHub(jobsHx, job.name, { jobAgentId, pk, ws, });
+      }
+      break
+    default:
+      throw Error(pathname);
+  }
 }
 
 function agentId (certSubjectDN) { // {{{1
@@ -110,5 +145,5 @@ function agentId (certSubjectDN) { // {{{1
   return certSubjectDN.slice(index, index + 56);
 }
 
-export { JobFairDOImpl, JobFairImpl, } // {{{1
+export { JobFairImpl, } // {{{1
 

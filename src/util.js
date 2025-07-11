@@ -63,16 +63,10 @@ class IpState { // {{{1
 
 class JobFair { // {{{1
   constructor () { // {{{2
-    this.impl = impl
   }
 
-  addJob (request, env, ctx) { // {{{2
-    //log_method_and_url('JobFair.addJob', request)
-    return this.impl.addJob(request, env, ctx, );
-  }
-
-  addJobAgent (request, env, ctx) { // {{{2
-    return this.impl.addJobAgent(request, env, ctx, );
+  static dispatch (request, env_OR_ws, ctx_OR_null = null) { // {{{2
+    return impl.dispatch.call(this, request, env_OR_ws, ctx_OR_null);
   }
 
   // }}}2
@@ -100,13 +94,6 @@ class Page { // {{{1
   }
 
   // }}}2
-}
-
-function log_method_and_url (tag, request, log = true) { // {{{1
-  let url = new URL(request.url)
-  let method = request.method
-  log && console.log(tag, 'request.method', method, 'request.url', url)
-  return [method, url];
 }
 
 function pp (o) { // {{{1
@@ -138,5 +125,5 @@ function pp (o) { // {{{1
 }
 
 
-export { DOpad, IpState, JobFair, Page, log_method_and_url, } // {{{1
+export { DOpad, IpState, JobFair, Page, } // {{{1
 

@@ -1,6 +1,5 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
-import { JobFairDOImpl as impl, } from '../cloudflare-job-fair/src/util.js'
-import { DOpad, IpState, JobFair, Page, log_method_and_url, } from './util.js'
+import { DOpad, IpState, JobFair, Page, } from './util.js'
 
 import style from '../public/static/style.css'
 import dopad from '../public/dopad.html'
@@ -22,13 +21,12 @@ export class KoT_Do extends DurableObject { // {{{1
     console.log('deleteAll', value)
     return value
   }
-  async fetch(request) { // {{{2
-    console.log('KoT_Do.fetch request.cf', request.cf)
+  fetch(request) { // {{{2
+    //console.log('KoT_Do.fetch request.cf', request.cf)
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
     this.ctx.acceptWebSocket(server)
-    this.env.ws = server
-    this.env.jobAgentId && impl.addJobAgent(this.env) || impl.addJob(this.env)
+    JobFair.dispatch.call(this, request, server)
     return new Response(null, { status: 101, webSocket: client });
   }
   async get (key) { // {{{2
@@ -59,7 +57,7 @@ export class KoT_Do extends DurableObject { // {{{1
   }
   async webSocketMessage(ws, message) { // {{{2
     //console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
-    ws.send(`this.env.URL_PATHNAME ${this.env.URL_PATHNAME}, this.env.jobAgentId ${this.env.jobAgentId}`)
+    ws.send('TODO get rid of this message')
   } // }}}2
 }
 
@@ -75,17 +73,15 @@ export default { // {{{1
 	async fetch(request, env, ctx) {
     env.KOT_DO_ID ??= env.KOT_DO.idFromName('/kot_do')
     env.KOT_DO_WSH_ID ??= env.KOT_DO.idFromName('/JobFair webSocket with Hibernation')
-    let [method, url] = log_method_and_url('fetch', request, false)
-    env.URL_PATHNAME = url.pathname
+    let pathname = new URL(request.url).pathname
     switch (true) {
-      case url.pathname.startsWith('/hack'):
-      case url.pathname.startsWith('/jcl'):
-      case url.pathname.startsWith('/job'):
-        return await new JobFair().addJob(request, env, ctx);
-      case url.pathname.startsWith('/jag'):
-        return await new JobFair().addJobAgent(request, env, ctx);
+      case pathname.startsWith('/hack'):
+      case pathname.startsWith('/jag'):
+      case pathname.startsWith('/jcl'):
+      case pathname.startsWith('/job'):
+        return JobFair.dispatch(request, env, ctx);
       default:
-        return await dispatch.call(url.pathname, request, env, ctx);
+        return await dispatch.call(pathname, request, env, ctx);
     }
 	},
 };
