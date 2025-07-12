@@ -8,13 +8,16 @@ const jobsHx = { _set: 'jobsHx', }, topjobsHx = { _set: 'topjobsHx', }
 class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
     jobs[jobname] ??= []
-    const agentId = _ => {
+    const agentId = _ => { // {{{3
       let agentId = jobs[jobname][0].jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
       agent.drop(jobs[jobname])
       return agentId;
     }
-    const push = _ => {
+    const prefix = (myId, agentId) => { // {{{3
+      return myId ? 'I AM' : `AGENT ${agentId} IS`;
+    }
+    const push = _ => { // {{{3
       /*
       this.promise = new Promise((resolve, reject) => {
         this.resolve = resolve
@@ -23,19 +26,20 @@ class JobHub { // {{{1
       */
       Object.assign(this, hub)
       jobs[jobname].push(this)
-    }
+    } // }}}3
     if (jobs[jobname].length == 0) {
       push()
     } else {
       if (jobs[jobname][0].jobAgentId && hub.jobAgentId || !hub.jobAgentId && !jobs[jobname][0].jobAgentId) {
         push()
       } else {
-        hub.ws.send(`${hub.jobAgentId} TAKING JOB ${jobname}`)
-        jobs[jobname][0].ws.send(`${jobs[jobname][0].jobAgentId} TAKING JOB ${jobname}`)
+        hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
+        jobs[jobname][0].ws.send(`${prefix(jobs[jobname][0].jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
         let jobAgentId = hub.jobAgentId ?? agentId()
         console.log('new JobHub agent', jobAgentId, 'is taking jobname', jobname)
       }
     }
+    durableObject.mapWs2Hub_set(this.ws, this)
     console.log('new JobHub jobs', jobs)
   }
 
@@ -43,27 +47,6 @@ class JobHub { // {{{1
 }
 
 const JobFairImpl = { // {{{1
-  addJob: (request, env, ctx, ) => { // {{{2
-    if (env.URL_PATHNAME == '/hack/do0') { // DONE
-      try {
-        let stub = env.KOT_DO.get(env.KOT_DO.idFromName('JobFair webSocket with Hibernation'))
-        return stub.deleteAll().then(r => new Response(`- stub.deleteAll ${r}`));
-      }
-      catch (err) {
-        return new Response(`${err}`);
-      }
-    }
-    let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
-    delete env.jobAgentId
-    return stub.fetch(request);
-  },
-
-  addJobAgent: (request, env, ctx, ) => { // {{{2
-    let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
-    env.jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
-    return stub.fetch(request);
-  },
-
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     let pathname = new URL(request.url).pathname
     let agent = pathname.startsWith('/jag')

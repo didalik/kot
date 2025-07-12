@@ -46,6 +46,9 @@ export class KoT_Do extends DurableObject { // {{{1
     console.log('list', value)
     return value
   }
+  mapWs2Hub_set (ws, hub) { // {{{2
+    console.log('mapWs2Hub_set ws', ws, 'hub', hub)
+  }
   async put (key, value) { // {{{2
     console.log('put', key, value)
     await this.ctx.storage.put(key, value)

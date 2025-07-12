@@ -1,6 +1,6 @@
 import fetch from 'node-fetch' // // CLIENT {{{1
 import WebSocket from 'ws'
-import { generate_keypair, } from '../../public/lib/util.mjs'
+import { base64ToUint8, generate_keypair, uint8ToBase64, } from '../../public/lib/util.mjs'
 
 const configuration = {} // CLIENT {{{1
 
@@ -108,13 +108,28 @@ function wsConnect (url) { // {{{1
     websocket.send('test message')
   })
   websocket.on('message', data => {
-    log(`${tag()} message`, data.toString())
-    //websocket.close()
+    data = data.toString()
+    log(`${tag()} message`, data)
+    wsDispatch(data, websocket)
   })
   promise.then(loop => loop ? wsConnect(url) : log(`${tag()}`, 'DONE')).
     catch(e => {
       console.error(e)
     })
+}
+
+function wsDispatch (data, ws) { // {{{1
+  if (data.includes('TAKING JOB')) {
+    let payload64 = uint8ToBase64(data)
+    let sk = process.argv[2] == 'put_agent' ? process.env.JOBAGENT_SK : process.env.JOBUSER_SK
+    crypto.subtle.importKey('jwk', JSON.parse(sk), 'Ed25519', true, ['sign']).
+      then(sk => {
+        return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
+      }).then(signature => {
+        let sig64 = uint8ToBase64(new Uint8Array(signature))
+        log('wsDispatch TODO send ', payload64, sig64)
+      }).catch(e => console.error(e))
+  }
 }
 
 export { // {{{1
