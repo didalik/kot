@@ -69,6 +69,10 @@ class JobFair { // {{{1
     return impl.dispatch.call(this, request, env_OR_ws, ctx_OR_null);
   }
 
+  static wsDispatch (message, ws) { // {{{2
+    return impl.wsDispatch(message, ws);
+  }
+
   // }}}2
 }
 

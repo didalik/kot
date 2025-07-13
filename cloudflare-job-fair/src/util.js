@@ -3,7 +3,7 @@ import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
 import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
-const jobsHx = { _set: 'jobsHx', }, topjobsHx = { _set: 'topjobsHx', }
+const jobsHx = { _set: 'jobsHx', }, mapWs2Hub = new Map(), topjobsHx = { _set: 'topjobsHx', }
 
 class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
@@ -24,9 +24,9 @@ class JobHub { // {{{1
         this.reject = reject
       })
       */
-      Object.assign(this, hub)
       jobs[jobname].push(this)
     } // }}}3
+    Object.assign(this, hub)
     if (jobs[jobname].length == 0) {
       push()
     } else {
@@ -35,12 +35,12 @@ class JobHub { // {{{1
       } else {
         hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
         jobs[jobname][0].ws.send(`${prefix(jobs[jobname][0].jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
-        let jobAgentId = hub.jobAgentId ?? agentId()
+        let jobAgentId = hub.jobAgentId ?? agentId() // FIXME
         console.log('new JobHub agent', jobAgentId, 'is taking jobname', jobname)
       }
     }
-    durableObject.mapWs2Hub_set(this.ws, this)
-    console.log('new JobHub jobs', jobs)
+    mapWs2Hub.set(this.ws, this)
+    console.log('new JobHub jobs', jobs, 'mapWs2Hub', mapWs2Hub)
   }
 
   // }}}2
@@ -68,7 +68,11 @@ const JobFairImpl = { // {{{1
     } else {
       addJobDO(ws, path, pk)
     }
-  }
+  },
+
+  wsDispatch: (data, ws) => { // {{{2
+    console.log('JobFairImpl.wsDispatch data', data, 'hub', mapWs2Hub.get(ws))
+  },
 
   // }}}2
 }

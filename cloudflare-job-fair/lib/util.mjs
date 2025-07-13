@@ -127,7 +127,7 @@ function wsDispatch (data, ws) { // {{{1
         return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
       }).then(signature => {
         let sig64 = uint8ToBase64(new Uint8Array(signature))
-        log('wsDispatch TODO send ', payload64, sig64)
+        ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(e => console.error(e))
   }
 }
