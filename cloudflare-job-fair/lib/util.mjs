@@ -105,7 +105,6 @@ function wsConnect (url) { // {{{1
   })
   websocket.on('open', _ => {
     log(`${tag()} open`)
-    websocket.send('test message')
   })
   websocket.on('message', data => {
     data = data.toString()

@@ -4,6 +4,8 @@ import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
 const jobsHx = { _set: 'jobsHx', }, mapWs2Hub = new Map(), topjobsHx = { _set: 'topjobsHx', }
+const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
+const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
 class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
@@ -36,11 +38,11 @@ class JobHub { // {{{1
         hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
         jobs[jobname][0].ws.send(`${prefix(jobs[jobname][0].jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
         let jobAgentId = hub.jobAgentId ?? agentId() // FIXME
-        console.log('new JobHub agent', jobAgentId, 'is taking jobname', jobname)
+        //console.log('new JobHub agent', jobAgentId, 'is taking jobname', jobname)
       }
     }
     mapWs2Hub.set(this.ws, this)
-    console.log('new JobHub jobs', jobs, 'mapWs2Hub', mapWs2Hub)
+    //console.log('new JobHub jobs', jobs, 'mapWs2Hub', mapWs2Hub)
   }
 
   // }}}2
@@ -71,7 +73,23 @@ const JobFairImpl = { // {{{1
   },
 
   wsDispatch: (data, ws) => { // {{{2
-    console.log('JobFairImpl.wsDispatch data', data, 'hub', mapWs2Hub.get(ws))
+    let hub = mapWs2Hub.get(ws)
+    try {
+      let json = JSON.parse(data)
+      let a = base64ToUint8(hub.pk)
+      let signature = base64ToUint8(json.sig64)
+      let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
+      crypto.subtle.importKey('raw', a.buffer, 'Ed25519', true, ['verify']).
+        then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(json.payload64))).
+        then(r => {
+          console.log('JobFairImpl.wsDispatch', hub.jobAgentId, 'r', r, 'payload', signedData(json.payload64))
+        }).catch(err => console.log('JobFairImpl.wsDispatch *** ERROR *** err', err))
+    } catch (e) {
+      if (!e.toString().startsWith('SyntaxError')) {
+        throw e;
+      }
+      console.log('JobFairImpl.wsDispatch data', data)
+    }
   },
 
   // }}}2
