@@ -9,6 +9,7 @@ const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
 class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
+    this.passthrough = []
     jobs[jobname] ??= []
     const agentId = _ => { // {{{3
       let agentId = jobs[jobname][0].jobAgentId
@@ -18,31 +19,26 @@ class JobHub { // {{{1
     }
     const prefix = (myId, agentId) => { // {{{3
       return myId ? 'I AM' : `AGENT ${agentId} IS`;
-    }
-    const push = _ => { // {{{3
-      /*
-      this.promise = new Promise((resolve, reject) => {
-        this.resolve = resolve
-        this.reject = reject
-      })
-      */
-      jobs[jobname].push(this)
     } // }}}3
-    Object.assign(this, hub)
-    if (jobs[jobname].length == 0) {
-      push()
-    } else {
-      if (jobs[jobname][0].jobAgentId && hub.jobAgentId || !hub.jobAgentId && !jobs[jobname][0].jobAgentId) {
-        push()
-      } else {
-        hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
-        jobs[jobname][0].ws.send(`${prefix(jobs[jobname][0].jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
-        let jobAgentId = hub.jobAgentId ?? agentId() // FIXME
-        //console.log('new JobHub agent', jobAgentId, 'is taking jobname', jobname)
-      }
+    if (hub.jobAgentId) {
+      hub.taking = +0
+    } else if (jobs[jobname].length > 0) {
+      jobs[jobname][0].taking = +0
     }
+    if (jobs[jobname].length == 0 || jobs[jobname][0].jobAgentId && hub.jobAgentId || !hub.jobAgentId && !jobs[jobname][0].jobAgentId) { // same side
+      jobs[jobname].push(this)
+    } else { // taking
+      hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
+      jobs[jobname][0].ws.send(`${prefix(jobs[jobname][0].jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
+    }
+    Object.assign(this, hub, { jobs })
     mapWs2Hub.set(this.ws, this)
-    //console.log('new JobHub jobs', jobs, 'mapWs2Hub', mapWs2Hub)
+  }
+
+  jobStart (jobname) { // {{{2
+    this.jobname = jobname
+    console.log('JobHub jobStart this', this)
+    this.ws.send(`START JOB ${this.jobname}`)
   }
 
   // }}}2
@@ -82,7 +78,26 @@ const JobFairImpl = { // {{{1
       crypto.subtle.importKey('raw', a.buffer, 'Ed25519', true, ['verify']).
         then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(json.payload64))).
         then(r => {
-          console.log('JobFairImpl.wsDispatch', hub.jobAgentId, 'r', r, 'payload', signedData(json.payload64))
+          if (!r) { // TODO handle verify false
+            return;
+          }
+          let payload = signedData(json.payload64)
+          let jobname = payload.slice(payload.lastIndexOf(' ') + 1)
+          let jobAgentId = hub.jobAgentId ?? payload.split(' ')[1]
+          if (hub.jobAgentId) {
+            if (++hub.taking == 2) {
+              hub.jobStart(jobname)
+            }
+          } else {
+            let jobAgentHub = agentHub(jobAgentId)
+            jobAgentHub.passthrough.push(ws)
+            hub.passthrough.push(jobAgentHub.ws)
+            hub.jobname = jobname
+            if (++jobAgentHub.taking == 2) {
+              jobAgentHub.jobStart(jobname)
+            }
+          }
+          console.log('JobFairImpl.wsDispatch r', r, 'jobAgentId', jobAgentId, 'hub', hub)
         }).catch(err => console.log('JobFairImpl.wsDispatch *** ERROR *** err', err))
     } catch (e) {
       if (!e.toString().startsWith('SyntaxError')) {
@@ -140,6 +155,16 @@ function addJobAgentDO (ws, path, pk, jobAgentId) { // {{{1
     default:
       throw Error(pathname);
   }
+}
+
+function agentHub (jobAgentId) { // {{{1
+  const iterator = mapWs2Hub[Symbol.iterator]()
+  for (const item of iterator) {
+    if (item[1].jobAgentId == jobAgentId) {
+      return item[1];
+    }
+  }
+  throw Error('UNEXPECTED');
 }
 
 function agentId (certSubjectDN) { // {{{1
