@@ -1,0 +1,11 @@
+#!/bin/bash
+
+log () { # {{{1
+  local blue=$(git config --get-color color.diff.whitespace "blue")
+  local reset=$(git config --get-color "" "reset")
+  echo "${blue}$@${reset}"
+}
+
+log "$0 started for $USER@$HOSTNAME on $(date) in $PWD" # {{{1
+#validate $@ && run $@ || help $@
+log "$0 DONE for $USER@$HOSTNAME"

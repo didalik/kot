@@ -1,8 +1,13 @@
 import fetch from 'node-fetch' // // CLIENT {{{1
 import WebSocket from 'ws'
 import { base64ToUint8, generate_keypair, uint8ToBase64, } from '../../public/lib/util.mjs'
+import { reset_testnet, reset_testnet_monitor, } from '../module-topjob-hx-agent/lib/list.mjs'
+import { selftest, setup_selftest, } from '../module-job-hx-agent/lib/list.mjs'
 
 const configuration = {} // CLIENT {{{1
+const startJob = {
+  reset_testnet, reset_testnet_monitor, selftest, setup_selftest,
+}
 
 async function hack (node, run, cmd, ...args) { // CLIENT {{{1
   let path = hackURLpath(args)
@@ -10,11 +15,8 @@ async function hack (node, run, cmd, ...args) { // CLIENT {{{1
     : 'https://jag.kloudoftrust.org/hack'
   let url = `${urlHack}${path}`
   log('- hack args', args, 'url', url, 'configuration', configuration)
-  /*
-  wsConnect(url)
-  */
   fetch(url, configuration.fetch_options ?? {}).
-    then(response => response.text()).then(responseBody => console.log(responseBody)).
+    then(response => response.text()).then(responseBody => log(responseBody)).
     catch(err => log(err))
 }
 
@@ -86,7 +88,7 @@ async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
 }
 
 function setkeys() { // {{{1
-  generate_keypair.call(crypto.subtle, ).then(keys => console.log(keys))
+  generate_keypair.call(crypto.subtle, ).then(keys => log(keys))
 }
 
 function wsConnect (url) { // {{{1
@@ -119,6 +121,9 @@ function wsConnect (url) { // {{{1
 
 function wsDispatch (data, ws) { // {{{1
   if (data.includes('TAKING JOB')) {
+    if (data.includes('AM TAKING JOB')) {
+      global.jobAgentId = data.slice(0, data.indexOf(' '))
+    }
     let payload64 = uint8ToBase64(data)
     let sk = process.argv[2] == 'put_agent' ? process.env.JOBAGENT_SK : process.env.JOBUSER_SK
     crypto.subtle.importKey('jwk', JSON.parse(sk), 'Ed25519', true, ['sign']).
@@ -128,6 +133,12 @@ function wsDispatch (data, ws) { // {{{1
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(e => console.error(e))
+  } else if (data.includes('START JOB')) {
+    let jobname = data.slice(1 + data.lastIndexOf(' '))
+    global.log = log
+    startJob[jobname]()
+  } else if (data.includes('STARTED JOB')) {
+    log('wsDispatch STARTED JOB data', data)
   }
 }
 

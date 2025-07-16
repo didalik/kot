@@ -18,7 +18,7 @@ class JobHub { // {{{1
       return agentId;
     }
     const prefix = (myId, agentId) => { // {{{3
-      return myId ? 'I AM' : `AGENT ${agentId} IS`;
+      return myId ? `${myId} AM` : `AGENT ${agentId} IS`;
     } // }}}3
     if (hub.jobAgentId) {
       hub.taking = +0
@@ -39,6 +39,9 @@ class JobHub { // {{{1
     this.jobname = jobname
     console.log('JobHub jobStart this', this)
     this.ws.send(`START JOB ${this.jobname}`)
+    for (let ws of this.passthrough) {
+      ws.send(`AGENT ${this.jobAgentId} STARTED JOB ${this.jobname}`)
+    }
   }
 
   // }}}2
@@ -84,11 +87,11 @@ const JobFairImpl = { // {{{1
           let payload = signedData(json.payload64)
           let jobname = payload.slice(payload.lastIndexOf(' ') + 1)
           let jobAgentId = hub.jobAgentId ?? payload.split(' ')[1]
-          if (hub.jobAgentId) {
+          if (hub.jobAgentId) { // approval from job agent
             if (++hub.taking == 2) {
               hub.jobStart(jobname)
             }
-          } else {
+          } else {              // approval from job user
             let jobAgentHub = agentHub(jobAgentId)
             jobAgentHub.passthrough.push(ws)
             hub.passthrough.push(jobAgentHub.ws)
