@@ -46,9 +46,6 @@ export class KoT_Do extends DurableObject { // {{{1
     console.log('list', value)
     return value
   }
-  //mapWs2Hub_set (ws, hub) { // {{{2
-    //console.log('mapWs2Hub_set ws', ws, 'hub', hub)
-  //}
   async put (key, value) { // {{{2
     console.log('put', key, value)
     await this.ctx.storage.put(key, value)
@@ -56,12 +53,12 @@ export class KoT_Do extends DurableObject { // {{{1
   }
   async webSocketClose(ws, code, reason, wasClean) { // {{{2
     //console.log('webSocketClose ws', ws, 'code', code, 'reason', reason, 'wasClean', wasClean)
-    wasClean && ws.close()
+    //wasClean && ws.close()
+    JobFair.wsClose(ws, code, reason, wasClean)
   }
   async webSocketMessage(ws, message) { // {{{2
     //console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
     JobFair.wsDispatch(message, ws)
-    //ws.send('TODO get rid of this message')
   } // }}}2
 }
 

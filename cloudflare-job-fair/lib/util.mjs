@@ -136,7 +136,7 @@ function wsDispatch (data, ws) { // {{{1
   } else if (data.includes('START JOB')) {
     let jobname = data.slice(1 + data.lastIndexOf(' '))
     global.log = log
-    startJob[jobname]()
+    startJob[jobname].call({ ws })
   } else if (data.includes('STARTED JOB')) {
     log('wsDispatch STARTED JOB data', data)
   }

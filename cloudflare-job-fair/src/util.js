@@ -44,6 +44,12 @@ class JobHub { // {{{1
     }
   }
 
+  pipe (data) { // {{{2
+    for (let ws of this.passthrough) {
+      ws.send(data)
+    }
+  }
+
   // }}}2
 }
 
@@ -71,9 +77,20 @@ const JobFairImpl = { // {{{1
     }
   },
 
+  wsClose: (ws, code, reason, wasClean) => { // {{{2
+    wasClean && ws.close()
+    let hub = mapWs2Hub.get(ws)
+    for (let ws of hub.passthrough) {
+      ws.close()
+    }
+  },
+
   wsDispatch: (data, ws) => { // {{{2
     let hub = mapWs2Hub.get(ws)
-    try {
+    if (hub.taking == 2) { // {{{3
+      return hub.pipe(data);
+    }
+    try { // {{{3
       let json = JSON.parse(data)
       let a = base64ToUint8(hub.pk)
       let signature = base64ToUint8(json.sig64)
@@ -107,7 +124,7 @@ const JobFairImpl = { // {{{1
         throw e;
       }
       console.log('JobFairImpl.wsDispatch data', data)
-    }
+    } // }}}3
   },
 
   // }}}2
