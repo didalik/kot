@@ -5,7 +5,7 @@ import { spawn } from 'node:child_process'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-export function reset_testnet (amountHEXA = '10000') { // {{{1
+export function reset_testnet (amountHEXA = '10000') { // TODO drop default value {{{1
   //log('reset_testnet global', global, '__dirname', __dirname)
   let job = spawn(
     `${__dirname}/module-topjob-hx-definition/reset_testnet/bin/job`,
@@ -13,6 +13,7 @@ export function reset_testnet (amountHEXA = '10000') { // {{{1
     { cwd: `${__dirname}/module-topjob-hx-definition/reset_testnet` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))
+  job.stderr.on('data', data => log('reset_testnet stderr', data.toString()))
   job.stdout.on('data', data => {
     //log('reset_testnet data', data.toString())
     this.ws.send(data)

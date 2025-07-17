@@ -9,6 +9,7 @@ pids
 _.pid
 _.seed
 \*.pid.lock
+**/build
 
 # wrangler project {{{1
 .dev.vars

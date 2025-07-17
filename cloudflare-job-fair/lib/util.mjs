@@ -138,7 +138,7 @@ function wsDispatch (data, ws) { // {{{1
     global.log = log
     startJob[jobname].call({ ws })
   } else if (data.includes('STARTED JOB')) {
-    log('wsDispatch STARTED JOB data', data)
+    //log('wsDispatch STARTED JOB data', data)
   }
 }
 

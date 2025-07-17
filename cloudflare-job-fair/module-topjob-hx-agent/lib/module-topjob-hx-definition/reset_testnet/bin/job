@@ -18,6 +18,7 @@ log () { # {{{1
 run () { # {{{1
 	log "run $# $@"
   bin/run.mjs $@
+  tree
 }
 
 validate () { # {{{1
