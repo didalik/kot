@@ -139,6 +139,8 @@ function wsDispatch (data, ws) { // {{{1
     startJob[jobname].call({ ws })
   } else if (data.includes('STARTED JOB')) {
     //log('wsDispatch STARTED JOB data', data)
+  } else if (data.includes('EXIT CODE')) {
+    ws.close()
   }
 }
 

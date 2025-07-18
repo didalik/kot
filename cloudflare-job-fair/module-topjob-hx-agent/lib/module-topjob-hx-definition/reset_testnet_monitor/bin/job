@@ -5,7 +5,7 @@ help () { # {{{1
   local red=$(git config --get-color color.diff.whitespace "red")
   local reset=$(git config --get-color "" "reset")
   echo -n "${red}"
-	echo -e "ERROR $error\n\tRequired argument is amountHEXA - a string representing initial amount of HEXA issued to hx Agent by hx Issuer. Usage example:\n\n\t$0 '10000'\n"
+	echo -e "ERROR $error\n\tTwo arguments are required.\n\tThe first argument is amountMA - a string representing initial amount of Monitor Asset issued to hx MA Agent by hx MA Issuer.\n\tThe second argument is network directory.\n\tUsage example:\n\n\t$0 '10000' '../reset_testnet/build/testnet'\n"
   echo -n "${reset}"
 }
 
@@ -18,12 +18,12 @@ log () { # {{{1
 run () { # {{{1
 	log "run $# $@"
   bin/run.mjs $@
-  tree build
+  tree $2
 }
 
 validate () { # {{{1
 	log "$USER validate $# $@"
-  if [ $# -ne 1 ]; then
+  if [ $# -ne 2 ]; then
     return 1
   fi
   return 0

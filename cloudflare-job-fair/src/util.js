@@ -3,7 +3,7 @@ import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
 import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
-const jobsHx = { _set: 'jobsHx', }, mapWs2Hub = new Map(), topjobsHx = { _set: 'topjobsHx', }
+const jobsHx = {}, mapWs2Hub = new Map(), topjobsHx = {}
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
@@ -11,12 +11,12 @@ class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
     this.passthrough = []
     jobs[jobname] ??= []
-    const agentId = _ => { // {{{3
+    /*const agentId = _ => { // {{{3
       let agentId = jobs[jobname][0].jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
       agent.drop(jobs[jobname])
       return agentId;
-    }
+    }*/
     const prefix = (myId, agentId) => { // {{{3
       return myId ? `${myId} AM` : `AGENT ${agentId} IS`;
     } // }}}3
@@ -27,9 +27,10 @@ class JobHub { // {{{1
     }
     if (jobs[jobname].length == 0 || jobs[jobname][0].jobAgentId && hub.jobAgentId || !hub.jobAgentId && !jobs[jobname][0].jobAgentId) { // same side
       jobs[jobname].push(this)
-    } else { // taking
-      hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
-      jobs[jobname][0].ws.send(`${prefix(jobs[jobname][0].jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
+    } else {                                                                                                                             // taking an opposite side
+      hub.isClosed || hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
+      let osh = jobs[jobname][0] // opposite side hub
+      osh.isClosed || osh.ws.send(`${prefix(osh.jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
     }
     Object.assign(this, hub, { jobs })
     mapWs2Hub.set(this.ws, this)
@@ -80,9 +81,19 @@ const JobFairImpl = { // {{{1
   wsClose: (ws, code, reason, wasClean) => { // {{{2
     wasClean && ws.close()
     let hub = mapWs2Hub.get(ws)
+    hub.isClosed = true
     for (let ws of hub.passthrough) {
       ws.close()
     }
+    let jobs = hub.jobs[hub.jobname]
+    jobs[0] === hub && jobs.shift()
+    if (hub.jobAgentId) {
+      for (let jobq of Object.getOwnPropertyNames(hub.jobs)) {
+        hub.jobs[jobq].length > 0 && hub.jobs[jobq].shift()
+      }
+    }
+    let deleted = mapWs2Hub.delete(ws)
+    console.log('JobFairImpl.wsClose hub', hub, 'deleted', deleted)
   },
 
   wsDispatch: (data, ws) => { // {{{2

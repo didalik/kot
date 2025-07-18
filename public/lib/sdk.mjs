@@ -125,6 +125,8 @@ async function addMA_Agent (limit, keysIssuer, init, ...args) { // {{{1
 
 function addMA_CREATOR (...args) { // {{{1
   let { s, e, c, d } = this
+  e.server ??= new Horizon.Server("https://horizon-testnet.stellar.org")
+  e.nw = Networks.TESTNET
   let [CREATOR_SK, CREATOR_PK] = storeKeys.call(this, ...args)
   return fetch(
     `https://friendbot.stellar.org?addr=${encodeURIComponent(CREATOR_PK)}`
@@ -134,7 +136,8 @@ function addMA_CREATOR (...args) { // {{{1
   }).then(account => {
     c.account = account // used by createAccount
     e.log('loaded CREATOR', account.id)
-    return Promise.resolve(d.kp = Keypair.fromSecret(CREATOR_SK)); // used by addAgent
+    // used by addMA_Agent VVVV
+    return Promise.resolve(d.kp = Keypair.fromSecret(CREATOR_SK));
   });
 }
 
@@ -308,7 +311,7 @@ async function createAccount ( // {{{1
   tx =  await e.server.submitTransaction(tx).catch(e => console.error(
     '*** ERROR ***', e.response.data.extras.result_codes
   ))
-  return tx.id;
+  return tx?.id;
 }
 
 function getClaimableBalanceId (result_xdr, index = 0) { // {{{1
