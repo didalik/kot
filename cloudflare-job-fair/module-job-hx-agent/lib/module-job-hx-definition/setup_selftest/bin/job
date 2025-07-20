@@ -1,0 +1,34 @@
+#!/bin/bash
+
+help () { # {{{1
+  local error=$?
+  local red=$(git config --get-color color.diff.whitespace "red")
+  local reset=$(git config --get-color "" "reset")
+  echo -n "${red}"
+	echo -e "ERROR $error\n\tTwo arguments are required.\n\tThe first argument is amountMA - a string representing initial amount of Monitor Asset issued to hx MA Agent by hx MA Issuer.\n\tThe second argument is network directory.\n\tUsage example:\n\n\t$0 '10000' '../reset_testnet/build/testnet'\n"
+  echo -n "${reset}"
+}
+
+log () { # {{{1
+  local blue=$(git config --get-color color.diff.whitespace "blue")
+  local reset=$(git config --get-color "" "reset")
+  echo "${blue}$@${reset}"
+}
+
+run () { # {{{1
+	log "run $# $@"
+  bin/run.mjs $@
+  tree $2
+}
+
+validate () { # {{{1
+	log "$USER validate $# $@"
+  if [ $# -ne 2 ]; then
+    return 1
+  fi
+  return 0
+}
+
+log "$0 started for $USER@$HOSTNAME on $(date) in $PWD" # {{{1
+validate $@ && run $@ || help $@
+log "$0 DONE for $USER@$HOSTNAME"

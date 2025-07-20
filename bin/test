@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Basic integration test
+# # # # # # # # # # # # #
 
 #bin/setkeys agent
 #bin/setkeys user
@@ -8,14 +11,16 @@ export JOBAGENT_SK JOBAGENT_PK
 read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/user.keys
 export JOBUSER_SK JOBUSER_PK
 
-rm -rf cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build
+#rm -rf cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build
 
-bin/dev.mjs put_agent '*testnet*' &
-bin/dev.mjs post_jcl 'hx/reset_testnet'
+#bin/dev.mjs put_agent '*testnet*' &
+#bin/dev.mjs post_jcl 'hx/reset_testnet'
 
-bin/dev.mjs put_agent '*testnet*' &
-bin/dev.mjs post_jcl 'hx/reset_testnet_monitor'
+#bin/dev.mjs put_agent '*testnet*' &
+#bin/dev.mjs post_jcl 'hx/reset_testnet_monitor'
 
-bin/dev.mjs post_job 'hx/selftest' browser=true
-bin/dev.mjs put_agent '*hx_selftest'
+bin/dev.mjs put_agent '*selftest' &
 bin/dev.mjs post_job 'hx/setup_selftest'
+
+bin/dev.mjs put_agent '*selftest' &
+bin/dev.mjs post_job 'hx/selftest' browser=true

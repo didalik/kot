@@ -28,7 +28,7 @@ async function jagURLpath (args) { // CLIENT {{{1
   switch (args[0]) {
     case '*testnet*':
       return `/topjob/hx/${await pubkey('JOBAGENT_PK')}`;
-    case '*hx_selftest':
+    case '*selftest':
       return `/job/hx/${await pubkey('JOBAGENT_PK')}`;
   }
 }

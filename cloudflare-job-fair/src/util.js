@@ -57,6 +57,7 @@ class JobHub { // {{{1
 const JobFairImpl = { // {{{1
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     let pathname = new URL(request.url).pathname
+    console.log('JobFairImpl.dispatch pathname', pathname, 'ctx_OR_null', ctx_OR_null)
     let agent = pathname.startsWith('/jag')
     if (ctx_OR_null) { // EDGE
       let ctx = ctx_OR_null, env = env_OR_ws
@@ -184,7 +185,7 @@ function addJobAgentDO (ws, path, pk, jobAgentId) { // {{{1
       }
       break
     default:
-      throw Error(pathname);
+      throw Error(path);
   }
 }
 
