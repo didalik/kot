@@ -1,39 +1,64 @@
 #!/usr/bin/env node
 
-import { addMA_Agent, addMA_CREATOR, addMA_Issuer, } // {{{1
-from '../../../../../../public/lib/sdk.mjs' // FIXME
+import { // {{{1
+  addMA_Agent, addMA_CREATOR, addMA_Issuer,
+  loadKeys, secdVm,
+} from '../../../../../../public/lib/sdk.mjs' // FIXME
+import { 
+  HEX_FEE, 
+} from '../../../../../../public/lib/api.mjs' // FIXME
 import * as fs from "node:fs"
 import { Asset, } from '@stellar/stellar-sdk'
-
-function reset (amountMA, nwdir) { // {{{1
-  console.log('reset amountMA', amountMA, 'nwdir', nwdir)
-  let s = {}, e = { log: console.log }, c = { fs }, d = {}
-  let vm = { s, e, c, d }
-
-  const _init = async (vm, keysI, keysA, limit) => {
-    let [Issuer_SK, Issuer_PK] = keysI
-    let [Agent_SK, Agent_PK] = keysA
-    const MA = new Asset('MA', Issuer_PK)
-    let agent = await vm.e.server.loadAccount(Agent_PK)
-    vm.e.log('+ _init loaded agent', agent.id)
-    let issuer = await vm.e.server.loadAccount(Issuer_PK)
-    vm.e.log('+ _init loaded issuer', issuer.id)
-    Object.assign(vm.d,
-      { MA, agent, keysAgent: keysA, issuer, limit }
+/*
+  f_add_hex_makes: async (node, run, job, nwdir, limit) => { // {{{2
+    let url = 'https://github.com/didalik/stellar-help-exchange/blob/main/README.md'
+    r = await makeRequest.call(vm, // = Port Angeles = {{{3
+      vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
+      requestPARTNERS_WELCOME(url)   // Port Angeles //////
     )
-  }
+    makeIds = makeIds + r.txId + ' '
+    log('- f_add_hex_makes makeRequest', r.request, r.amount, r.balanceId, r.txId)
 
-  return addMA_CREATOR.call(vm, nwdir, 'monitor').
-    then(kp => addMA_Issuer.call(vm, 
-      'hx.kloudoftrust.org', kp, `${nwdir}/monitor`, 'Issuer'
-    )).
-    then(keysIssuer => addMA_Agent.call(vm,
-      amountMA, keysIssuer, _init, `${nwdir}/monitor`, 'Agent'
-    ));
+    r = await makeRequest.call(vm, // = Tagoba = {{{3
+      vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
+      requestHELP_WANTED(url)        // Tagoba ////////////
+    )
+    makeIds = makeIds + r.txId + ' '
+    log('- f_add_hex_makes makeRequest', r.request, r.amount, r.balanceId, r.txId)
+    
+    r = await makeOffer.call(vm, //   = Kyiv = {{{3
+      vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
+      offerAIM_FOR_BUSINESSES(url)   // Kyiv //////////////
+    )
+    makeIds = makeIds + r.txId + ' '
+    log('- f_add_hex_makes makeOffer', r.offer, r.balanceId, r.txId)
+
+    r = await makeRequest.call(vm, // = Aukland = {{{3
+      vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
+      requestAGENTS_WANTED(url)     // Aukland ///////////
+    )
+    makeIds = makeIds + r.txId // Look, Ma! NO SPACE!
+    log('- f_add_hex_makes makeRequest', r.request, r.amount, r.balanceId, r.txId)
+    // }}}3
+    fs.writeFileSync(nwdir + '/HEX_Agent_make2map.txids', makeIds)
+  },
+*/
+async function setup_selftest (limit, nwdir) { // {{{1
+  let agent_keys = nwdir + '/HEX_Agent.keys'
+  let creator_keys = nwdir + '.keys'
+  let keys = nwdir + '/HEX_Issuer.keys'
+  let log = console.log
+  let vm = await secdVm(
+    loadKeys(fs, keys),       // keysIssuer
+    loadKeys(fs, agent_keys), // keysAgent
+    log, limit, HEX_FEE, nwdir.endsWith('public'), null, fs
+  )
+  console.log('setup_selftest nwdir', nwdir, 'vm', vm)
 }
 
-await reset(process.argv[2], process.argv[3]).then(_ => process.exit(0)). // {{{1
+await setup_selftest(process.argv[2], process.argv[3]).then(_ => process.exit(0)). // {{{1
   catch(err => {
     console.error(err)
     process.exit(1)
   });
+

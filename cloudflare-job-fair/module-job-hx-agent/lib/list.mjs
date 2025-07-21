@@ -23,9 +23,12 @@ export function selftest () { // {{{1
 
 export function setup_selftest () { // {{{1
   let job = spawn(
-    `${__dirname}/module-hx-definition/setup_selftest/bin/job`,
-    [amountMA, '../reset_testnet/build/testnet'],
-    { cwd: `${__dirname}/module-topjob-hx-definition/setup_selftest` }
+    `${__dirname}/module-job-hx-definition/setup_selftest/bin/job`,
+    [
+      '10000',
+      '../../../../module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet'
+    ],
+    { cwd: `${__dirname}/module-job-hx-definition/setup_selftest` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))
   job.stderr.on('data', data => log('setup_selftest stderr', data.toString()))

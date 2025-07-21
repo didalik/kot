@@ -322,13 +322,13 @@ function getClaimableBalanceId (result_xdr, index = 0) { // {{{1
   return balanceId;
 }
 
-//function loadKeys (dirname, basename = null) { // {{{1
-//  let SK_PK = fs.readFileSync(
-//    basename ? `${dirname}/${basename}.keys` : dirname
-//  )
-//  let pair = SK_PK.toString().split(' ')
-//  return [pair[0].trim(), pair[1].trim()];
-//}
+function loadKeys (fs, dirname, basename = null) { // {{{1
+  let SK_PK = fs.readFileSync(
+    basename ? `${dirname}/${basename}.keys` : dirname
+  )
+  let pair = SK_PK.toString().split(' ')
+  return [pair[0].trim(), pair[1].trim()];
+}
 
 async function makeBuyOffer( // {{{1
   kp, account, buying, selling, buyAmount, price, offerId = 0
@@ -595,10 +595,9 @@ export { // {{{1
   addHEX_Agent, addHEX_CREATOR, addHEX_Issuer, 
   addMA_Agent, addMA_CREATOR, addMA_Issuer,
   clawback, clawbackOffer, clawbackRequest,
-  convertClawableHexa,
-  createAccount, makeBuyOffer, 
-  makeClaimableBalance,
-  makeSellOffer, memo2str,
+  convertClawableHexa, createAccount,
+  loadKeys,
+  makeBuyOffer, makeClaimableBalance, makeSellOffer, memo2str,
   secdVm,
   storeKeys, takeClaimableBalance,
   trustAssets, updateTrustline, updateTrustlineAndPay,
