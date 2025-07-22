@@ -19,8 +19,8 @@ export JOBUSER_SK JOBUSER_PK
 #bin/dev.mjs put_agent '*testnet*' &
 #bin/dev.mjs post_jcl 'hx/reset_testnet_monitor'
 
-bin/dev.mjs put_agent '*selftest' &
-bin/dev.mjs post_job 'hx/setup_selftest'
+#bin/dev.mjs put_agent '*selftest' &
+#bin/dev.mjs post_job 'hx/setup_selftest'
 
 bin/dev.mjs put_agent '*selftest' &
 bin/dev.mjs post_job 'hx/selftest' browser=true

@@ -56,26 +56,27 @@ class JobHub { // {{{1
 
 const JobFairImpl = { // {{{1
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
-    let pathname = new URL(request.url).pathname
-    console.log('JobFairImpl.dispatch pathname', pathname, 'ctx_OR_null', ctx_OR_null)
-    let agent = pathname.startsWith('/jag')
+    let url = new URL(request.url)
+    let browser = url.searchParams.get('browser')
+    console.log('JobFairImpl.dispatch pathname', url.pathname, 'browser', browser, 'ctx_OR_null', ctx_OR_null)
+    let agent = url.pathname.startsWith('/jag')
     if (ctx_OR_null) { // EDGE
       let ctx = ctx_OR_null, env = env_OR_ws
       if (agent) {
         return addJobAgent(request, env, ctx, );
       } else {
-        return addJob(request, env, ctx, pathname);
+        return addJob(request, env, ctx, url.pathname);
       }
     }
     durableObject ??= this
     let ws = env_OR_ws
     let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
-    let path = pathname.split('/')
+    let path = url.pathname.split('/')
     let pk = decodeURIComponent(path[4])
     if (agent) {
       addJobAgentDO(ws, path, pk, jobAgentId)
     } else {
-      addJobDO(ws, path, pk)
+      addJobDO(ws, path, pk, browser)
     }
   },
 
@@ -121,6 +122,9 @@ const JobFairImpl = { // {{{1
               hub.jobStart(jobname)
             }
           } else {              // approval from job user
+            if (hub.arg1) { // FIXME
+              ws.send('FIXME arg1 ' + hub.arg1)
+            }
             let jobAgentHub = agentHub(jobAgentId)
             jobAgentHub.passthrough.push(ws)
             hub.passthrough.push(jobAgentHub.ws)
@@ -161,12 +165,12 @@ function addJobAgent (request, env, ctx) { // {{{1
   return stub.fetch(request);
 }
 
-function addJobDO (ws, path, pk) { // {{{1
+function addJobDO (ws, path, pk, arg1 = null) { // {{{1
   switch (path[1] + '/' + path[2]) {
     case 'jcl/hx':
-      return new JobHub(topjobsHx, path[3], { pk, ws, });
+      return new JobHub(topjobsHx, path[3], { arg1, pk, ws, });
     case 'job/hx':
-      return new JobHub(jobsHx, path[3], { pk, ws, });
+      return new JobHub(jobsHx, path[3], { arg1, pk, ws, });
     default:
       throw Error(path);
   }

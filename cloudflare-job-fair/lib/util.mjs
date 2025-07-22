@@ -38,7 +38,8 @@ async function jclURLpath (args) { // CLIENT {{{1
 }
 
 async function jobURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}/${await pubkey('JOBUSER_PK')}`;
+  //console.log('jobURLpath args', args)
+  return `/${args[0]}/${await pubkey('JOBUSER_PK')}?${args[1]}`;
 }
 
 function log (...args) { // CLIENT {{{1
@@ -141,6 +142,8 @@ function wsDispatch (data, ws) { // {{{1
     //log('wsDispatch STARTED JOB data', data)
   } else if (data.includes('EXIT CODE')) {
     ws.close()
+  } else if (data.includes('FIXME')) {
+    console.log('wsDispatch === TODO === open browser on the host via SSH ===')
   }
 }
 

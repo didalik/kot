@@ -1,5 +1,19 @@
 #!/usr/bin/env node
 
+function onClawback (effect) { // account_debited {{{1
+  let { s, e, c, d } = this
+  if (effect.asset_code != 'ClawableHexa') { // not clawback
+    return;
+  }
+  cbEffect.call(this, { effect })
+  .then(o => disputeBrokenDeal.call(this,
+    d.agent, Keypair.fromSecret(d.keysAgent[0]), o.tx.id
+  ))
+  .then(r => e.log('onClawback disputeBrokenDeal r', r))
+  .catch(err => console.error('onClawback UNEXPECTED', err))
+}
+
+/* {{{1
    h_run_agent: async (node, run, job, svc, nwdir, limit, ...args) => { // {{{2
     console.log(job)
     process.env.SVC_NAME = svc
@@ -33,4 +47,11 @@
     )
     _onSIGTERM(vm)
   },
+*/
+
+await selftest(process.argv[2], process.argv[3]).then(_ => process.exit(0)). // {{{1
+  catch(err => {
+    console.error(err)
+    process.exit(1)
+  });
 
