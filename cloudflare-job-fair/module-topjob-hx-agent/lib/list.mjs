@@ -1,4 +1,4 @@
-import { fileURLToPath } from 'url'
+import { fileURLToPath } from 'url' // {{{1
 import { dirname } from 'path'
 import { spawn } from 'node:child_process'
 

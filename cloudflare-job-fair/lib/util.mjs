@@ -1,5 +1,6 @@
 import fetch from 'node-fetch' // // CLIENT {{{1
 import WebSocket from 'ws'
+import { spawn } from 'node:child_process'
 import { base64ToUint8, generate_keypair, uint8ToBase64, } from '../../public/lib/util.mjs'
 import { reset_testnet, reset_testnet_monitor, } from '../module-topjob-hx-agent/lib/list.mjs'
 import { selftest, setup_selftest, } from '../module-job-hx-agent/lib/list.mjs'
@@ -143,7 +144,11 @@ function wsDispatch (data, ws) { // {{{1
   } else if (data.includes('EXIT CODE')) {
     ws.close()
   } else if (data.includes('FIXME')) {
-    console.log('wsDispatch === TODO === open browser on the host via SSH ===')
+    let job = spawn('bin/test-browser')
+    job.on('error', err => console.error(`wsDispatch FIXME  E R R O R  ${err}`))
+    job.stderr.on('data', data => log('wsDispatch FIXME stderr', data.toString()))
+    job.stdout.on('data', data => log('wsDispatch FIXME stdout', data.toString()))
+    job.on('close', code => log('wsDispatch FIXME close', code))
   }
 }
 

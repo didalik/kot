@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#
+# Open browser on host via SSH
+# # # # # # # # # # # # # # # # #
+
+ssh alec@192.168.0.80 open 'http://192.168.0.37:8787'
