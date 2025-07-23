@@ -10,6 +10,7 @@ _.pid
 _.seed
 \*.pid.lock
 **/build
+public/hx.html
 
 # wrangler project {{{1
 .dev.vars

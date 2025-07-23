@@ -10,11 +10,11 @@
 		"directory": "./public/static"
 	},
   /*
+  */
   "build": { // browser=true
     "command": "./bin/build",
-    "watch_dir": [ "./lib", "./public", "./src" ]
+    "watch_dir": [ "./lib", "./public", "./public/lib", "./src" ]
   },
-  */
 	"durable_objects": {
 		"bindings": [
 			{

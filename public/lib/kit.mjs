@@ -15,13 +15,13 @@ import {
   trustAssets, updateTrustlineAndPay,
 } from './sdk.mjs'
 import { addStream, cbEffect, postBody, } from './aux.mjs'
-import { addLine, retrieveItem, storeItem, } from '../../lib/util.mjs'
-import { JobChannel, Channel, Model, Test, } from '../../lib/jc.mjs'
+import { addLine, retrieveItem, storeItem, } from './util.mjs'
+import { JobChannel, Channel, Model, Test, } from './jc.mjs'
 import {
   Keypair, MemoHash, MemoText, TransactionBuilder,
 } from '@stellar/stellar-sdk'
 import { Loader } from '@googlemaps/js-api-loader'
-import { apiKey, } from '../../../../../../env.mjs'
+import { apiKey, } from '../../../env.mjs'
 
 let _jc = new JobChannel() // {{{1
 let _ns = {}

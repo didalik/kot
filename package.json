@@ -9,8 +9,10 @@
     "test": "bin/test"
   },
   "dependencies": {
-    "@stellar/stellar-sdk": "^11.2.0",
+    "@googlemaps/js-api-loader": "latest",
+    "@stellar/stellar-sdk": "latest",
+    "esbuild": "latest",
     "node-fetch": "^3.3.2",
-    "wrangler": "^4.22.0"
+    "wrangler": "latest"
   }
 }
