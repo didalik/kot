@@ -84,12 +84,15 @@ class Page { // {{{1
   constructor (name, env) { // {{{2
     this.text = Page.pages[name.slice(1)];
     this.env = env;
+    //console.log('new Page this.env', this.env)
     this.data = {};
   }
-  set (content) { // {{{2
+  set (content, vars = []) { // {{{2
     for (let key in content) {
-      //console.log('page.set', key, typeof content[key]);
       this.text = this.text.replaceAll(key, content[key]);
+    }
+    for (let v of vars) {
+      this.text = this.text.replaceAll(v, this.env[v]);
     }
     return this.text;
   }

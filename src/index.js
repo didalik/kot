@@ -3,9 +3,10 @@ import { DOpad, IpState, JobFair, Page, } from './util.js'
 
 import style from '../public/static/style.css'
 import dopad from '../public/dopad.html'
+import hx from '../public/hx.html'
 import sandbox from '../public/sandbox.html'
 import template from '../public/template.html'
-Page.use({ style, dopad, sandbox, template, })
+Page.use({ style, dopad, hx, sandbox, template, })
 
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) { // {{{2
@@ -94,7 +95,8 @@ async function dispatch (request, env, ctx) { // {{{1
 
   let content = { // {{{2
     IPADDRESS: ip, 
-    DATETIME: new Date().toISOString()} // }}}2
+    DATETIME: new Date().toISOString()
+  } // }}}2
 
   switch (true) {
     case this == '/cf': // {{{2
@@ -112,6 +114,8 @@ async function dispatch (request, env, ctx) { // {{{1
         return new Response(page.set(content), { headers: { 'content-type': 'text/html;charset=UTF-8' } })
       });
     }
+    case this == '/hx': // {{{2
+        return new Response(page.set(content), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {

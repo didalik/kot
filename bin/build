@@ -24,3 +24,21 @@ for dhtm in dopad hx sandbox stellar_test_monitor template; do
   log "$dhtm.html updated"
 done
 cd -
+
+## Update ./dev.vars {{{1
+#
+pd=$HOME/.cloudflare-job-fair/hx/build/public
+read SK PK < $pd/HEX_Issuer.keys
+echo "hx_public_IssuerPK='$PK'" > ./.dev.vars
+echo "hx_public_IssuerSK='$SK'" >> ./.dev.vars
+read SK PK < $pd/HEX_Agent.keys
+echo "hx_public_AgentPK='$PK'" >> ./.dev.vars
+echo "hx_public_AgentSK='$SK'" >> ./.dev.vars
+td=cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet
+read SK PK < $td/HEX_Issuer.keys
+echo "hx_testnet_IssuerPK='$PK'" >> ./.dev.vars
+echo "hx_testnet_IssuerSK='$SK'" >> ./.dev.vars
+read SK PK < $td/HEX_Agent.keys
+echo "hx_testnet_AgentPK='$PK'" >> ./.dev.vars
+echo "hx_testnet_AgentSK='$SK'" >> ./.dev.vars
+

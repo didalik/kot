@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<!-- {{{1
+# Copyright (c) 2023-present, Дід Alik and the Kids
+#
+# This script is licensed under the Apache License, Version 2.0, found in the
+# LICENSE file in the root directory of this source tree.
+##
+}}}1 -->
+<html>
+  <head> <!-- {{{1 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stellar Help Exchange</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="stylesheet" href="/style.css" />
+  </head>
+  <body> <!-- {{{1 -->
+    <div id="map"></div>
+    <!-- The Modal Pane(s) {{{2 -->
+    <div id="modalRoot" class="modal-background">
+      <!-- welcome2HEX {{{3 -->
+      <div id='welcome2HEX' class="modal-content">
+        <span id='welcome2HEXX' class="close">&times;</span>
+
+        <p>
+Hi there, I'm Дід Alik and Stellar Help Exchange (HEX) is my hobby project. The project's goal is to setup an equitable marketplace on <a href='https://stellar.org' target='_blank'>Stellar</a> network - if you do not get the help you paid for, you get your payment back. <a href='https://github.com/didalik/dak-hex-user/blob/main/poc/latest_test.html' target='_blank'>More...</a>
+        </p>
+        <p>
+This program embeds an automated self-test. To run it, click here:
+<input type='checkbox' id='run-self-test'/>
+<a href='https://github.com/didalik/stellar-help-exchange/blob/main/README.md#automated-self-test-stellar-testnet-only' target='_blank'>More...</a>
+        </p>
+        <fieldset id='run-self-test-detail' class='detail'>
+    <legend>Please configure your run:</legend>
+    <div>
+      <input name='config' type="radio" id="run-self-test-default" checked/>
+      <label for="run-self-test-default">default</label>
+
+      <input name='config' type="radio" id="run-self-test-custom" disabled/>
+      <label for="run-self-test-custom">custom</label>
+    </div>
+    <hr/>
+The browser console has more. Open it!
+    <div>
+      <button id='run-self-test-run' class='take'>Run</button>
+    </div>
+  </fieldset>
+      </div>
+  
+      <!-- takeX {{{3 -->
+      <div id='takeX' class="modal-content">
+        <span id='takeXX' class="close">&times;</span>
+
+        <p>
+Enter your <a href='https://laboratory.stellar.org/#account-creator?network=test' target='_blank'>Stellar secret</a> to continue:
+<input type='password' maxlength='56' id='stellar-secret'/>
+<div>
+  <input type='checkbox' id='keep-secret-locally'/>
+  <label for='keep-secret-locally'>keep your secret locally</label>
+</div>
+        </p>
+  <fieldset id='make-offer-or-request-fieldset' class='detail'>
+    <legend>Make Offer or Request:</legend>
+    <div>
+      <input name='makeor' type="radio" id="make-offer-radio"/>
+      <label for="make-offer-radio">Offer</label>
+
+      <input name='makeor' type="radio" id="make-request-radio"d/>
+      <label for="make-request-radio">Request</label>
+    </div>
+    <textarea rows='6' cols='34' id='make-offer-or-request-textarea'>
+Header text/html, one line
+
+Body text/html, one or more lines
+...
+
+Replace the above with your data.
+    </textarea>
+  </fieldset>
+  <div>
+    <button id='confirm-take' class='take'>Take</button>
+  </div>
+      </div>
+
+      <!-- makeRequest {{{3 -->
+      <div id='makeRequest' class="modal-content">
+        <span id='makeRequestX' class="close">&times;</span>
+        <form> 
+          <p>, we'd like to show you now that the demo is listening for
+          TESTNET requests in real time. Please click the "Make Request" button.
+          This will start an external process that places on TESTNET the request below.
+          The demo detects the request in real time, and prompts you to bid on it.
+          The external process then takes your bid and sends you gratitude. When the
+          demo detects this event (again, in real time), you will be notified.</p>
+          <hr>
+          <p> 
+Need a babysitter tomorrow from 6pm to 11pm for 2 kids: boy 3 and girl 7 yo.
+Can give a ride back home. GRAT 100 obo.
+          </p>
+          <button id='makeRequestButton' type="button" onclick='makeRequest()'>
+            Make Request
+          </button>
+          <div id='makeRequestCogs' style="display:none">
+            Running External Process... <img src='favicon.ico'/>
+          </div>
+        </form>
+      </div>
+      <!-- }}}3 -->
+    </div> <!-- }}}2 -->
+  </body> <!-- }}}1 -->
+<script type="text/javascript">
