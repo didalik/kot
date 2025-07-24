@@ -7,21 +7,13 @@
 import { Model, Test, View, } from './lib/mvc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
 
-let service = { // {{{1
-  description: 'Stellar Help Exchange',
-  svcName: 'SVC_NAME', // replace in $DAK_HOME/svc/hex/cfw/src/util.mjs
-  svcPK: 'SVC_PK',
-}
 let user = {
-  //guestId: GUEST_ID, // replace in $DAK_HOME/svc/hex/cfw/src/util.mjs ////
-  //guestUseSvcUrl: 'GUEST_USE_SVC_URL',                                  //
-  //position: { lat: LATITUDE, lng: LONGITUDE },                          //
-  //wsUserURL: 'WS_USER_URL', // r=$DAK_HOME/svc/hex/cfw/src/util.mjs //////
+  position: { lat: LATITUDE, lng: LONGITUDE },
 }
 let config = { // {{{1
-  HEX_Issuer_PK: 'STELLAR_HEX_ISSUER_PK', // replace in $r ////
-  nw: 'STELLAR_NETWORK',                                     //
-  kit, service, 
+  HEX_Issuer_PK: 'hx_testnet_IssuerPK',
+  nw: 'hx_STELLAR_NETWORK',
+  kit, 
   //test: false, 
   test: true, 
   user, 

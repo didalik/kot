@@ -41,4 +41,4 @@ echo "hx_testnet_IssuerSK='$SK'" >> ./.dev.vars
 read SK PK < $td/HEX_Agent.keys
 echo "hx_testnet_AgentPK='$PK'" >> ./.dev.vars
 echo "hx_testnet_AgentSK='$SK'" >> ./.dev.vars
-
+echo 'hx_STELLAR_NETWORK=testnet' >> ./.dev.vars

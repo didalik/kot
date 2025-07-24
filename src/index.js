@@ -95,7 +95,9 @@ async function dispatch (request, env, ctx) { // {{{1
 
   let content = { // {{{2
     IPADDRESS: ip, 
-    DATETIME: new Date().toISOString()
+    DATETIME: new Date().toISOString(),
+    LATITUDE: request.cf.latitude,
+    LONGITUDE: request.cf.longitude,
   } // }}}2
 
   switch (true) {
@@ -114,8 +116,10 @@ async function dispatch (request, env, ctx) { // {{{1
         return new Response(page.set(content), { headers: { 'content-type': 'text/html;charset=UTF-8' } })
       });
     }
-    case this == '/hx': // {{{2
-        return new Response(page.set(content), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
+    case this == '/hx': { // {{{2
+      let vars = ['hx_STELLAR_NETWORK', 'hx_testnet_IssuerPK']
+      return new Response(page.set(content, vars), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
+    }
     case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {
