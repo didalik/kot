@@ -57,8 +57,9 @@ class JobHub { // {{{1
 const JobFairImpl = { // {{{1
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     let url = new URL(request.url)
-    let browser = url.searchParams.get('browser')
-    console.log('JobFairImpl.dispatch pathname', url.pathname, 'browser', browser, 'ctx_OR_null', ctx_OR_null)
+    let browser = url.searchParams.get('browser') // FIXME
+    let start_testnet_monitor = url.searchParams.get('start_testnet_monitor') // FIXME
+    console.log('JobFairImpl.dispatch pathname', url.pathname, 'browser', browser, 'start_testnet_monitor', start_testnet_monitor, 'ctx_OR_null', ctx_OR_null)
     let agent = url.pathname.startsWith('/jag')
     if (ctx_OR_null) { // EDGE
       let ctx = ctx_OR_null, env = env_OR_ws
@@ -74,7 +75,7 @@ const JobFairImpl = { // {{{1
     let path = url.pathname.split('/')
     let pk = decodeURIComponent(path[4])
     if (agent) {
-      addJobAgentDO(ws, path, pk, jobAgentId)
+      addJobAgentDO(ws, path, pk, jobAgentId, start_testnet_monitor)
     } else {
       addJobDO(ws, path, pk, browser)
     }
@@ -114,17 +115,17 @@ const JobFairImpl = { // {{{1
           if (!r) { // TODO handle verify false
             return;
           }
+          if (hub.arg1) { // FIXME
+            ws.send('FIXME arg1 ' + hub.arg1)
+          }
           let payload = signedData(json.payload64)
           let jobname = payload.slice(payload.lastIndexOf(' ') + 1)
           let jobAgentId = hub.jobAgentId ?? payload.split(' ')[1]
-          if (hub.jobAgentId) { // approval from job agent
+          if (hub.jobAgentId) { // approval from job agent ////////////
             if (++hub.taking == 2) {
               hub.jobStart(jobname)
             }
-          } else {              // approval from job user
-            if (hub.arg1) { // FIXME
-              ws.send('FIXME arg1 ' + hub.arg1)
-            }
+          } else {              // approval from job user /////////////
             let jobAgentHub = agentHub(jobAgentId)
             jobAgentHub.passthrough.push(ws)
             hub.passthrough.push(jobAgentHub.ws)
@@ -176,16 +177,16 @@ function addJobDO (ws, path, pk, arg1 = null) { // {{{1
   }
 }
 
-function addJobAgentDO (ws, path, pk, jobAgentId) { // {{{1
+function addJobAgentDO (ws, path, pk, jobAgentId, arg1 = null) { // {{{1
   switch (path[1] + '/' + path[2] + '/' + path[3]) {
     case 'jag/topjob/hx':
       for (let job of topjobHxAgents[jobAgentId].jobs) {
-        new JobHub(topjobsHx, job.name, { jobAgentId, pk, ws, });
+        new JobHub(topjobsHx, job.name, { arg1, jobAgentId, pk, ws, });
       }
       break
     case 'jag/job/hx':
       for (let job of jobHxAgents[jobAgentId].jobs) {
-        new JobHub(jobsHx, job.name, { jobAgentId, pk, ws, });
+        new JobHub(jobsHx, job.name, { arg1, jobAgentId, pk, ws, });
       }
       break
     default:

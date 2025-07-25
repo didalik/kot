@@ -30,7 +30,7 @@ async function jagURLpath (args) { // CLIENT {{{1
     case '*testnet*':
       return `/topjob/hx/${await pubkey('JOBAGENT_PK')}`;
     case '*selftest':
-      return `/job/hx/${await pubkey('JOBAGENT_PK')}`;
+      return `/job/hx/${await pubkey('JOBAGENT_PK')}?${args[1]}`;
   }
 }
 
@@ -93,6 +93,10 @@ function setkeys() { // {{{1
   generate_keypair.call(crypto.subtle, ).then(keys => log(keys))
 }
 
+function start_testnet_monitor (node, run, cmd, nwdir, ...args) { // CLIENT {{{1
+  log('-', run, cmd, 'nwdir', nwdir)
+}
+
 function wsConnect (url) { // {{{1
   let websocket = new WebSocket(url, configuration.fetch_options ?? {})
   let [promise, resolve, reject] = promiseWithResolvers()
@@ -143,15 +147,25 @@ function wsDispatch (data, ws) { // {{{1
     //log('wsDispatch STARTED JOB data', data)
   } else if (data.includes('EXIT CODE')) {
     ws.close()
-  } else if (data.includes('FIXME')) {
-    let job = spawn('bin/test-browser')
-    job.on('error', err => console.error(`wsDispatch FIXME  E R R O R  ${err}`))
-    job.stderr.on('data', data => log('wsDispatch FIXME stderr', data.toString()))
-    job.stdout.on('data', data => log('wsDispatch FIXME stdout', data.toString()))
-    job.on('close', code => log('wsDispatch FIXME close', code))
+  } else if (data.includes('FIXME')) { // FIXME
+
+    global.job = process.argv[2] == 'put_agent' ?
+      spawn(
+        process.env._, // TODO call global.job.kill('SIGTERM') on close...
+        [
+          'start_testnet_monitor',
+          'cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet',
+        ]
+      )
+    : spawn('bin/test-browser')
+
+    job.on('error', err => console.error(`wsDispatch ${process.argv[2]} FIXME  E R R O R  ${err}`))
+    job.stderr.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stderr', data.toString()))
+    job.stdout.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stdout', data.toString()))
+    job.on('close', code => log('wsDispatch' ,process.argv[2], 'FIXME close', code))
   }
 }
 
 export { // {{{1
-  configuration, hack, post_jcl, post_job, put_agent, setkeys,
+  configuration, hack, post_jcl, post_job, put_agent, setkeys, start_testnet_monitor,
 }

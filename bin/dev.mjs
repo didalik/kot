@@ -2,11 +2,11 @@
 
 import path from 'path'; // {{{1
 import { 
-  hack, post_jcl, post_job, put_agent,
+  hack, post_jcl, post_job, put_agent, start_testnet_monitor,
 } from '../cloudflare-job-fair/lib/util.mjs'
 
 const execute = { // {{{1
-  hack, post_jcl, post_job, put_agent,
+  hack, post_jcl, post_job, put_agent, start_testnet_monitor,
 }
 
 switch (process.argv[2]) { // {{{1
