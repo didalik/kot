@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Set sign/verify keys for Cloudflare Job Fair user/agent
+# Set sign/verify keys for Cloudflare Job Fair offer/request
 ##
 
 help () { # {{{1
@@ -21,7 +21,6 @@ log () { # {{{1
 run () { # {{{1
 	log "run $# $@"
   bin/run.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
-  tree $HOME/.cloudflare-job-fair
 }
 
 validate () { # {{{1

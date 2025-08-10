@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Basic integration test
+# Basic integration test (bit)
 # # # # # # # # # # # # #
 
 #bin/setkeys agent
@@ -22,5 +22,5 @@ export JOBUSER_SK JOBUSER_PK
 #bin/dev.mjs put_agent '*selftest' &
 #bin/dev.mjs post_job 'hx/setup_selftest'
 
-bin/dev.mjs put_agent '*selftest' start_testnet_monitor=true &
-bin/dev.mjs post_job 'hx/selftest' browser=true
+bin/dev.mjs put_agent '*selftest' start_testnet_monitor=YES &
+bin/dev.mjs post_job 'hx/selftest' browser=yes

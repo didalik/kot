@@ -20,9 +20,9 @@ class JobHub { // {{{1
     const prefix = (myId, agentId) => { // {{{3
       return myId ? `${myId} AM` : `AGENT ${agentId} IS`;
     } // }}}3
-    if (hub.jobAgentId) {
+    if (hub.jobAgentId) {                  // job offer
       hub.taking = +0
-    } else if (jobs[jobname].length > 0) {
+    } else if (jobs[jobname].length > 0) { // job request
       jobs[jobname][0].taking = +0
     }
     if (jobs[jobname].length == 0 || jobs[jobname][0].jobAgentId && hub.jobAgentId || !hub.jobAgentId && !jobs[jobname][0].jobAgentId) { // same side
