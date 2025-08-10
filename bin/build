@@ -25,11 +25,19 @@ for dhtm in dopad hx sandbox stellar_test_monitor template; do
 done
 cd -
 
-## Update ./dev.vars {{{1
+## Reset ./dev.vars {{{1
 #
-pd=$HOME/.cloudflare-job-fair/hx/build/public
+rm -f ./.dev.vars
+cfjfd=$HOME/.cloudflare-job-fair
+read SK PK < $cfjfd/owner.keys
+echo "hx_ownerPK='$PK'" >> ./.dev.vars
+read SK PK < $cfjfd/agent.keys
+echo "hx_agentPK='$PK'" >> ./.dev.vars
+read SK PK < $cfjfd/user.keys
+echo "hx_userPK='$PK'" >> ./.dev.vars
+pd=$cfjfd/hx/build/public
 read SK PK < $pd/HEX_Issuer.keys
-echo "hx_public_IssuerPK='$PK'" > ./.dev.vars
+echo "hx_public_IssuerPK='$PK'" >> ./.dev.vars
 echo "hx_public_IssuerSK='$SK'" >> ./.dev.vars
 read SK PK < $pd/HEX_Agent.keys
 echo "hx_public_AgentPK='$PK'" >> ./.dev.vars

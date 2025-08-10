@@ -11,8 +11,9 @@ class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
     this.passthrough = []
     jobs[jobname] ??= []
+    let job = jobs[jobname][0]
     /*const agentId = _ => { // {{{3
-      let agentId = jobs[jobname][0].jobAgentId
+      let agentId = job.jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
       agent.drop(jobs[jobname])
       return agentId;
@@ -23,14 +24,13 @@ class JobHub { // {{{1
     if (hub.jobAgentId) {                  // job offer
       hub.taking = +0
     } else if (jobs[jobname].length > 0) { // job request
-      jobs[jobname][0].taking = +0
+      job.taking = +0
     }
-    if (jobs[jobname].length == 0 || jobs[jobname][0].jobAgentId && hub.jobAgentId || !hub.jobAgentId && !jobs[jobname][0].jobAgentId) { // same side
+    if (jobs[jobname].length == 0 || job.jobAgentId && hub.jobAgentId || !hub.jobAgentId && !job.jobAgentId) { // same side
       jobs[jobname].push(this)
-    } else {                                                                                                                             // taking an opposite side
-      hub.isClosed || hub.ws.send(`${prefix(hub.jobAgentId, jobs[jobname][0].jobAgentId)} TAKING JOB ${jobname}`)
-      let osh = jobs[jobname][0] // opposite side hub
-      osh.isClosed || osh.ws.send(`${prefix(osh.jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
+    } else {                                                                                                   // taking an opposite side
+      hub.isClosed || hub.ws.send(`${prefix(hub.jobAgentId, job.jobAgentId)} TAKING JOB ${jobname}`)
+      job.isClosed || job.ws.send(`${prefix(job.jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
     }
     Object.assign(this, hub, { jobs })
     mapWs2Hub.set(this.ws, this)
