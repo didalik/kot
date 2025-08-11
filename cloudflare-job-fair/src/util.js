@@ -12,6 +12,8 @@ class JobHub { // {{{1
     this.passthrough = []
     jobs[jobname] ??= []
     let job = jobs[jobname][0]
+    console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
+
     /*const agentId = _ => { // {{{3
       let agentId = job.jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
@@ -36,6 +38,19 @@ class JobHub { // {{{1
     mapWs2Hub.set(this.ws, this)
   }
 
+  agentAuth() { // {{{2
+    let jobs = this.jobs
+    let jobname = this.jobname
+    let job = jobs[jobname][0]
+    let agentId = job.jobAgentId
+    let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
+    if (agent) {
+      let job = agent.jobs.find(e => e.name == jobname)
+      console.log(`new JobHub #agentAuth job.name ${job?.name}`, 'jobname', jobname)
+      return true;
+    }
+  }
+
   jobStart (jobname) { // {{{2
     this.jobname = jobname
     console.log('JobHub jobStart this', this)
@@ -49,6 +64,11 @@ class JobHub { // {{{1
     for (let ws of this.passthrough) {
       ws.send(data)
     }
+  }
+
+  userAuth() { // {{{2
+    console.log('new JobHub #userAuth job', job, 'jobname', jobname)
+    return true;
   }
 
   // }}}2
