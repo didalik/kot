@@ -23,12 +23,16 @@ export class KoT_Do extends DurableObject { // {{{1
     return value
   }
   fetch(request) { // {{{2
-    //console.log('KoT_Do.fetch request.cf', request.cf)
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
     this.ctx.acceptWebSocket(server)
-    JobFair.dispatch.call(this, request, server)
-    return new Response(null, { status: 101, webSocket: client });
+    try {
+      JobFair.dispatch.call(this, request, server)
+      return new Response(null, { status: 101, webSocket: client });
+    } catch (err) {
+      server.close()
+      return new Response(err.message, { status: 401 });
+    }
   }
   async get (key) { // {{{2
     let value = await this.ctx.storage.get(key)
@@ -53,8 +57,6 @@ export class KoT_Do extends DurableObject { // {{{1
     return true;
   }
   async webSocketClose(ws, code, reason, wasClean) { // {{{2
-    //console.log('webSocketClose ws', ws, 'code', code, 'reason', reason, 'wasClean', wasClean)
-    //wasClean && ws.close()
     JobFair.wsClose(ws, code, reason, wasClean)
   }
   async webSocketMessage(ws, message) { // {{{2

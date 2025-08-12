@@ -13,6 +13,7 @@ class JobHub { // {{{1
     jobs[jobname] ??= []
     let job = jobs[jobname][0]
     console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
+    throw Error('Not Authorized')
 
     /*const agentId = _ => { // {{{3
       let agentId = job.jobAgentId
@@ -46,7 +47,7 @@ class JobHub { // {{{1
     let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
     if (agent) {
       let job = agent.jobs.find(e => e.name == jobname)
-      console.log(`new JobHub #agentAuth job.name ${job?.name}`, 'jobname', jobname)
+      console.log(`JobHub agentAuth job.name ${job?.name}`, 'jobname', jobname)
       return true;
     }
   }
@@ -67,7 +68,7 @@ class JobHub { // {{{1
   }
 
   userAuth() { // {{{2
-    console.log('new JobHub #userAuth job', job, 'jobname', jobname)
+    console.log('JobHub userAuth job', job, 'jobname', jobname)
     return true;
   }
 
