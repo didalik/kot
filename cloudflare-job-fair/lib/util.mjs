@@ -104,7 +104,8 @@ function wsConnect (url) { // {{{1
     return 'ws ' + process.argv[2];
   }
   websocket.on('error', err => {
-    err.message.endsWith('401') || log(`${tag()} error`, err)
+    err.message.endsWith('401') || err.message.endsWith('404') ||
+      log(`${tag()} error`, err)
     reject(err)
   })
   websocket.on('close', data => {

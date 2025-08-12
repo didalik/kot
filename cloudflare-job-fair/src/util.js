@@ -1,5 +1,4 @@
 import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
-//import * as jobHxDeclarations from '../module-job-hx-agent/src/module-job-hx-declaration/list.js'
 import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
@@ -12,22 +11,35 @@ class JobHub { // {{{1
     this.passthrough = []
     jobs[jobname] ??= []
     let job = jobs[jobname][0]
-    console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
-    throw Error('Not Authorized')
 
-    /*const agentId = _ => { // {{{3
-      let agentId = job.jobAgentId
+    const agentAuth = _ => { // {{{3
+      let agentId = hub.jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
-      agent.drop(jobs[jobname])
-      return agentId;
-    }*/
+      if (agent) {
+        let job = agent.jobs.find(e => e.name == jobname)
+        return job.agentAuth(hub.pk);
+      }
+      throw Error('Not Found')
+    }
+
     const prefix = (myId, agentId) => { // {{{3
       return myId ? `${myId} AM` : `AGENT ${agentId} IS`;
-    } // }}}3
-    if (hub.jobAgentId) {                  // job offer
+    }
+
+    const userAuth = _ => { // {{{3
+      console.log('JobHub userAuth job', job, 'jobname', jobname, 'hub', hub)
+    }
+
+    // }}}3
+ 
+    if (hub.jobAgentId) { // job offer
+      agentAuth()
       hub.taking = +0
-    } else if (jobs[jobname].length > 0) { // job request
-      job.taking = +0
+    } else {              // job request
+      userAuth()
+      if (jobs[jobname].length > 0) {
+        job.taking = +0
+      }
     }
     if (jobs[jobname].length == 0 || job.jobAgentId && hub.jobAgentId || !hub.jobAgentId && !job.jobAgentId) { // same side
       jobs[jobname].push(this)
@@ -37,19 +49,6 @@ class JobHub { // {{{1
     }
     Object.assign(this, hub, { jobs })
     mapWs2Hub.set(this.ws, this)
-  }
-
-  agentAuth() { // {{{2
-    let jobs = this.jobs
-    let jobname = this.jobname
-    let job = jobs[jobname][0]
-    let agentId = job.jobAgentId
-    let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
-    if (agent) {
-      let job = agent.jobs.find(e => e.name == jobname)
-      console.log(`JobHub agentAuth job.name ${job?.name}`, 'jobname', jobname)
-      return true;
-    }
   }
 
   jobStart (jobname) { // {{{2
@@ -65,11 +64,6 @@ class JobHub { // {{{1
     for (let ws of this.passthrough) {
       ws.send(data)
     }
-  }
-
-  userAuth() { // {{{2
-    console.log('JobHub userAuth job', job, 'jobname', jobname)
-    return true;
   }
 
   // }}}2

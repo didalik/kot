@@ -31,7 +31,12 @@ export class KoT_Do extends DurableObject { // {{{1
       return new Response(null, { status: 101, webSocket: client });
     } catch (err) {
       server.close()
-      return new Response(err.message, { status: 401 });
+      switch (err.message) {
+        case 'Not Authorized':
+          return new Response(err.message, { status: 401 });
+        case 'Not Found':
+          return new Response(err.message, { status: 404 });
+      }
     }
   }
   async get (key) { // {{{2
