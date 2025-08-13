@@ -25,34 +25,3 @@ for dhtm in dopad hx sandbox stellar_test_monitor template; do
 done
 cd -
 
-## Reset ./dev.vars {{{1
-#
-# TODO reset ./dev.vars BEFORE deploy, AFTER reset_testnet to use the updated:
-# - hx_testnet_IssuerPK
-# - hx_testnet_IssuerSK
-# - hx_testnet_AgentPK
-# - hx_testnet_AgentSK
-#
-rm -f ./.dev.vars
-cfjfd=$HOME/.cloudflare-job-fair
-read SK PK < $cfjfd/owner.keys
-echo "hx_ownerPK='$PK'" >> ./.dev.vars
-read SK PK < $cfjfd/agent.keys
-echo "hx_agentPK='$PK'" >> ./.dev.vars
-read SK PK < $cfjfd/user.keys
-echo "hx_userPK='$PK'" >> ./.dev.vars
-pd=$cfjfd/hx/build/public
-read SK PK < $pd/HEX_Issuer.keys
-echo "hx_public_IssuerPK='$PK'" >> ./.dev.vars
-echo "hx_public_IssuerSK='$SK'" >> ./.dev.vars
-read SK PK < $pd/HEX_Agent.keys
-echo "hx_public_AgentPK='$PK'" >> ./.dev.vars
-echo "hx_public_AgentSK='$SK'" >> ./.dev.vars
-td=cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet
-read SK PK < $td/HEX_Issuer.keys
-echo "hx_testnet_IssuerPK='$PK'" >> ./.dev.vars
-echo "hx_testnet_IssuerSK='$SK'" >> ./.dev.vars
-read SK PK < $td/HEX_Agent.keys
-echo "hx_testnet_AgentPK='$PK'" >> ./.dev.vars
-echo "hx_testnet_AgentSK='$SK'" >> ./.dev.vars
-echo 'hx_STELLAR_NETWORK=testnet' >> ./.dev.vars

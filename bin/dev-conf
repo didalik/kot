@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+log () { # {{{1
+  local blue=$(git config --get-color color.diff.whitespace "blue")
+  local reset=$(git config --get-color "" "reset")
+  echo "${blue}$@${reset}"
+}
+
+log "$0 started; PWD should be project root: $PWD" # {{{1
+
+## Reset ./dev.vars {{{1
+#
+rm -f ./.dev.vars
+cfjfd=$HOME/.cloudflare-job-fair
+read SK PK < $cfjfd/owner.keys
+echo "hx_ownerPK='$PK'" >> ./.dev.vars
+read SK PK < $cfjfd/agent.keys
+echo "hx_agentPK='$PK'" >> ./.dev.vars
+read SK PK < $cfjfd/user.keys
+echo "hx_userPK='$PK'" >> ./.dev.vars
+pd=$cfjfd/hx/build/public
+read SK PK < $pd/HEX_Issuer.keys
+echo "hx_public_IssuerPK='$PK'" >> ./.dev.vars
+echo "hx_public_IssuerSK='$SK'" >> ./.dev.vars
+read SK PK < $pd/HEX_Agent.keys
+echo "hx_public_AgentPK='$PK'" >> ./.dev.vars
+echo "hx_public_AgentSK='$SK'" >> ./.dev.vars
+td=cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet
+read SK PK < $td/HEX_Issuer.keys
+echo "hx_testnet_IssuerPK='$PK'" >> ./.dev.vars
+echo "hx_testnet_IssuerSK='$SK'" >> ./.dev.vars
+read SK PK < $td/HEX_Agent.keys
+echo "hx_testnet_AgentPK='$PK'" >> ./.dev.vars
+echo "hx_testnet_AgentSK='$SK'" >> ./.dev.vars
+echo 'hx_STELLAR_NETWORK=testnet' >> ./.dev.vars
+
+log "$0 DONE" # {{{1
+
