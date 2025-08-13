@@ -1,10 +1,35 @@
 import * as topjobHxDeclarations from './module-topjob-hx-declaration/list.js' // {{{1
 
+////
+// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client certificate
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
-  drop: queue => console.log('drop queue', queue),
   jobs: [
-    { name: 'reset_testnet', },
-    { name: 'reset_testnet_monitor', },
+    {
+      name: 'reset_testnet',
+      agentAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet agentAuth pk', pk, 'env', env)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet userAuth pk', pk, 'env', env)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+        return true;
+      },
+    },
+    {
+      name: 'reset_testnet_monitor',
+      agentAuth: pk => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet_monitor agentAuth pk', pk)
+      },
+      userAuth: pk => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet_monitor userAuth pk', pk)
+        return true;
+      },
+    },
   ],
 }
 

@@ -27,6 +27,12 @@ cd -
 
 ## Reset ./dev.vars {{{1
 #
+# TODO reset ./dev.vars BEFORE deploy, AFTER reset_testnet to use the updated:
+# - hx_testnet_IssuerPK
+# - hx_testnet_IssuerSK
+# - hx_testnet_AgentPK
+# - hx_testnet_AgentSK
+#
 rm -f ./.dev.vars
 cfjfd=$HOME/.cloudflare-job-fair
 read SK PK < $cfjfd/owner.keys

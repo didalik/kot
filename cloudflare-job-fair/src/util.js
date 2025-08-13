@@ -17,7 +17,7 @@ class JobHub { // {{{1
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
       if (agent) {
         let job = agent.jobs.find(e => e.name == jobname)
-        return job.agentAuth(hub.pk);
+        return job.agentAuth(hub.pk, durableObject.env);
       }
       throw Error('Not Found')
     }
@@ -27,7 +27,13 @@ class JobHub { // {{{1
     }
 
     const userAuth = _ => { // {{{3
-      console.log('JobHub userAuth job', job, 'jobname', jobname, 'hub', hub)
+      let agents = jobs === jobsHx ? jobHxAgents : topjobHxAgents
+      for (let jobAgentId of Object.getOwnPropertyNames(agents)) {
+        if (agents[jobAgentId].jobs.find(e => e.name == jobname).userAuth(hub.pk, durableObject.env)) {
+          return;
+        }
+      }
+      throw Error('Not Authorized')
     }
 
     // }}}3
