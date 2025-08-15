@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Basic integration test (bit) hX qa reset_testnet
+# Basic integration test (bit) hX qa reset_testnet_monitor
 #
 # Use:
 # - hx_ownerPK

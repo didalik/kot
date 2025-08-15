@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Basic integration test (bit) hX dev reset_testnet_monitor
+# Basic integration test (bit) hX qa selftest
 # # # # # # # # # # # # #
 
 log () { # {{{1
@@ -16,5 +16,5 @@ export JOBAGENT_SK JOBAGENT_PK
 read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/owner.keys
 export JOBUSER_SK JOBUSER_PK
 
-bin/dev.mjs put_agent '*testnet*' &
-bin/dev.mjs post_jcl 'hx/reset_testnet_monitor'
+bin/run.mjs put_agent '*selftest' start_testnet_monitor=YES &
+bin/run.mjs post_job 'hx/selftest' browser=yes

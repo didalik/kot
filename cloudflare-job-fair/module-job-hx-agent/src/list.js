@@ -1,13 +1,16 @@
 import * as jobHxDeclarations from './module-job-hx-declaration/list.js' // {{{1
 
 ////
-// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client certificate
+// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client SSL certificate
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
   jobs: [
     {
       name: 'selftest',
-      agentAuth: pk => {
+      agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ selftest agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
       },
       userAuth: pk => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ selftest userAuth pk', pk)
@@ -16,11 +19,17 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
     },
     {
       name: 'setup_selftest',
-      agentAuth: pk => {
+      agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ setup_selftest agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
       },
-      userAuth: pk => {
+      userAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ setup_selftest userAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
         return true;
       },
     },
