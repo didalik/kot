@@ -22,11 +22,17 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
     },
     {
       name: 'reset_testnet_monitor',
-      agentAuth: pk => {
+      agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet_monitor agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
       },
-      userAuth: pk => {
+      userAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet_monitor userAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
         return true;
       },
     },

@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "npm run dev; wrangler deploy",
+    "deploy": "wrangler deploy",
     "dev": "bin/dev-conf; wrangler dev --ip 0.0.0.0",
     "test": "bin/test"
   },
