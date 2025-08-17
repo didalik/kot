@@ -4,8 +4,6 @@
  * LICENSE file in the root directory of this source tree.
  * * */
 
-//const algorithm = { name: "ECDSA", hash: { name: "SHA-384" }, namedCurve: "P-384" } // {{{1
-//const algorithm = { name: "ECDSA", hash: "SHA-384", namedCurve: "P-384" } // {{{1
 const algorithm = { name: "Ed25519", } // {{{1
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')

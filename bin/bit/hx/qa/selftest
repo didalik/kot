@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 #
 # Basic integration test (bit) hX qa selftest
+#
+# Use:
+# - hx_ownerPK
+# - hx_testnet_IssuerPK
+# - hx_STELLAR_NETWORK
 # # # # # # # # # # # # #
 
 log () { # {{{1

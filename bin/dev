@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 ##
-# This ./bin/dev script adds public DHTM update to 'npm run dev'.
+# This ./bin/dev script adds public DHTM update to 'npm run dev'. *** PRESENTLY NOT IN USE ***
 ##
 
 log () { # {{{1

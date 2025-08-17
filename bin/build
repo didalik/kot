@@ -16,7 +16,7 @@ log "$0 started; PWD should be project root: $PWD" # {{{1
 #
 cd public
 for dhtm in dopad hx sandbox stellar_test_monitor template; do
-  [ $dhtm.html -nt $dhtm-head.html -a $dhtm.html -nt $dhtm.mjs ] && continue
+  [ $dhtm.html -nt $dhtm-head.html -a $dhtm.html -nt $dhtm.mjs -a $dhtm.html -nt lib ] && continue
   npx esbuild --bundle --minify --inject:./shim.js \
     --outfile=$dhtm.minified.mjs --format=esm $dhtm.mjs
   cat $dhtm-head.html $dhtm.minified.mjs tail.html > $dhtm.html

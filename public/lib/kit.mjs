@@ -281,6 +281,7 @@ const initVm = c => secdVm( // {{{1
   c.nw == 'public',        // PUBLIC
   c.kit                    // kit
 ).then(vm => {
+  console.log('kit.initVm returned vm', vm)
   window.vm = vm
   
   document.onclick = event => { // {{{2

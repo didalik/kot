@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
 # Basic integration test (bit) hX qa setup_selftest
+#
+# Use:
+# - hx_ownerPK
 # # # # # # # # # # # # #
 
 log () { # {{{1
