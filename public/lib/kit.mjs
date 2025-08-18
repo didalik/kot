@@ -986,7 +986,7 @@ function initModel (config, resolve, reject) { // {{{1
       c.model.channel.receive() // see https://go.dev/tour/concurrency/2
       resolve(c.model)
     }
-  })
+  }).catch(err => console.error('initModel err', err))
 }
 
 function initTest (config, resolve, reject) { // {{{1

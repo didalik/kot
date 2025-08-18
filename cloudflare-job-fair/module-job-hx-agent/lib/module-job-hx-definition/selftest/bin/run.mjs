@@ -10,7 +10,7 @@ import {
   HEX_FEE,
 } from '../../../../../../public/lib/api.mjs' // FIXME
 import * as fs from "node:fs"
-//import { Asset, Keypair, } from '@stellar/stellar-sdk'
+import { MemoHash, MemoText, } from '@stellar/stellar-sdk'
 
 const _onSIGTERM = vm => { // {{{1
   process.on('SIGTERM', _ => {
@@ -103,7 +103,7 @@ async function selftest (limit, nwdir) { // {{{1
   _onSIGTERM(vm)
 }
 
-await selftest(process.argv[2], process.argv[3]).then(_ => process.exit(0)). // {{{1
+await selftest(process.argv[2], process.argv[3]).//then(_ => process.exit(0)). // {{{1
   catch(err => {
     console.error(err)
     process.exit(1)

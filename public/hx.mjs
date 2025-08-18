@@ -6,6 +6,7 @@
 
 import { Model, Test, View, } from './lib/mvc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
+import { post_job, } from './lib/ws.mjs'
 
 let user = {
   position: { lat: LATITUDE, lng: LONGITUDE },
@@ -14,11 +15,14 @@ let config = { // {{{1
   HEX_Issuer_PK: 'hx_testnet_IssuerPK',
   nw: 'hx_STELLAR_NETWORK',
   kit, 
-  //test: false, 
   test: true, 
   user, 
 }
-console.log(config)
+console.log(config, location)
+
+if (config.test) {
+  post_job('selftest')
+}
 
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 

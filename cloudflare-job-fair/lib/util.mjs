@@ -158,7 +158,7 @@ function wsDispatch (data, ws) { // {{{1
           'cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet',
         ]
       )
-    : spawn('bin/test-browser')
+    : spawn('bin/test-browser', [data.split(' ')[2],])
 
     job.on('error', err => console.error(`wsDispatch ${process.argv[2]} FIXME  E R R O R  ${err}`))
     job.stderr.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stderr', data.toString()))

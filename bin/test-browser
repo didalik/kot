@@ -3,4 +3,4 @@
 # Open browser on host via SSH
 # # # # # # # # # # # # # # # # #
 
-ssh alec@mba open 'http://ko:8787/hx'
+ssh alec@mba open "$1"
