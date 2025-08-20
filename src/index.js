@@ -96,6 +96,8 @@ export default { // {{{1
 };
 
 async function dispatch (request, env, ctx) { // {{{1
+  console.log('dispatch this', this)
+
   let ip = request.headers.get('CF-Connecting-IP');
   let page = new Page(this, env)
   let stub = env.KOT_DO.get(env.KOT_DO_ID)
@@ -116,7 +118,7 @@ async function dispatch (request, env, ctx) { // {{{1
         },
       });
     case /\/dopad/.test(this): { // {{{2
-      let page = new Page('/dopad', env) // TODO remove duplicate?
+      let page = new Page('/dopad', env) // TODO remove duplicate page when ready
       content.DOTOTALS = replaceDOTOTALS.call(page, env)
       return new DOpad(page).serve(new URL(request.url)).then(text => {
         content.DODETAILS = text

@@ -4,8 +4,20 @@ import * as topjobHxDeclarations from './module-topjob-hx-declaration/list.js' /
 // GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client SSL certificate
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
   jobs: [
-    {
-      name: 'reset_testnet',
+    { name: 'dopad', // {{{2
+      userAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userAuth pk', pk, 'env', env)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+        return true;
+      },
+      userDone: (hub, durableObject) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone hub', hub, 'durableObject', durableObject)
+        return true;
+      },
+    },
+    { name: 'reset_testnet', // {{{2
       agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet agentAuth pk', pk, 'env', env)
         if (pk != env.hx_ownerPK) {
@@ -20,8 +32,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         return true;
       },
     },
-    {
-      name: 'reset_testnet_monitor',
+    { name: 'reset_testnet_monitor', // {{{2
       agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ reset_testnet_monitor agentAuth pk', pk)
         if (pk != env.hx_ownerPK) {
@@ -36,6 +47,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         return true;
       },
     },
+    // }}}2
   ],
 }
 

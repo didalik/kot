@@ -35,11 +35,14 @@ async function jagURLpath (args) { // CLIENT {{{1
 }
 
 async function jclURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}/${await pubkey('JOBUSER_PK')}`;
+  let urlPath = `/${args[0]}/${await pubkey('JOBUSER_PK')}`
+  if (args[0] == 'hx/dopad') {
+    urlPath += '/' + args[1] + '?' + `${args[2]}=${encodeURIComponent(args[3])}`
+  }
+  return urlPath;
 }
 
 async function jobURLpath (args) { // CLIENT {{{1
-  //console.log('jobURLpath args', args)
   return `/${args[0]}/${await pubkey('JOBUSER_PK')}?${args[1]}`;
 }
 

@@ -12,6 +12,8 @@ class JobHub { // {{{1
     jobs[jobname] ??= []
     let job = jobs[jobname][0]
 
+    console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
+
     const agentAuth = _ => { // {{{3
       let agentId = hub.jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
@@ -29,8 +31,9 @@ class JobHub { // {{{1
     const userAuth = _ => { // {{{3
       let agents = jobs === jobsHx ? jobHxAgents : topjobHxAgents
       for (let jobAgentId of Object.getOwnPropertyNames(agents)) {
-        if (agents[jobAgentId].jobs.find(e => e.name == jobname).userAuth(hub.pk, durableObject.env)) {
-          return;
+        let job = agents[jobAgentId].jobs.find(e => e.name == jobname)
+        if (job.userAuth(hub.pk, durableObject.env)) {
+          return job;
         }
       }
       throw Error('Not Authorized')
@@ -42,7 +45,9 @@ class JobHub { // {{{1
       agentAuth()
       hub.taking = +0
     } else {              // job request
-      userAuth()
+      if (userAuth()?.userDone(hub, durableObject)) {
+        return;
+      }
       if (jobs[jobname].length > 0) {
         job.taking = +0
       }
@@ -78,9 +83,6 @@ class JobHub { // {{{1
 const JobFairImpl = { // {{{1
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     let url = new URL(request.url)
-    let browser = url.searchParams.get('browser') // FIXME
-    let start_testnet_monitor = url.searchParams.get('start_testnet_monitor') // FIXME
-    console.log('JobFairImpl.dispatch pathname', url.pathname, 'browser', browser, 'start_testnet_monitor', start_testnet_monitor, 'ctx_OR_null', ctx_OR_null)
     let agent = url.pathname.startsWith('/jag')
     if (ctx_OR_null) { // EDGE
       let ctx = ctx_OR_null, env = env_OR_ws
@@ -91,14 +93,16 @@ const JobFairImpl = { // {{{1
       }
     }
     durableObject ??= this
+    let parms = new URLSearchParams(url.search)
+    console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
     let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
     let pk = decodeURIComponent(path[4])
     if (agent) {
-      addJobAgentDO(ws, path, pk, jobAgentId, start_testnet_monitor)
+      addJobAgentDO(ws, path, pk, jobAgentId, parms)
     } else {
-      addJobDO(ws, path, pk, browser)
+      addJobDO(ws, path, pk, parms)
     }
   },
 
@@ -187,12 +191,12 @@ function addJobAgent (request, env, ctx) { // {{{1
   return stub.fetch(request);
 }
 
-function addJobDO (ws, path, pk, arg1 = null) { // {{{1
+function addJobDO (ws, path, pk, parms) { // {{{1
   switch (path[1] + '/' + path[2]) {
     case 'jcl/hx':
-      return new JobHub(topjobsHx, path[3], { arg1, pk, ws, });
+      return new JobHub(topjobsHx, path[3], { parms, path, pk, ws, });
     case 'job/hx':
-      return new JobHub(jobsHx, path[3], { arg1, pk, ws, });
+      return new JobHub(jobsHx, path[3], { parms, path, pk, ws, });
     default:
       throw Error(path);
   }
