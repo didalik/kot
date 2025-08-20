@@ -121,6 +121,9 @@ function wsConnect (url) { // {{{1
   websocket.on('message', data => {
     data = data.toString()
     log(`${tag()} message`, data)
+    if (data == 'DONE') { // FIXME
+      process.exit(0)
+    }
     wsDispatch(data, websocket)
   })
   promise.then(loop => loop ? wsConnect(url) : log(`${tag()}`, 'DONE')).
@@ -149,7 +152,7 @@ function wsDispatch (data, ws) { // {{{1
     startJob[jobname].call({ ws })
   } else if (data.includes('STARTED JOB')) {
     //log('wsDispatch STARTED JOB data', data)
-  } else if (data.includes('EXIT CODE')) {
+  } else if (data.includes('EXIT CODE') || data == 'DONE') {
     ws.close()
   } else if (data.includes('FIXME')) { // FIXME
 

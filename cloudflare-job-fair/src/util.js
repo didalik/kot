@@ -46,6 +46,7 @@ class JobHub { // {{{1
       hub.taking = +0
     } else {              // job request
       if (userAuth()?.userDone(hub, durableObject)) {
+        hub.ws.send('DONE')
         return;
       }
       if (jobs[jobname].length > 0) {
@@ -107,8 +108,13 @@ const JobFairImpl = { // {{{1
   },
 
   wsClose: (ws, code, reason, wasClean) => { // {{{2
-    wasClean && ws.close()
     let hub = mapWs2Hub.get(ws)
+    if (!hub) {
+      console.log('JobFairImpl.wsClose wasClean', wasClean, 'reason', reason, 'code', code, 'closing websocket...')
+      ws.close()
+      return;
+    }
+    wasClean && ws.close()
     hub.isClosed = true
     for (let ws of hub.passthrough) {
       ws.close()

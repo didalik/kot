@@ -13,7 +13,7 @@ read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/owner.keys
 #read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/user.keys
 export JOBUSER_SK JOBUSER_PK
 
-bin/dev.mjs post_jcl hx/dopad put hx_ownerPK $JOBUSER_PK
+bin/dev.mjs post_jcl hx/dopad put hx_ownerPK $JOBUSER_PK # TODO use dopad instead of hx/dopad
 
 #rm -rf cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build
 
