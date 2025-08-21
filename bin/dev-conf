@@ -12,7 +12,8 @@ log "$0 started; PWD should be project root: $PWD" # {{{1
 #
 rm -f ./.dev.vars
 cfjfd=$HOME/.cloudflare-job-fair
-read SK PK < $cfjfd/OWNER.keys
+#read SK PK < $cfjfd/OWNER.keys
+read SK PK < $cfjfd/CREATOR.keys
 echo "hx_ownerPK='$PK'" >> ./.dev.vars
 #read SK PK < $cfjfd/agent.keys
 #echo "hx_agentPK='$PK'" >> ./.dev.vars

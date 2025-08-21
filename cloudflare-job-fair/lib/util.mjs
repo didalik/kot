@@ -12,10 +12,10 @@ const startJob = {
 
 async function hack (node, run, cmd, ...args) { // CLIENT {{{1
   let path = hackURLpath(args)
-  let urlHack = process.env._ == 'bin/dev.mjs' ? 'http://127.0.0.1:8787/hack'
+  let urlHack = configuration.fetch_options ? 'http://127.0.0.1:8787/hack'
     : 'https://jag.kloudoftrust.org/hack'
   let url = `${urlHack}${path}`
-  log('- hack args', args, 'url', url, 'configuration', configuration)
+  log('- hack args', args, 'url', url)
   fetch(url, configuration.fetch_options ?? {}).
     then(response => response.text()).then(responseBody => log(responseBody)).
     catch(err => log(err))
@@ -35,9 +35,9 @@ async function jagURLpath (args) { // CLIENT {{{1
 }
 
 function jclURLpath (args) { // CLIENT {{{1
-  let urlPath = `/${args[0]}/${encodeURIComponent(args[5])}`
-  if (args[0] == 'hx/dopad') {
-    urlPath += '/' + args[1] + '?' + `${args[2]}=${encodeURIComponent(args[3])}`
+  let urlPath = `/${args[1]}/${encodeURIComponent(args[0])}`
+  if (args[1] == 'hx/dopad') {
+    urlPath += '/' + args[2] + '?' + `${args[3]}=${encodeURIComponent(args[4])}`
   }
   return urlPath;
 }
@@ -52,19 +52,19 @@ function log (...args) { // CLIENT {{{1
 
 async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   let path = await jclURLpath(args)
-  let urlJcl = args[4] == 'dev' ? 'ws://127.0.0.1:8787/jcl'
-    : 'wss://jag.kloudoftrust.org/jcl'
+  let urlJcl = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jcl'
+    : 'ws://127.0.0.1:8787/jcl'
   let url = `${urlJcl}${path}`
-  log('- post_jcl args', args, 'url', url, 'configuration', configuration)
+  log('- post_jcl args', args, 'url', url)
   wsConnect(url)
 }
 
 async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
   let path = await jobURLpath(args)
-  let urlJob = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/job'
-    : 'wss://job.kloudoftrust.org/job'
+  let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
+    : 'ws://127.0.0.1:8787/job'
   let url = `${urlJob}${path}`
-  log('- post_job args', args, 'url', url, 'configuration', configuration)
+  log('- post_job args', args, 'url', url)
   wsConnect(url)
 }
 
@@ -85,10 +85,10 @@ async function pubkey (pk) { // {{{1
 
 async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
   let path = await jagURLpath(args)
-  let urlJag = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/jag'
-    : 'wss://jag.kloudoftrust.org/jag'
+  let urlJag = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jag'
+    : 'ws://127.0.0.1:8787/jag'
   let url = `${urlJag}${path}`
-  log('- put_agent args', args, 'url', url, 'configuration', configuration)
+  log('- put_agent args', args, 'url', url)
   wsConnect(url)
 }
 

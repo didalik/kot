@@ -19,7 +19,7 @@ $$HOME/.cloudflare-job-fair/%.keys:
 	@[ -e $@ ] && echo '$@ preserved' || bin/setkeys $*;\
 		read JOB$*_SK JOB$*_PK < $$HOME/.cloudflare-job-fair/$*.keys;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
-		bin/${PHASE}.mjs post_jcl hx/dopad put hx_$*_PK $$JOB$*_PK ${PHASE} $$CREATOR_PK
+		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}:
 	@bin/bit/hx/${PHASE}/reset_testnet
