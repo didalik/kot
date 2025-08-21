@@ -34,8 +34,8 @@ async function jagURLpath (args) { // CLIENT {{{1
   }
 }
 
-async function jclURLpath (args) { // CLIENT {{{1
-  let urlPath = `/${args[0]}/${await pubkey('JOBUSER_PK')}`
+function jclURLpath (args) { // CLIENT {{{1
+  let urlPath = `/${args[0]}/${encodeURIComponent(args[5])}`
   if (args[0] == 'hx/dopad') {
     urlPath += '/' + args[1] + '?' + `${args[2]}=${encodeURIComponent(args[3])}`
   }
@@ -52,7 +52,7 @@ function log (...args) { // CLIENT {{{1
 
 async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   let path = await jclURLpath(args)
-  let urlJcl = process.env._ == 'bin/dev.mjs' ? 'ws://127.0.0.1:8787/jcl'
+  let urlJcl = args[4] == 'dev' ? 'ws://127.0.0.1:8787/jcl'
     : 'wss://jag.kloudoftrust.org/jcl'
   let url = `${urlJcl}${path}`
   log('- post_jcl args', args, 'url', url, 'configuration', configuration)
