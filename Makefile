@@ -26,7 +26,7 @@ keys: ${AUTH_KEYS}
 ##
 
 $$HOME/.cloudflare-job-fair/%.keys: # {{{1
-	@[ -e $@ ] && echo '$@ preserved' && exit 0 || bin/setkeys $*;\
+	@[ -e $@ ] && echo "$@ preserved" && exit 0 || bin/setkeys $*;\
 		read JOB$*_SK JOB$*_PK < $$HOME/.cloudflare-job-fair/$*.keys;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_$*_PK $$JOB$*_PK
