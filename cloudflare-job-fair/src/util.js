@@ -33,6 +33,8 @@ class JobHub { // {{{1
       for (let jobAgentId of Object.getOwnPropertyNames(agents)) {
         let job = agents[jobAgentId].jobs.find(e => e.name == jobname)
         if (job.userAuth(hub.pk, durableObject.env)) {
+          //console.log('new JobHub userAuth job', job)
+
           return job;
         }
       }
@@ -45,7 +47,8 @@ class JobHub { // {{{1
       agentAuth()
       hub.taking = +0
     } else {              // job request
-      if (userAuth()?.userDone(hub, durableObject)) {
+      let userDone = userAuth().userDone
+      if (userDone && userDone(hub, durableObject)) {
         hub.ws.send('DONE')
         return;
       }
@@ -208,16 +211,18 @@ function addJobDO (ws, path, pk, parms) { // {{{1
   }
 }
 
-function addJobAgentDO (ws, path, pk, jobAgentId, arg1 = null) { // {{{1
+function addJobAgentDO (ws, path, pk, jobAgentId, parms) { // {{{1
+  //console.log('addJobAgentDO ws', ws, 'path', path, 'pk', pk, 'jobAgentId', jobAgentId, 'parms', parms)
+
   switch (path[1] + '/' + path[2] + '/' + path[3]) {
     case 'jag/topjob/hx':
       for (let job of topjobHxAgents[jobAgentId].jobs) {
-        new JobHub(topjobsHx, job.name, { arg1, jobAgentId, pk, ws, });
+        job.agentAuth && new JobHub(topjobsHx, job.name, { parms, jobAgentId, pk, ws, });
       }
       break
     case 'jag/job/hx':
       for (let job of jobHxAgents[jobAgentId].jobs) {
-        new JobHub(jobsHx, job.name, { arg1, jobAgentId, pk, ws, });
+        new JobHub(jobsHx, job.name, { parms, jobAgentId, pk, ws, });
       }
       break
     default:

@@ -26,11 +26,11 @@ function hackURLpath (args) { // CLIENT {{{1
 }
 
 async function jagURLpath (args) { // CLIENT {{{1
-  switch (args[0]) {
+  switch (args[1]) {
     case '*testnet*':
-      return `/topjob/hx/${await pubkey('JOBAGENT_PK')}`;
+      return `/topjob/hx/${encodeURIComponent(args[0])}`;
     case '*selftest':
-      return `/job/hx/${await pubkey('JOBAGENT_PK')}?${args[1]}`;
+      return `/job/hx/${encodeURIComponent(args[0])}?${args[1]}`;
   }
 }
 
