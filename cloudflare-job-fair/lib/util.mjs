@@ -25,12 +25,12 @@ function hackURLpath (args) { // CLIENT {{{1
   return '/' + args[0];
 }
 
-async function jagURLpath (args) { // CLIENT {{{1
+function jagURLpath (args) { // CLIENT {{{1
   switch (args[1]) {
     case '*testnet*':
       return `/topjob/hx/${encodeURIComponent(args[0])}`;
     case '*selftest':
-      return `/job/hx/${encodeURIComponent(args[0])}?${args[1]}`;
+      return `/job/hx/${encodeURIComponent(args[0])}`;
   }
 }
 
@@ -42,8 +42,8 @@ function jclURLpath (args) { // CLIENT {{{1
   return urlPath;
 }
 
-async function jobURLpath (args) { // CLIENT {{{1
-  return `/${args[0]}/${await pubkey('JOBUSER_PK')}?${args[1]}`;
+function jobURLpath (args) { // CLIENT {{{1
+  return `/${args[1]}/${encodeURIComponent(args[0])}`;
 }
 
 function log (...args) { // CLIENT {{{1

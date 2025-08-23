@@ -4,6 +4,7 @@ AUTH_KEYS := $$HOME/.cloudflare-job-fair/${AUTH}.keys
 BUILD_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
 						 module-topjob-hx-definition/reset_testnet/build
 PHASE ?= dev
+SHELL = bash
 TESTNET_DIR := ${BUILD_DIR}/testnet
 TESTNET_KEYS := ${TESTNET_DIR}.keys
 TXIDS := ${TESTNET_DIR}/HEX_Agent_make2map.txids
@@ -14,6 +15,10 @@ bit_hx_${PHASE}: ${AUTH_KEYS} ${TESTNET_DIR} ${TXIDS}
 
 ## TODO remove these lines when done testing prerequisites {{{1
 #
+.PHONY: setup {{{2
+setup: ${AUTH_KEYS} ${TESTNET_DIR} ${TXIDS}
+	@echo $@ DONE
+
 .PHONY: testnet {{{2
 testnet: ${AUTH_KEYS} ${TESTNET_DIR}
 	@echo $@ DONE
@@ -39,7 +44,10 @@ ${TESTNET_DIR}: # reset_testnet {{{1
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_testnet_IssuerPK $$PK
 
 ${TXIDS}: # setup_selftest {{{1
-	@bin/bit/hx/${PHASE}/setup_selftest
+	@bin/bit/hx/${PHASE}/setup_selftest;\
+		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
+		read < ${TXIDS}; bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put \
+		hx_Agent_make2map_txids "$$REPLY"
 
 .PHONY: clean # {{{1
 clean:
