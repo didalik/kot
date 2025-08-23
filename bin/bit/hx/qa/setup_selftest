@@ -14,10 +14,10 @@ log () { # {{{1
 
 log "$0 started; PWD should be project root: $PWD" # {{{1
 
-read JOBAGENT_SK JOBAGENT_PK < $HOME/.cloudflare-job-fair/owner.keys # {{{1
+read JOBAGENT_SK JOBAGENT_PK < $HOME/.cloudflare-job-fair/CREATOR.keys # {{{1
 export JOBAGENT_SK JOBAGENT_PK
-read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/owner.keys
+read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/CREATOR.keys
 export JOBUSER_SK JOBUSER_PK
 
-bin/run.mjs put_agent '*selftest' &
-bin/run.mjs post_job 'hx/setup_selftest'
+bin/run.mjs put_agent $JOBAGENT_PK '*selftest' &
+bin/run.mjs post_job $JOBUSER_PK 'hx/setup_selftest'
