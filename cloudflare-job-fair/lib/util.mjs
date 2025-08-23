@@ -43,6 +43,10 @@ function jclURLpath (args) { // CLIENT {{{1
 }
 
 function jobURLpath (args) { // CLIENT {{{1
+  if (args[1] == 'hx/selftest' && args[2] && args[2].indexOf('=')) {
+    let pair = args[2].split('=')
+    configuration[pair[0]] = pair[1]
+  }
   return `/${args[1]}/${encodeURIComponent(args[0])}`;
 }
 
@@ -75,12 +79,6 @@ function promiseWithResolvers () { // {{{1
     reject = rej;
   });
   return [promise, resolve, reject];
-}
-
-async function pubkey (pk) { // {{{1
-  //let pair = await generate_keypair.call(crypto.subtle, )
-  //return encodeURIComponent(pair.split(' ')[1]);
-  return encodeURIComponent(process.env[pk]);
 }
 
 async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
@@ -133,7 +131,8 @@ function wsConnect (url) { // {{{1
 }
 
 function wsDispatch (data, ws) { // {{{1
-  if (data.includes('TAKING JOB')) {
+  let jobname = data.slice(1 + data.lastIndexOf(' '))
+  if (data.includes('TAKING JOB')) { // {{{2
     if (data.includes('AM TAKING JOB')) {
       global.jobAgentId = data.slice(0, data.indexOf(' '))
     }
@@ -146,15 +145,14 @@ function wsDispatch (data, ws) { // {{{1
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(e => console.error(e))
-  } else if (data.includes('START JOB')) {
-    let jobname = data.slice(1 + data.lastIndexOf(' '))
+  } else if (data.includes('START JOB')) { // {{{2
     global.log = log
     startJob[jobname].call({ ws })
-  } else if (data.includes('STARTED JOB')) {
-    //log('wsDispatch STARTED JOB data', data)
-  } else if (data.includes('EXIT CODE') || data == 'DONE') {
+  } else if (data.includes('STARTED JOB')) { // {{{2
+    configuration.browser && spawn('bin/test-browser', [configuration.browser])
+  } else if (data.includes('EXIT CODE') || data == 'DONE') { // {{{2
     ws.close()
-  } else if (data.includes('FIXME')) { // FIXME
+  } else if (data.includes('FIXME')) { // FIXME {{{2
 
     global.job = process.argv[2] == 'put_agent' ?
       spawn(
@@ -170,7 +168,7 @@ function wsDispatch (data, ws) { // {{{1
     job.stderr.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stderr', data.toString()))
     job.stdout.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stdout', data.toString()))
     job.on('close', code => log('wsDispatch' ,process.argv[2], 'FIXME close', code))
-  }
+  } // }}}2
 }
 
 export { // {{{1
