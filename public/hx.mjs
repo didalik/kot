@@ -4,7 +4,7 @@
  * LICENSE file in the root directory of this source tree.
  * * */
 
-import { Model, Test, View, } from './lib/mvc.mjs' // {{{1
+import { Model, Test, View, } from './lib/jc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
 import { post_job, } from './lib/ws.mjs'
 
@@ -12,6 +12,7 @@ let user = {
   position: { lat: LATITUDE, lng: LONGITUDE },
 }
 let config = { // {{{1
+  HEX_Agent_make2map_txids: 'hx_Agent_make2map_txids',
   HEX_Issuer_PK: 'hx_testnet_IssuerPK',
   nw: 'hx_STELLAR_NETWORK',
   kit, 

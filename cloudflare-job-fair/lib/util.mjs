@@ -152,7 +152,7 @@ function wsDispatch (data, ws) { // {{{1
     configuration.browser && spawn('bin/test-browser', [configuration.browser])
   } else if (data.includes('EXIT CODE') || data == 'DONE') { // {{{2
     ws.close()
-  } else if (data.includes('FIXME')) { // FIXME {{{2
+  } else if (data.includes('FIXME')) { // TODO delete this block {{{2
 
     global.job = process.argv[2] == 'put_agent' ?
       spawn(

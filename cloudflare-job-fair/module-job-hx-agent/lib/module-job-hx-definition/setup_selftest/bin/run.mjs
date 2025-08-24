@@ -63,35 +63,35 @@ async function setup_selftest (limit, nwdir) { // {{{1
     vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
     offerHEX_FOR_SALE(url)         // Onna //////////////
   )
-  let makeIds = r.txId + ' '
+  let makeIds = r.txId + ' 26.4668328 127.8232348 '
   log('- f_add_hex_makes makeOffer', r.offer, r.balanceId, r.txId)
 
   r = await makeRequest.call(vm, // = Port Angeles = {{{2
     vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
     requestPARTNERS_WELCOME(url)   // Port Angeles //////
   )
-  makeIds = makeIds + r.txId + ' '
+  makeIds = makeIds + r.txId + ' 48.1165763 -123.4444233 '
   log('- f_add_hex_makes makeRequest', r.request, r.amount, r.balanceId, r.txId)
 
   r = await makeRequest.call(vm, // = Tagoba = {{{2
     vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
     requestHELP_WANTED(url)        // Tagoba ////////////
   )
-  makeIds = makeIds + r.txId + ' '
+  makeIds = makeIds + r.txId + ' 8.7961073 -79.5552843 '
   log('- f_add_hex_makes makeRequest', r.request, r.amount, r.balanceId, r.txId)
   
   r = await makeOffer.call(vm, //   = Kyiv = {{{2
     vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
     offerAIM_FOR_BUSINESSES(url)   // Kyiv //////////////
   )
-  makeIds = makeIds + r.txId + ' '
+  makeIds = makeIds + r.txId + ' 50.4462921 30.5104239 '
   log('- f_add_hex_makes makeOffer', r.offer, r.balanceId, r.txId)
 
   r = await makeRequest.call(vm, // = Aukland = {{{2
     vm.d.agent, Keypair.fromSecret(vm.d.keysAgent[0]),
     requestAGENTS_WANTED(url)     // Aukland ///////////
   )
-  makeIds = makeIds + r.txId // Look, Ma! NO SPACE!
+  makeIds = makeIds + r.txId + ' -36.6880111 174.7388642'// Look, Ma! NO SPACE!
   log('- f_add_hex_makes makeRequest', r.request, r.amount, r.balanceId, r.txId)
   // }}}2
   fs.writeFileSync(nwdir + '/HEX_Agent_make2map.txids', makeIds)

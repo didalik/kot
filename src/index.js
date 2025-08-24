@@ -126,7 +126,13 @@ async function dispatch (request, env, ctx) { // {{{1
       });
     }
     case this == '/hx': { // {{{2
-      let vars = ['hx_STELLAR_NETWORK', 'hx_testnet_IssuerPK']
+      let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
+      env.hx_Agent_make2map_txids = await stub.get('hx_Agent_make2map_txids')
+      env.hx_STELLAR_NETWORK = await stub.get('hx_STELLAR_NETWORK')
+      env.hx_testnet_IssuerPK = await stub.get('hx_testnet_IssuerPK')
+      let vars = [
+        'hx_Agent_make2map_txids','hx_STELLAR_NETWORK', 'hx_testnet_IssuerPK'
+      ]
       return new Response(page.set(content, vars), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     }
     case this == '/ip': // {{{2

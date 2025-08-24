@@ -281,7 +281,10 @@ const initVm = c => secdVm( // {{{1
   c.nw == 'public',        // PUBLIC
   c.kit                    // kit
 ).then(vm => {
-  console.log('kit.initVm returned vm', vm)
+  if (c.test) {
+    vm.d.HEX_Agent_make2map_txids = c.HEX_Agent_make2map_txids.split(' ')
+  }
+  console.log('kit.initVm then vm', vm)
   window.vm = vm
   
   document.onclick = event => { // {{{2
@@ -796,8 +799,8 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     opts.data.memo2str == c?.latest?.make?.txId
 
   cbEffect.call(this, { effect, }).then(opts => {
-    opts.data.memo_type = opts.tx.memo_type // FIXME
-    //e.log('cbcc cbEffect opts', opts)
+    opts.data.memo_type = opts.tx.memo_type // FIXME what? why?
+    e.log('cbcc cbEffect opts', opts)
 
     if (effect.amount == HEXA_DISPUTE) { // {{{2
       //e.log('cbcc effect.amount == HEXA_DISPUTE cbEffect opts', opts)
@@ -848,6 +851,8 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
 
     // }}}2
     _jc.send([this, push_opts, opts])
+    let txidIdx = d.HEX_Agent_make2map_txids.findIndex(e => e == opts.tx.id)
+    e.log('cbcc cbEffect txidIdx', txidIdx)
     if (++d.tXs_read == d.old_tXs_length) { // Model is initialized.
       c.model.initialized = true
       //e.log('cbcc c.model.initialized true this', this)
