@@ -30,6 +30,10 @@ kit.initVm(config).then(vm => Promise.all([
   Test.init(vm, config),
   View.init(vm, config)
 ]))
-.then(run => Promise.all(run.map(v => v?.run())))
+//.then(run => Promise.all(run.map(v => v?.run())))
+.then(run => {
+  console.log('run', run)
+  return Promise.all(run.map(v => v?.run()));
+})
 .then(done => Promise.all(done.map(v => v?.done())))
 .catch(e => console.error(e)).finally(_ => console.log('DONE vm', window.vm))

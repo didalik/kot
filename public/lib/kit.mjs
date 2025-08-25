@@ -852,12 +852,24 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     // }}}2
     _jc.send([this, push_opts, opts])
     let txidIdx = d.HEX_Agent_make2map_txids.findIndex(e => e == opts.tx.id)
-    e.log('cbcc cbEffect txidIdx', txidIdx)
-    if (++d.tXs_read == d.old_tXs_length) { // Model is initialized.
+    let [txId, latitude, longitude] = d.HEX_Agent_make2map_txids.splice(txidIdx, 3)
+    e.log('cbcc cbEffect txId', txId, 'latitude', latitude, 'longitude', longitude)
+    ++d.tXs_read
+    /*
+    uxMapTx.call(this, {
+      data: [
+        txId,
+        [+latitude, +longitude],
+        opts
+      ]
+    })
+    */
+    _jc.send([this, push_txid_pos, +latitude, +longitude])
+    if (d.HEX_Agent_make2map_txids.length == 0) { // Model is initialized.
+      delete d.HEX_Agent_make2map_txids
       c.model.initialized = true
-      //e.log('cbcc c.model.initialized true this', this)
-
-      //c.model.channel.receive() // see https://go.dev/tour/concurrency/2
+      c.model.channel.receive()
+      e.log('cbcc cbEffect this', this)
       _ns.model.resolve(_ns.model.result)
     }
    
@@ -976,6 +988,7 @@ function initModel (config, resolve, reject) { // {{{1
     { tXs_mapped: [], tXs_read: 0, service: config.service, user: config.user }
   )
   _ns.model = { resolve, result: c.model }
+  /*
   fetch(d.user.guestUseSvcUrl, { method: 'GET', }).then(response => response.json())
   .then(json => {
     //e.log('initModel json', json)
@@ -992,6 +1005,7 @@ function initModel (config, resolve, reject) { // {{{1
       resolve(c.model)
     }
   }).catch(err => console.error('initModel err', err))
+  */
 }
 
 function initTest (config, resolve, reject) { // {{{1
@@ -1353,7 +1367,7 @@ function uxMapTx (job) { // {{{1
     if (pos.length == 0) {
       return [false, false];
     }
-    //e.log('uxMapTx data job', job, 'opts', opts, 'pos', pos)
+    e.log('uxMapTx data job', job, 'opts', opts, 'pos', pos)
 
     let x = opts.data ? opts.data : {}
     x.opts = opts

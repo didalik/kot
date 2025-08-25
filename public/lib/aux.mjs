@@ -34,19 +34,17 @@ function addStream (tag, types, id = null, now = false) { // {{{1
   }
   e.log('addStream tag', tag, 'types', types, 'id', id, 'now', now)
 
-  s.push({
-    close: effects4account.stream({
-      onerror:   e => { throw e; },
-      onmessage: e => {
-        let pair = types.find(p => p[0] == e.type)
-        if (!pair) {
-          return;
-        }
-        pair[1].call(this, e)
+  let close = effects4account.stream({
+    onerror:   e => { close(); throw e; },
+    onmessage: e => {
+      let pair = types.find(p => p[0] == e.type)
+      if (!pair) {
+        return;
       }
-    }),
-    id, tag,
+      pair[1].call(this, e)
+    }
   })
+  s.push({ close, id, tag, })
 }
 
 function cbEffect (opts) { // claimable_balance_claimant_created {{{1
