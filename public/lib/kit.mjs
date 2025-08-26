@@ -326,6 +326,8 @@ class ModalPane { // {{{1
     let span = document.getElementById(`${contentId}X`)
     span.onclick = _ => ModalPane.close(contentId)
     
+    console.log('ModalPane.show content', content)
+
     let onclickP = window.onclick
     window.onclick = event => {
       if (event.target == background && span.style.display == 'block') {
@@ -875,7 +877,6 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
         let result = true
         _ns.view = { resolve, result }
         await promise // wait for View.init
-        delete _ns.view
       }
       for (let tX of d.tXs) {
         map_tX(tX)
@@ -1063,9 +1064,9 @@ function initView (config, resolve, reject) { // {{{1
 
     c.view.initialized = true
     _ns.view && _ns.view.resolve(_ns.view.result)
+    _ns.view || c.model.channel.receive()
     e.log('initView _ns', _ns)
 
-    c.model.channel.receive() // see https://go.dev/tour/concurrency/2
     resolve(ModalPane.init(this))
   })
   .catch(e => { console.error(e); }); 

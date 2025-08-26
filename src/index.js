@@ -1,12 +1,13 @@
 import { DurableObject } from "cloudflare:workers"; // {{{1
 import { DOpad, IpState, JobFair, Page, } from './util.js'
 
-import style from '../public/static/style.css'
 import dopad from '../public/dopad.html'
 import hx from '../public/hx.html'
+import hx_style from '../public/static/hx-style.css'
 import sandbox from '../public/sandbox.html'
+import style from '../public/static/style.css'
 import template from '../public/template.html'
-Page.use({ style, dopad, hx, sandbox, template, })
+Page.use({ dopad, hx, hx_style, sandbox, style, template, })
 
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) { // {{{2
@@ -97,6 +98,7 @@ export default { // {{{1
 
 async function dispatch (request, env, ctx) { // {{{1
   console.log('dispatch this', this)
+  console.log('dispatch style', style, 'hx_style', hx_style)
 
   let ip = request.headers.get('CF-Connecting-IP');
   let page = new Page(this, env)
@@ -135,6 +137,8 @@ async function dispatch (request, env, ctx) { // {{{1
       ]
       return new Response(page.set(content, vars), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     }
+    case this == '/hx-style.css': // {{{2
+      return new Response(hx_style, { headers: { 'content-type': 'text/css' } });
     case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {
