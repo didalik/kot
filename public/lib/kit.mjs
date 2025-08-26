@@ -283,8 +283,9 @@ const initVm = c => secdVm( // {{{1
 ).then(vm => {
   if (c.test) {
     vm.d.HEX_Agent_make2map_txids = c.HEX_Agent_make2map_txids.split(' ')
+    vm.d.txids_count = vm.d.HEX_Agent_make2map_txids.length/3
   }
-  console.log('kit.initVm then vm', vm)
+  //console.log('kit.initVm then vm', vm)
   window.vm = vm
   
   document.onclick = event => { // {{{2
@@ -794,14 +795,27 @@ async function cbc (effect) { // claimable_balance_claimed {{{1
 
 function cbcc (effect) { // claimable_balance_claimant_created {{{1
   let { s, e, c, d } = this
-  let breakMyRequest = opts => d.tXs_mapped.find(v => v.txid == opts.data.memo2str)
-  let takingMyMake = opts => opts.data.memo_type == MemoHash &&
-    opts.data.memo2str == c?.latest?.make?.txId
+  let breakMyRequest = opts => d.tXs_mapped.find(v => v.txid == opts.data.memo2str) // {{{2
 
-  cbEffect.call(this, { effect, }).then(opts => {
+  let map_tX = tX => { // {{{2
+    let [pos, opts] = [tX[1], tX[2]]
+    if (pos.length == 0) {
+      return; // closing
+    }
+    let x = opts.data ? opts.data : {}
+    x.opts = opts; x.txid = tX[0]; x.memo = opts.tx.memo
+    x.position = { lat: pos[0], lng: pos[1] }
+    let f = x.memo_type == MemoText ? x.memo.startsWith('Offer') ? markOfferMade 
+      : markRequestMade
+      : markTaking
+    f.call(this, x)
+    d.tXs_mapped.push(x)
+  }
+  let takingMyMake = opts => opts.data.memo_type == MemoHash && opts.data.memo2str == c?.latest?.make?.txId // {{{2
+
+  // }}}2
+  cbEffect.call(this, { effect, }).then(async opts => {
     opts.data.memo_type = opts.tx.memo_type // FIXME what? why?
-    e.log('cbcc cbEffect opts', opts)
-
     if (effect.amount == HEXA_DISPUTE) { // {{{2
       //e.log('cbcc effect.amount == HEXA_DISPUTE cbEffect opts', opts)
 
@@ -850,29 +864,27 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     }
 
     // }}}2
-    _jc.send([this, push_opts, opts])
     let txidIdx = d.HEX_Agent_make2map_txids.findIndex(e => e == opts.tx.id)
-    let [txId, latitude, longitude] = d.HEX_Agent_make2map_txids.splice(txidIdx, 3)
-    e.log('cbcc cbEffect txId', txId, 'latitude', latitude, 'longitude', longitude)
-    ++d.tXs_read
-    /*
-    uxMapTx.call(this, {
-      data: [
-        txId,
-        [+latitude, +longitude],
-        opts
-      ]
-    })
-    */
-    _jc.send([this, push_txid_pos, +latitude, +longitude])
-    if (d.HEX_Agent_make2map_txids.length == 0) { // Model is initialized.
-      delete d.HEX_Agent_make2map_txids
+    let [txId, latitude, longitude] = 
+      d.HEX_Agent_make2map_txids.slice(txidIdx, txidIdx + 3)
+    d.tXs.push([txId, [+latitude, +longitude], opts])
+    if (++d.tXs_read == vm.d.txids_count) { // Model is initialized.
+      if (!c.view.initialized) {
+        e.log('cbcc wait for View.init')
+        let { promise, resolve, reject } = Promise.withResolvers()
+        let result = true
+        _ns.view = { resolve, result }
+        await promise // wait for View.init
+        delete _ns.view
+      }
+      for (let tX of d.tXs) {
+        map_tX(tX)
+      }
       c.model.initialized = true
       c.model.channel.receive()
-      e.log('cbcc cbEffect this', this)
+      e.log('cbcc model initialized this', this)
       _ns.model.resolve(_ns.model.result)
     }
-   
   })
 }
 
@@ -985,7 +997,7 @@ function initModel (config, resolve, reject) { // {{{1
   let { s, e, c, d } = this
   Object.assign(c.model, { resolve, reject })
   Object.assign(d, 
-    { tXs_mapped: [], tXs_read: 0, service: config.service, user: config.user }
+    { tXs: [], tXs_mapped: [], tXs_read: 0, user: config.user }
   )
   _ns.model = { resolve, result: c.model }
   /*
@@ -1050,6 +1062,9 @@ function initView (config, resolve, reject) { // {{{1
     addMxButton.call(this)
 
     c.view.initialized = true
+    _ns.view && _ns.view.resolve(_ns.view.result)
+    e.log('initView _ns', _ns)
+
     c.model.channel.receive() // see https://go.dev/tour/concurrency/2
     resolve(ModalPane.init(this))
   })
@@ -1179,6 +1194,8 @@ function push_opts (queue, opts) { // {{{1
   let { s, e, c, d } = this
   let txid = opts.tx.id
   let index = queue.findIndex(v => v.data[0] == txid)
+  e.log('push_opts queue', queue, 'opts', opts, 'index', index)
+
   if (index == -1) {
     queue.push({ data: [txid, opts] })
     return false;
@@ -1192,6 +1209,8 @@ function push_opts (queue, opts) { // {{{1
 function push_txid_pos (queue, txid, pos) { // {{{1
   let { s, e, c, d } = this
   let index = queue.findIndex(v => v.data[0] == txid)
+  e.log('push_txid_pos queue', queue, 'txid', txid, 'pos', pos)
+
   if (index == -1) {
     queue.push({ data: [txid, pos] })
     return false;
@@ -1358,17 +1377,25 @@ function userX (type, resolve, content, secret, keep, tX = null) { // {{{1
   // }}}2
 }
 
-function uxMapTx (job) { // {{{1
+async function uxMapTx (job) { // {{{1
   let { s, e, c, d } = this // {{{2
 
-  let data = job => { // {{{2
+  e.log('uxMapTx job', job)
+
+  let data = async job => { // {{{2
     let [pos, opts] = job.data[1].length == 2 ? [job.data[1], job.data[2]]
     : [job.data[2], job.data[1]]
     if (pos.length == 0) {
       return [false, false];
     }
-    e.log('uxMapTx data job', job, 'opts', opts, 'pos', pos)
-
+    if (_ns.view) {
+      delete _ns.view
+    } else {
+      let { promise, resolve, reject } = Promise.withResolvers()
+      let result = true
+      _ns.view = { resolve, result }
+      await promise // wait for View.init
+    }
     let x = opts.data ? opts.data : {}
     x.opts = opts
     x.txid = job.data[0]
@@ -1377,16 +1404,16 @@ function uxMapTx (job) { // {{{1
     let f = x.memo_type == MemoText ? x.memo.startsWith('Offer') ? markOfferMade 
       : markRequestMade
       : markTaking
-
     return [x, f];
   }
 
-  let [x, f] = data(job) // {{{2
+  let [x, f] = await data(job) // {{{2
   if (!x) {
     return; // closing
   }
   f.call(this, x)
   d.tXs_mapped.push(x)
+  e.log('uxMapTx d', d)
 
   // }}}2
 }

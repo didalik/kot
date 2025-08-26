@@ -19,7 +19,7 @@ class JobChannel { // {{{1
     return this.#lock.wait()
     .then(_ => {
       let jobIndex = this.#qOfJobs.findIndex(job => job.sent)
-      console.log('JobChannel.receive jobIndex', jobIndex)
+      console.log('JobChannel.receive then jobIndex', jobIndex, 'this.#qOfJobs', this.#qOfJobs)
 
       return Promise.resolve(this.#qOfJobs.splice(jobIndex, 1)[0]); // the job
     });
@@ -89,7 +89,9 @@ class Model { // {{{1
   }
 
   run () { // {{{2
-    return new Promise((resolve, reject) => vm.c.kit.runModel.call(this.vm, 
+    console.log('Model.run this', this)
+
+    return new Promise((resolve, reject) => this.vm.c.kit.runModel.call(this.vm, 
       resolve, reject
     ));
   }
