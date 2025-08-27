@@ -451,6 +451,7 @@ class ModalPane { // {{{1
           console.log('ModalPane.update run-self-test-default localStorage cleared')
         }
         ModalPane.close('welcome2HEX')
+        console.log('ModalPane.update _ns.test.resolve...')
         _ns.test.resolve()
       }
     }
@@ -811,6 +812,8 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       : markRequestMade
       : markTaking
     f.call(this, x)
+    e.log('cbcc map_tX x', x)
+
     d.tXs_mapped.push(x)
   }
   let takingMyMake = opts => opts.data.memo_type == MemoHash && opts.data.memo2str == c?.latest?.make?.txId // {{{2
@@ -1026,6 +1029,7 @@ function initTest (config, resolve, reject) { // {{{1
   if (!config.test) {
     c.test = null
   }
+  e.log('initTest resolve...')
   resolve(c.test)
 }
 
@@ -1064,7 +1068,7 @@ function initView (config, resolve, reject) { // {{{1
 
     c.view.initialized = true
     _ns.view && _ns.view.resolve(_ns.view.result)
-    _ns.view || c.model.channel.receive()
+    /*_ns.view || */ c.model.channel.receive()
     e.log('initView _ns', _ns)
 
     resolve(ModalPane.init(this))
@@ -1227,13 +1231,15 @@ function receiveJobs (q) { // {{{1
   if (!c.view.initialized) {
     return;
   }
+  e.log('receiveJobs q', q)
+
   while (true) {
     let index
     if ((index = q.findIndex(v => Test.isJob(v))) == -1) {
       break
     }
     let job = q.splice(index, 1)[0]
-    //e.log('receiveJobs job', job)
+    e.log('receiveJobs job', job)
 
     let f = job.shift()
     f.call(this, ...job)
@@ -1277,7 +1283,7 @@ function runModel (resolve, reject) { // {{{1
 
 async function runTest (resolve, reject) { // {{{1
   let { s, e, c, d } = this
-  await new Promise((resolve, reject) => { // closing ModalPane
+  await new Promise((resolve, reject) => { // wait for ModalPane to close
     _ns.test = { resolve, reject }
   })
   if (!document.getElementById('run-self-test').checked) {
@@ -1287,6 +1293,7 @@ async function runTest (resolve, reject) { // {{{1
 
   let lns = {} // local name space
   for (let step of _test_steps) {
+    e.log('runTest step', step)
     await c.test.lock.acquire().then(_ => new Promise((resolve, reject) => {
       step.push(Object.assign(lns, { resolve }))
       c.test.channel.send(step).receive()
@@ -1311,8 +1318,7 @@ function runView (resolve, reject) { // {{{1
 function sendItems (item, queue) { // {{{1
   let { s, e, c, d } = this
   Test.isJob(item) && queue.push(item)
-  //e.log('sendItems item', item, 'queue', queue)
-
+  e.log('sendItems item', item, 'queue', queue)
 }
 
 function stop (timeout) { // {{{1

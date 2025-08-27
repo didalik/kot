@@ -118,6 +118,8 @@ class Test { // {{{1
   }
 
   run () { // {{{2
+    console.log('Test.run this', this)
+
     return new Promise((resolve, reject) => vm.c.kit.runTest.call(this.vm, 
       resolve, reject
     ));
@@ -148,6 +150,8 @@ class View { // {{{1
   }
 
   run () { // {{{2
+    console.log('View.run this', this)
+
     return new Promise((resolve, reject) => vm.c.kit.runView.call(this.vm, 
       resolve, reject
     ));

@@ -13,14 +13,14 @@ import { Asset, Keypair, } from '@stellar/stellar-sdk'
 function offerAIM_FOR_BUSINESSES (url) { // {{{1
   let hash = '#%D0%B4%D1%96%D0%B4-alik--the-kids-aim-for-businesses'
   return `<b>Did Alik & the Kids: AIM FOR BUSINESSES</b><br/>
-Automated Integration Modeling by DA&K. Inquiry fee HEXA 10.
-<a href='${url}${hash}' target='_blank'>More...</a>`;
+Automated Integration Modeling by DA&K. Inquiry fee HEXA 10 .
+<a href='${url}${hash}' target='_blank'>More...</a>`; //   ^ this space must be kept
 }
 
 function offerHEX_FOR_SALE (url) { // {{{1
-  let hash = '#stellar-hex-for-sale'
+  let hash = '#stellar-hex-for-sale' //        v that space must be kept
   return `<b>Stellar HEX: FOR SALE</b><br/>
-Full or partial ownership. Inquiry fee HEXA 100.
+Full or partial ownership. Inquiry fee HEXA 100 .
 <a href='${url}${hash}' target='_blank'>More...</a>`;
 }
 

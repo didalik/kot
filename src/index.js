@@ -3,7 +3,7 @@ import { DOpad, IpState, JobFair, Page, } from './util.js'
 
 import dopad from '../public/dopad.html'
 import hx from '../public/hx.html'
-import hx_style from '../public/static/hx-style.css'
+import hx_style from '../public/static/hx-style.css' // must be in assets.directory
 import sandbox from '../public/sandbox.html'
 import style from '../public/static/style.css'
 import template from '../public/template.html'
