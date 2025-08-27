@@ -2,6 +2,7 @@ import { DurableObject } from "cloudflare:workers"; // {{{1
 import { DOpad, IpState, JobFair, Page, } from './util.js'
 
 import dopad from '../public/dopad.html'
+import { generate_keypair, } from '../public/lib/util.mjs'
 import hx from '../public/hx.html'
 import hx_style from '../public/static/hx-style.css' // must be in assets.directory
 import sandbox from '../public/sandbox.html'
@@ -131,9 +132,14 @@ async function dispatch (request, env, ctx) { // {{{1
       let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
       env.hx_Agent_make2map_txids = await stub.get('hx_Agent_make2map_txids')
       env.hx_STELLAR_NETWORK = await stub.get('hx_STELLAR_NETWORK')
+      env.hx_userKeys = encodeURIComponent(await generate_keypair.call(crypto.subtle, )) // TODO drop this line when ready
+      console.log('dispatch env.hx_userKeys', env.hx_userKeys)
+
       env.hx_testnet_IssuerPK = await stub.get('hx_testnet_IssuerPK')
       let vars = [
-        'hx_Agent_make2map_txids','hx_STELLAR_NETWORK', 'hx_testnet_IssuerPK'
+        'hx_Agent_make2map_txids','hx_STELLAR_NETWORK',
+        'hx_userKeys', // TODO drop this line when ready
+        'hx_testnet_IssuerPK'
       ]
       return new Response(page.set(content, vars), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
     }

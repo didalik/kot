@@ -326,7 +326,7 @@ class ModalPane { // {{{1
     let span = document.getElementById(`${contentId}X`)
     span.onclick = _ => ModalPane.close(contentId)
     
-    console.log('ModalPane.show content', content)
+    //console.log('ModalPane.show content', content)
 
     let onclickP = window.onclick
     window.onclick = event => {
@@ -448,7 +448,7 @@ class ModalPane { // {{{1
       document.getElementById('run-self-test-run').onclick = _ => {
         if (document.getElementById('run-self-test-default').checked) {
           localStorage.clear()
-          console.log('ModalPane.update run-self-test-default localStorage cleared')
+          //console.log('ModalPane.update run-self-test-default localStorage cleared')
         }
         ModalPane.close('welcome2HEX')
         console.log('ModalPane.update _ns.test.resolve...')
@@ -812,7 +812,7 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       : markRequestMade
       : markTaking
     f.call(this, x)
-    e.log('cbcc map_tX x', x)
+    //e.log('cbcc map_tX x', x)
 
     d.tXs_mapped.push(x)
   }
@@ -875,7 +875,7 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     d.tXs.push([txId, [+latitude, +longitude], opts])
     if (++d.tXs_read == vm.d.txids_count) { // Model is initialized.
       if (!c.view.initialized) {
-        e.log('cbcc wait for View.init')
+        //e.log('cbcc wait for View.init')
         let { promise, resolve, reject } = Promise.withResolvers()
         let result = true
         _ns.view = { resolve, result }
@@ -886,7 +886,7 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       }
       c.model.initialized = true
       c.model.channel.receive()
-      e.log('cbcc model initialized this', this)
+      //e.log('cbcc model initialized this', this)
       _ns.model.resolve(_ns.model.result)
     }
   })
@@ -1029,7 +1029,7 @@ function initTest (config, resolve, reject) { // {{{1
   if (!config.test) {
     c.test = null
   }
-  e.log('initTest resolve...')
+  //e.log('initTest resolve...')
   resolve(c.test)
 }
 
@@ -1069,7 +1069,7 @@ function initView (config, resolve, reject) { // {{{1
     c.view.initialized = true
     _ns.view && _ns.view.resolve(_ns.view.result)
     /*_ns.view || */ c.model.channel.receive()
-    e.log('initView _ns', _ns)
+    //e.log('initView _ns', _ns)
 
     resolve(ModalPane.init(this))
   })
@@ -1231,7 +1231,7 @@ function receiveJobs (q) { // {{{1
   if (!c.view.initialized) {
     return;
   }
-  e.log('receiveJobs q', q)
+  //e.log('receiveJobs q', q)
 
   while (true) {
     let index
@@ -1239,7 +1239,7 @@ function receiveJobs (q) { // {{{1
       break
     }
     let job = q.splice(index, 1)[0]
-    e.log('receiveJobs job', job)
+    //e.log('receiveJobs job', job)
 
     let f = job.shift()
     f.call(this, ...job)
@@ -1293,7 +1293,7 @@ async function runTest (resolve, reject) { // {{{1
 
   let lns = {} // local name space
   for (let step of _test_steps) {
-    e.log('runTest step', step)
+    //e.log('runTest step', step)
     await c.test.lock.acquire().then(_ => new Promise((resolve, reject) => {
       step.push(Object.assign(lns, { resolve }))
       c.test.channel.send(step).receive()
@@ -1303,7 +1303,7 @@ async function runTest (resolve, reject) { // {{{1
       now && c.test?.lock.release()
     })
   }
-  e.log('runTest resolving...')
+  //e.log('runTest resolving...')
   resolve(c.test)
 }
 
@@ -1318,7 +1318,7 @@ function runView (resolve, reject) { // {{{1
 function sendItems (item, queue) { // {{{1
   let { s, e, c, d } = this
   Test.isJob(item) && queue.push(item)
-  e.log('sendItems item', item, 'queue', queue)
+  //e.log('sendItems item', item, 'queue', queue)
 }
 
 function stop (timeout) { // {{{1

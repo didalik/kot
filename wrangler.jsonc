@@ -2,6 +2,7 @@
 	"name": "kot",
 	"main": "src/index.js",
   "compatibility_date": "2025-06-17",
+  "compatibility_flags": [ "nodejs_compat" ],
 
   /* Commenting out "assets" below enables request methods other than GET:
   */

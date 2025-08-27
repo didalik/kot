@@ -17,11 +17,12 @@ let config = { // {{{1
   nw: 'hx_STELLAR_NETWORK',
   kit, 
   test: true, 
-  user, 
+  user,
+  userKeys: 'hx_userKeys', // TODO generate the keys in the browser
 }
-/*
 console.log(config, location)
 
+/*
 if (config.test) {
   post_job('selftest')
 }

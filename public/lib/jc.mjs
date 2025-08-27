@@ -89,7 +89,7 @@ class Model { // {{{1
   }
 
   run () { // {{{2
-    console.log('Model.run this', this)
+    //console.log('Model.run this', this)
 
     return new Promise((resolve, reject) => this.vm.c.kit.runModel.call(this.vm, 
       resolve, reject
@@ -118,7 +118,7 @@ class Test { // {{{1
   }
 
   run () { // {{{2
-    console.log('Test.run this', this)
+    //console.log('Test.run this', this)
 
     return new Promise((resolve, reject) => vm.c.kit.runTest.call(this.vm, 
       resolve, reject
@@ -150,7 +150,7 @@ class View { // {{{1
   }
 
   run () { // {{{2
-    console.log('View.run this', this)
+    //console.log('View.run this', this)
 
     return new Promise((resolve, reject) => vm.c.kit.runView.call(this.vm, 
       resolve, reject
