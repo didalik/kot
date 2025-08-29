@@ -4,8 +4,7 @@ import * as jobHxDeclarations from './module-job-hx-declaration/list.js' // {{{1
 // GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client SSL certificate
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
   jobs: [
-    {
-      name: 'selftest',
+    { name: 'selftest', // {{{2
       agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ selftest agentAuth pk', pk)
         if (pk != env.hx_ownerPK) {
@@ -17,8 +16,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         return true;
       },
     },
-    {
-      name: 'setup_selftest',
+    { name: 'setup_selftest', // {{{2
       agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ setup_selftest agentAuth pk', pk)
         if (pk != env.hx_ownerPK) {
@@ -33,6 +31,41 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         return true;
       },
     },
+    { name: 'signTaking', // {{{2
+      userAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userAuth pk', pk)
+        return true;
+      },
+      userDone: async (hub, durableObject) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone hub', hub, 'durableObject', durableObject);
+        return await Promise.resolve(true);
+      },
+    },
+    { name: 'signTx', // {{{2
+      agentAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTx agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTx userAuth pk', pk)
+        return true;
+      },
+    },
+    { name: 'test_signTaking', // {{{2
+      agentAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_signTaking agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_signTaking userAuth pk', pk)
+        return true;
+      },
+    },
+    // }}}2
   ],
 }
 

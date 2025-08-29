@@ -11,8 +11,7 @@ class JobHub { // {{{1
     this.passthrough = []
     jobs[jobname] ??= []
     let job = jobs[jobname][0]
-
-    console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
+    //console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
 
     const agentAuth = _ => { // {{{3
       let agentId = hub.jobAgentId
@@ -42,13 +41,13 @@ class JobHub { // {{{1
     }
 
     // }}}3
- 
+
     if (hub.jobAgentId) { // job offer
       agentAuth()
       hub.taking = +0
     } else {              // job request
       let userDone = userAuth().userDone
-      if (userDone && userDone(hub, durableObject)) {
+      if (userDone && userDone(hub, durableObject)) { // FIXME userDone returns Promise
         hub.ws.send('DONE')
         return;
       }
@@ -212,8 +211,6 @@ function addJobDO (ws, path, pk, parms) { // {{{1
 }
 
 function addJobAgentDO (ws, path, pk, jobAgentId, parms) { // {{{1
-  //console.log('addJobAgentDO ws', ws, 'path', path, 'pk', pk, 'jobAgentId', jobAgentId, 'parms', parms)
-
   switch (path[1] + '/' + path[2] + '/' + path[3]) {
     case 'jag/topjob/hx':
       for (let job of topjobHxAgents[jobAgentId].jobs) {
@@ -222,7 +219,7 @@ function addJobAgentDO (ws, path, pk, jobAgentId, parms) { // {{{1
       break
     case 'jag/job/hx':
       for (let job of jobHxAgents[jobAgentId].jobs) {
-        new JobHub(jobsHx, job.name, { parms, jobAgentId, pk, ws, });
+        job.agentAuth && new JobHub(jobsHx, job.name, { parms, jobAgentId, pk, ws, });
       }
       break
     default:

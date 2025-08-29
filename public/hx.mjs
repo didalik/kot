@@ -6,7 +6,7 @@
 
 import { Model, Test, View, } from './lib/jc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
-//import { post_job, } from './lib/ws.mjs'
+import { post_job, post_job_args, } from './lib/ws.mjs'
 
 let user = {
   position: { lat: LATITUDE, lng: LONGITUDE },
@@ -22,11 +22,14 @@ let config = { // {{{1
 }
 console.log(config, location)
 
-/*
 if (config.test) {
-  post_job('selftest')
+  post_job(
+    post_job_args(
+      'hx/test_signTaking',
+      decodeURIComponent(config.userKeys)
+    )
+  )
 }
-*/
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
   Test.init(vm, config),
