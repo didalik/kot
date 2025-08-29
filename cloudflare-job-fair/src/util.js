@@ -145,11 +145,8 @@ const JobFairImpl = { // {{{1
       crypto.subtle.importKey('raw', a.buffer, 'Ed25519', true, ['verify']).
         then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(json.payload64))).
         then(r => {
-          if (!r) { // TODO handle verify false
+          if (!r) { // TODO handle verify false - no approval
             return;
-          }
-          if (hub.arg1) { // FIXME
-            ws.send('FIXME arg1 ' + hub.arg1)
           }
           let payload = signedData(json.payload64)
           let jobname = payload.slice(payload.lastIndexOf(' ') + 1)
@@ -167,7 +164,7 @@ const JobFairImpl = { // {{{1
               jobAgentHub.jobStart(jobname)
             }
           }
-          console.log('JobFairImpl.wsDispatch r', r, 'jobAgentId', jobAgentId, 'hub', hub)
+          //console.log('JobFairImpl.wsDispatch r', r, 'jobAgentId', jobAgentId, 'hub', hub)
         }).catch(err => console.log('JobFairImpl.wsDispatch *** ERROR *** err', err))
     } catch (e) {
       if (!e.toString().startsWith('SyntaxError')) {

@@ -152,7 +152,7 @@ function wsDispatch (data, ws) { // {{{1
     configuration.browser && spawn('bin/test-browser', [configuration.browser])
   } else if (data.includes('EXIT CODE') || data == 'DONE') { // {{{2
     ws.close()
-  } else if (data.includes('FIXME')) { // TODO delete this block {{{2
+  /*} else if (data.includes('FIXME')) { // TODO delete this block {{{2
 
     global.job = process.argv[2] == 'put_agent' ?
       spawn(
@@ -168,6 +168,7 @@ function wsDispatch (data, ws) { // {{{1
     job.stderr.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stderr', data.toString()))
     job.stdout.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stdout', data.toString()))
     job.on('close', code => log('wsDispatch' ,process.argv[2], 'FIXME close', code))
+    */
   } // }}}2
 }
 
