@@ -23,12 +23,13 @@ let config = { // {{{1
 console.log(config, location)
 
 if (config.test) {
+  window.config = config
   post_job(
     post_job_args(
       'hx/test_signTaking',
       decodeURIComponent(config.userKeys)
     )
-  )
+  ).then(result => console.log(result)).catch(err => throw Error(err))
 }
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
