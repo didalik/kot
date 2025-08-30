@@ -1,33 +1,43 @@
+import { uint8ToBase64, } from './util.mjs' // {{{1
+
 function post_job (args) { // no client certificate required {{{1
   let originJob =
     location.protocol.startsWith('https') ? 'wss://job.kloudoftrust.org/job'
     : 'ws://ko:8787/job' // FIXME use location.host instead of ko:8787
   let url = `${originJob}/${args[1]}/${encodeURIComponent(args[0])}`
+  if (args.length > 2) {
+    url += '?' + args[2]
+  }
   console.log('post_job url', url, 'args', args)
-  let { promiseJob, resolveJob, rejectJob } = Promise.withResolvers()
-  wsConnect(url, resolveJob, rejectJob)
-  return promiseJob;
+  let { promise, resolve, reject } = Promise.withResolvers()
+  wsConnect(url, resolve, reject)
+  return promise;
 }
 
-function post_job_args (jobname, userKeys) { // {{{1
+function post_job_args (jobname, userKeys, payload64 = null) { // {{{1
   let [sk, pk] = userKeys.split(' ')
+  if (jobname == 'hx/signTaking') {
+    return [pk, jobname, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`];
+  }
   return [pk, jobname];
 }
 
 let log = console.log, global = window // {{{1
+
 function wsConnect (url, resolveJob, rejectJob) { // {{{1
-  let aux = { data: [] }
+  let [sk, pk] = decodeURIComponent(config.userKeys).split(' ')
+  let aux = { data: [], sk, pk }
   let websocket = new WebSocket(url)
-  let { promiseLoop, resolveLoop, rejectLoop } = Promise.withResolvers()
+  let { promise, resolve, reject } = Promise.withResolvers()
   let tag = _ => 'ws post_job'
   websocket.onerror = err => {
     err.message.endsWith('401') || err.message.endsWith('404') ||
       log(`${tag()} error`, err)
-    rejectLoop(err) // TODO resolveLoop(true) on connection reset
+    reject(err) // TODO resolve(true) on connection reset
   }
   websocket.onclose = data => {
     log(`${tag()} close`, data)
-    resolveLoop(false)
+    resolve(false)
   }
   websocket.onopen = _ => {
     log(`${tag()} open`)
@@ -48,17 +58,23 @@ function wsDispatch (aux, data, ws, resolveJob, rejectJob) { // {{{1
     if (data.includes('AM TAKING JOB')) {
       global.jobAgentId = data.slice(0, data.indexOf(' '))
     }
-    
     let payload64 = uint8ToBase64(data)
-    let sk = process.argv[2] == 'put_agent' ? process.env.JOBAGENT_SK : process.env.JOBUSER_SK
+    log('wsDispatch data', data, 'payload64', payload64, 'aux', aux)
+    let sk = aux.sk
+/*    
     crypto.subtle.importKey('jwk', JSON.parse(sk), 'Ed25519', true, ['sign']).
       then(sk => {
         return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
-      }).then(signature => {
+      })
+*/
+    let pk = aux.pk
+    post_job(
+      post_job_args('hx/signTaking', `${sk} ${pk}`, payload64)
+    )
+      .then(signature => {
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(err => rejectJob(err))
-
   } else if (data.includes('START JOB')) { // {{{2
     global.log = log
     startJob[jobname].call({ ws })

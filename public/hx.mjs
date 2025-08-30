@@ -29,7 +29,9 @@ if (config.test) {
       'hx/test_signTaking',
       decodeURIComponent(config.userKeys)
     )
-  ).then(result => console.log(result)).catch(err => throw Error(err))
+  ).then(result => console.log(result)).catch(err => {
+    throw Error(err)
+  })
 }
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
