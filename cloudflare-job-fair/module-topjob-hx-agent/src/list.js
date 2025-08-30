@@ -12,7 +12,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         }
         return true;
       },
-      userDone: async (hub, durableObject) => {
+      userDone: (hub, durableObject) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone hub', hub, 'durableObject', durableObject);
         let keys = [], values = []
         for (const key of hub.parms.keys()) {
@@ -21,7 +21,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         for (const value of hub.parms.values()) {
           values.push(value)
         }
-        return await durableObject[hub.path[5]](keys[0], values[0]);
+        return durableObject[hub.path[5]](keys[0], values[0]);
       },
     },
     { name: 'reset_testnet', // {{{2

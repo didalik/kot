@@ -36,9 +36,19 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userAuth pk', pk)
         return true;
       },
-      userDone: async (hub, durableObject) => {
+      userDone: (hub, durableObject) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone hub', hub, 'durableObject', durableObject);
-        return await Promise.resolve(true);
+        let sk = hub.parms.get('sk')
+        let payload64 = hub.parms.get('payload64')
+        return crypto.subtle.importKey(
+          'jwk', JSON.parse(sk), 'Ed25519', true, ['sign']
+        ).then(sk => crypto.subtle.sign(
+          'Ed25519', sk, new TextEncoder().encode(payload64))
+        ).then(signature => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone signature', signature)
+          hub.ws.send(signature)
+          return Promise.resolve(true);
+        });
       },
     },
     { name: 'signTx', // {{{2
