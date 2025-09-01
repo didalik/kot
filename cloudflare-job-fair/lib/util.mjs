@@ -111,7 +111,7 @@ function wsConnect (url) { // {{{1
   })
   websocket.on('close', data => {
     log(`${tag()} close`, data)
-    resolve(false)
+    --configuration.jobCount || resolve(false)
   })
   websocket.on('open', _ => {
     log(`${tag()} open`)
@@ -135,6 +135,8 @@ function wsDispatch (data, ws) { // {{{1
   if (data.includes('TAKING JOB')) { // {{{2
     if (data.includes('AM TAKING JOB')) {
       global.jobAgentId = data.slice(0, data.indexOf(' '))
+      configuration.jobCount ??= 0
+      configuration.jobCount++
     }
     let payload64 = uint8ToBase64(data)
     let sk = process.argv[2] == 'put_agent' ? process.env.JOBAGENT_SK : process.env.JOBUSER_SK

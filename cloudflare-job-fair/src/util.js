@@ -69,14 +69,15 @@ class JobHub { // {{{1
     this.jobname = jobname
     console.log('JobHub jobStart this', this)
     this.ws.send(`START JOB ${this.jobname}`)
-    for (let ws of this.passthrough) {
-      ws.send(`AGENT ${this.jobAgentId} STARTED JOB ${this.jobname}`)
+    for (let hub of this.passthrough) {
+      hub.ws.send(`AGENT ${this.jobAgentId} STARTED JOB ${this.jobname}`)
     }
   }
 
   pipe (data) { // {{{2
-    for (let ws of this.passthrough) {
-      ws.send(data)
+    console.log('JobHub pipe this', this)
+    for (let hub of this.passthrough) {
+      this.jobname == hub.jobname && hub.ws.send(data)
     }
   }
 
@@ -118,8 +119,8 @@ const JobFairImpl = { // {{{1
     }
     wasClean && ws.close()
     hub.isClosed = true
-    for (let ws of hub.passthrough) {
-      ws.close()
+    for (let h of hub.passthrough) {
+      hub.jobname == h.jobname && h.ws.close()
     }
     let jobs = hub.jobs[hub.jobname]
     jobs[0] === hub && jobs.shift()
@@ -157,8 +158,8 @@ const JobFairImpl = { // {{{1
             }
           } else {              // approval from job user /////////////
             let jobAgentHub = agentHub(jobAgentId)
-            jobAgentHub.passthrough.push(ws)
-            hub.passthrough.push(jobAgentHub.ws)
+            jobAgentHub.passthrough.push(hub)
+            hub.passthrough.push(jobAgentHub)
             hub.jobname = jobname
             if (++jobAgentHub.taking == 2) {
               jobAgentHub.jobStart(jobname)
