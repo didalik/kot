@@ -67,12 +67,14 @@ function wsDispatch (aux, data, ws, resolveJob, rejectJob) { // {{{1
         return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
       })
 */
-    let pk = aux.pk
-    post_job(
-      post_job_args('hx/signTaking', `${sk} ${pk}`, payload64)
-    )
-      .then(signature => {
-        let sig64 = uint8ToBase64(new Uint8Array(signature))
+      let pk = aux.pk
+      post_job(
+        post_job_args('hx/signTaking', `${sk} ${pk}`, payload64)
+      )
+      .then(sig64 => {
+        //let sig64 = uint8ToBase64(new Uint8Array(signature))
+        log('wsDispatch payload64', payload64, 'sig64', sig64)
+
         ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(err => rejectJob(err))
   } else if (data.includes('START JOB')) { // {{{2
@@ -80,7 +82,7 @@ function wsDispatch (aux, data, ws, resolveJob, rejectJob) { // {{{1
     startJob[jobname].call({ ws })
   } else if (data.includes('STARTED JOB')) { // {{{2
     aux.browser && spawn('bin/test-browser', [aux.browser])
-  } else if (data.includes('EXIT CODE') || data == 'DONE') { // {{{2
+  } else if (data.includes('EXIT CODE') || data.startsWith('DONE')) { // {{{2
     ws.close()
     resolveJob(aux.data[aux.data.length - 2])
   } // }}}2

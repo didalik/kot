@@ -46,8 +46,9 @@ class JobHub { // {{{1
       agentAuth()
       hub.taking = +0
     } else {              // job request
-      if (userAuth().userDone) {
-        userAuth().userDone(hub, durableObject).then(bool => hub.ws.send('DONE ' + bool))
+      let done = userAuth().userDone
+      if (done) {
+        done(hub, durableObject).then(bool => hub.ws.send('DONE ' + bool))
         return;
       }
       if (jobs[jobname].length > 0) {
@@ -169,7 +170,11 @@ const JobFairImpl = { // {{{1
       if (!e.toString().startsWith('SyntaxError')) {
         throw e;
       }
-      console.log('JobFairImpl.wsDispatch e', e, 'data.toString()', data.toString())
+      let str = data.toString()
+      if (str == '[object ArrayBuffer]') {
+        str = new TextDecoder('utf-8').decode(data)
+      }
+      console.log('JobFairImpl.wsDispatch e', e, 'str', str)
     } // }}}3
   },
 

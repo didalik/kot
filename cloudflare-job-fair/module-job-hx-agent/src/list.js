@@ -1,4 +1,5 @@
 import * as jobHxDeclarations from './module-job-hx-declaration/list.js' // {{{1
+import { uint8ToBase64, } from '../../../public/lib/util.mjs'
 
 ////
 // GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client SSL certificate
@@ -45,8 +46,9 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
         ).then(sk => crypto.subtle.sign(
           'Ed25519', sk, new TextEncoder().encode(payload64))
         ).then(signature => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone signature', signature)
-          hub.ws.send(signature)
+          let sig64 = uint8ToBase64(new Uint8Array(signature))
+          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone sig64', sig64)
+          hub.ws.send(sig64)
           return Promise.resolve(true);
         });
       },

@@ -3,11 +3,11 @@ import WebSocket from 'ws'
 import { spawn } from 'node:child_process'
 import { base64ToUint8, generate_keypair, uint8ToBase64, } from '../../public/lib/util.mjs'
 import { reset_testnet, reset_testnet_monitor, } from '../module-topjob-hx-agent/lib/list.mjs'
-import { selftest, setup_selftest, } from '../module-job-hx-agent/lib/list.mjs'
+import { selftest, setup_selftest, test_signTaking, } from '../module-job-hx-agent/lib/list.mjs'
 
 const configuration = {} // CLIENT {{{1
 const startJob = {
-  reset_testnet, reset_testnet_monitor, selftest, setup_selftest,
+  reset_testnet, reset_testnet_monitor, selftest, setup_selftest, test_signTaking,
 }
 
 async function hack (node, run, cmd, ...args) { // CLIENT {{{1
@@ -119,9 +119,9 @@ function wsConnect (url) { // {{{1
   websocket.on('message', data => {
     data = data.toString()
     log(`${tag()} message`, data)
-    if (data == 'DONE') { // FIXME
-      process.exit(0)
-    }
+    //if (data == 'DONE') {
+      //process.exit(0)
+    //}
     wsDispatch(data, websocket)
   })
   promise.then(loop => loop ? wsConnect(url) : log(`${tag()}`, 'DONE')).
@@ -143,6 +143,8 @@ function wsDispatch (data, ws) { // {{{1
         return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
       }).then(signature => {
         let sig64 = uint8ToBase64(new Uint8Array(signature))
+        log('wsDispatch payload64', payload64, 'sig64', sig64)
+
         ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(e => console.error(e))
   } else if (data.includes('START JOB')) { // {{{2
@@ -150,25 +152,9 @@ function wsDispatch (data, ws) { // {{{1
     startJob[jobname].call({ ws })
   } else if (data.includes('STARTED JOB')) { // {{{2
     configuration.browser && spawn('bin/test-browser', [configuration.browser])
+    delete configuration.browser
   } else if (data.includes('EXIT CODE') || data == 'DONE') { // {{{2
     ws.close()
-  /*} else if (data.includes('FIXME')) { // TODO delete this block {{{2
-
-    global.job = process.argv[2] == 'put_agent' ?
-      spawn(
-        process.env._, // TODO call global.job.kill('SIGTERM') on close...
-        [
-          'start_testnet_monitor',
-          'cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet',
-        ]
-      )
-    : spawn('bin/test-browser', [data.split(' ')[2],])
-
-    job.on('error', err => console.error(`wsDispatch ${process.argv[2]} FIXME  E R R O R  ${err}`))
-    job.stderr.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stderr', data.toString()))
-    job.stdout.on('data', data => log('wsDispatch' ,process.argv[2], 'FIXME stdout', data.toString()))
-    job.on('close', code => log('wsDispatch' ,process.argv[2], 'FIXME close', code))
-    */
   } // }}}2
 }
 
