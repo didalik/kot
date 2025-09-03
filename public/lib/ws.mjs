@@ -44,7 +44,7 @@ function wsConnect (url, resolveJob, rejectJob) { // {{{1
   }
   websocket.onmessage = event => {
     let data = event.data.toString()
-    log(`${tag()} message`, data)
+    log(`${tag()} message`, data, 'event.data', event.data)
     aux.data.push(data)
     wsDispatch(aux, data, websocket, resolveJob, rejectJob)
   }
@@ -59,7 +59,7 @@ function wsDispatch (aux, data, ws, resolveJob, rejectJob) { // {{{1
       global.jobAgentId = data.slice(0, data.indexOf(' '))
     }
     let payload64 = uint8ToBase64(data)
-    log('wsDispatch data', data, 'payload64', payload64, 'aux', aux)
+    //log('wsDispatch data', data, 'payload64', payload64, 'aux', aux)
     let sk = aux.sk
 /*    
     crypto.subtle.importKey('jwk', JSON.parse(sk), 'Ed25519', true, ['sign']).
@@ -73,7 +73,7 @@ function wsDispatch (aux, data, ws, resolveJob, rejectJob) { // {{{1
       )
       .then(sig64 => {
         //let sig64 = uint8ToBase64(new Uint8Array(signature))
-        log('wsDispatch payload64', payload64, 'sig64', sig64)
+        //log('wsDispatch payload64', payload64, 'sig64', sig64)
 
         ws.send(JSON.stringify({ payload64, sig64 }))
       }).catch(err => rejectJob(err))

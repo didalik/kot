@@ -45,7 +45,7 @@ export function setup_selftest () { // {{{1
 
 export function test_signTaking () { // {{{1
   this.ws.send('Hello from test_signTaking!')
-  let code = 0
-  this.ws.send(`test_signTaking EXIT CODE ${code}`)
+  //let code = 0
+  //this.ws.send(`test_signTaking EXIT CODE ${code}`)
 }
 

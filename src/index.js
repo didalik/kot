@@ -59,9 +59,9 @@ export class KoT_Do extends DurableObject { // {{{1
     return value
   }
   async put (key, value) { // {{{2
-    console.log('put', key, value)
-    await this.ctx.storage.put(key, value)
-    return true;
+    let result = await this.ctx.storage.put(key, value).then(_ => Promise.resolve(true));
+    console.log('put', key, value, 'result', result)
+    return result;
   }
   async webSocketClose(ws, code, reason, wasClean) { // {{{2
     JobFair.wsClose(ws, code, reason, wasClean)

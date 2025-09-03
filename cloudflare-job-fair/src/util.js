@@ -2,7 +2,8 @@ import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
 import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
-const jobsHx = {}, mapWs2Hub = new Map(), topjobsHx = {}
+const jobsHx = {}, topjobsHx = {}
+const mapOffer2Hub = new Map(), mapWs2Hubs = new Map()
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
@@ -11,8 +12,6 @@ class JobHub { // {{{1
     this.passthrough = []
     jobs[jobname] ??= []
     let job = jobs[jobname][0]
-    //console.log('new JobHub jobs', jobs, 'jobname', jobname, 'hub', hub, 'job', job)
-
     const agentAuth = _ => { // {{{3
       let agentId = hub.jobAgentId
       let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
@@ -40,29 +39,45 @@ class JobHub { // {{{1
       throw Error('Not Authorized')
     }
 
-    // }}}3
-
-    if (hub.jobAgentId) { // job offer
+    if (hub.jobAgentId) { // job offer {{{3
       agentAuth()
       hub.taking = +0
     } else {              // job request
       let done = userAuth().userDone
-      if (done) {
-        done(hub, durableObject).then(bool => hub.ws.send('DONE ' + bool))
+      if (done) { // job done on edge, agent not required
+        done(hub, durableObject).then(bool => {
+          console.log('done bool', bool)
+          hub.ws.send('DONE ' + bool)
+        })
         return;
       }
       if (jobs[jobname].length > 0) {
         job.taking = +0
       }
     }
-    if (jobs[jobname].length == 0 || job.jobAgentId && hub.jobAgentId || !hub.jobAgentId && !job.jobAgentId) { // same side
+    if (jobs[jobname].length == 0 || job.jobAgentId && hub.jobAgentId || !hub.jobAgentId && !job.jobAgentId) { // same side {{{3
       jobs[jobname].push(this)
     } else {                                                                                                   // taking an opposite side
       hub.isClosed || hub.ws.send(`${prefix(hub.jobAgentId, job.jobAgentId)} TAKING JOB ${jobname}`)
       job.isClosed || job.ws.send(`${prefix(job.jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
     }
-    Object.assign(this, hub, { jobs })
-    mapWs2Hub.set(this.ws, this)
+
+    // }}}3
+    Object.assign(this, hub, { jobname, jobs })
+    //mapWs2Hub.set(this.ws, this)
+    this.#add2maps()
+    console.log('new JobHub this', this)
+  }
+
+  #add2maps () { // {{{2
+    let hubs = mapWs2Hubs.get(this.ws) ?? []
+    hubs.push(this)
+    mapWs2Hubs.set(this.ws, hubs)
+    if (!this.jobAgentId) {
+      return;
+    }
+    let offer = { ws: this.ws, jobAgentId: this.jobAgentId, jobname: this.jobname }
+    mapOffer2Hub.set(offer, this)
   }
 
   jobStart (jobname) { // {{{2
@@ -70,12 +85,12 @@ class JobHub { // {{{1
     console.log('JobHub jobStart this', this)
     this.ws.send(`START JOB ${this.jobname}`)
     for (let hub of this.passthrough) {
-      hub.ws.send(`AGENT ${this.jobAgentId} STARTED JOB ${this.jobname}`)
+      this.jobname == hub.jobname && hub.ws.send(`AGENT ${this.jobAgentId} STARTED JOB ${this.jobname}`)
     }
   }
 
   pipe (data) { // {{{2
-    console.log('JobHub pipe this', this)
+    console.log('JobHub pipe this', this, 'data', data)
     for (let hub of this.passthrough) {
       this.jobname == hub.jobname && hub.ws.send(data)
     }
@@ -98,7 +113,7 @@ const JobFairImpl = { // {{{1
     }
     durableObject ??= this
     let parms = new URLSearchParams(url.search)
-    console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
+    console.log('---');console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
     let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
@@ -110,9 +125,29 @@ const JobFairImpl = { // {{{1
     }
   },
 
-  wsClose: (ws, code, reason, wasClean) => { // {{{2
-    let hub = mapWs2Hub.get(ws)
-    if (!hub) {
+  wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
+
+    ws.close() // our side of this ws
+
+    const iterator = mapWs2Hubs[Symbol.iterator]()
+    for (const pair of iterator) {
+      if (!(pair[0] === ws)) {
+        continue;
+      }
+      for (let hub of pair[1]) {
+        hub.isClosed = true
+    }
+
+    const iterator = mapOffer2Hub[Symbol.iterator]()
+    for (const pair of iterator) {
+      if (!(pair[0] === ws)) {
+        continue;
+      }
+    }
+    /* {{{3
+    //let hub = mapWs2Hub.get(ws)
+    let hubs = mapWs2Hubs.get(ws)
+    if (!hubs) {
       console.log('JobFairImpl.wsClose wasClean', wasClean, 'reason', reason, 'code', code, 'closing websocket...')
       ws.close()
       return;
@@ -131,6 +166,8 @@ const JobFairImpl = { // {{{1
     }
     let deleted = mapWs2Hub.delete(ws)
     console.log('JobFairImpl.wsClose hub', hub, 'deleted', deleted)
+    */
+    // }}}3
   },
 
   wsDispatch: (data, ws) => { // {{{2
@@ -157,7 +194,7 @@ const JobFairImpl = { // {{{1
               hub.jobStart(jobname)
             }
           } else {              // approval from job user /////////////
-            let jobAgentHub = agentHub(jobAgentId)
+            let jobAgentHub = agentHub(jobAgentId, jobname)
             jobAgentHub.passthrough.push(hub)
             hub.passthrough.push(jobAgentHub)
             hub.jobname = jobname
@@ -229,10 +266,12 @@ function addJobAgentDO (ws, path, pk, jobAgentId, parms) { // {{{1
   }
 }
 
-function agentHub (jobAgentId) { // {{{1
+function agentHub (jobAgentId, jobname) { // {{{1
   const iterator = mapWs2Hub[Symbol.iterator]()
   for (const item of iterator) {
-    if (item[1].jobAgentId == jobAgentId) {
+    console.log('agentHub jobname', jobname, 'item', item)
+
+    if (item[1].jobAgentId == jobAgentId && item[1].jobname == jobname) {
       return item[1];
     }
   }

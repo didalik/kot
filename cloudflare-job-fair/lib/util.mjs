@@ -155,7 +155,7 @@ function wsDispatch (data, ws) { // {{{1
   } else if (data.includes('STARTED JOB')) { // {{{2
     configuration.browser && spawn('bin/test-browser', [configuration.browser])
     delete configuration.browser
-  } else if (data.includes('EXIT CODE') || data == 'DONE') { // {{{2
+  } else if (data.includes('EXIT CODE') || data.startsWith('DONE')) { // {{{2
     ws.close()
   } // }}}2
 }
