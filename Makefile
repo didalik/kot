@@ -1,13 +1,17 @@
 # Variable references {{{1
 AUTH ?= OWNER
-AUTH_KEYS := $$HOME/.cloudflare-job-fair/${AUTH}.keys
 BUILD_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
 						 module-topjob-hx-definition/reset_testnet/build
 PHASE ?= dev
 SHELL = bash
+UNAME != uname
+
+AUTH_KEYS := $$HOME/.cloudflare-job-fair/${AUTH}.keys
 TESTNET_DIR := ${BUILD_DIR}/testnet
 TESTNET_KEYS := ${TESTNET_DIR}.keys
 TXIDS := ${TESTNET_DIR}/HEX_Agent_make2map.txids
+
+.PHONY: top; @echo ${UNAME} DONE # {{{1
 
 .PHONY: bit_hx_${PHASE} # {{{1
 bit_hx_${PHASE}: ${AUTH_KEYS} ${TESTNET_DIR} ${TXIDS}

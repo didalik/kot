@@ -1,0 +1,12 @@
+# Variable references {{{1
+SHELL = bash
+UNAME = $(shell uname)
+
+.PHONY: top # {{{1
+top: ${UNAME}; @echo ${UNAME} DONE
+
+.PHONY: Darwin # {{{1
+Darwin: ; @echo ${UNAME} DONE
+
+.PHONY: Linux # {{{1
+Linux: ; @echo ${UNAME} DONE
