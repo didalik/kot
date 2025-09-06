@@ -1,8 +1,26 @@
-import * as jobHxAgents from '../module-job-hx-agent/src/list.js' // {{{1
-import * as topjobHxAgents from '../module-topjob-hx-agent/src/list.js'
+import * as hxSvc from '../module-job-hx-agent/src/list.js' // {{{1
+import * as hxTopSvc from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
-const jobsHx = {}, topjobsHx = {}
+
+class Ad { // {{{1
+  constructor (svc, svcId, jobname, base, subtype) { // {{{2
+    let topSvc = svc === hxTopSvc
+    console.log('new Ad topSvc', topSvc, svcId, jobname, base, subtype)
+  }
+
+  // }}}2
+}
+
+class Request extends Ad { // {{{1
+
+  constructor (svc, svcId, jobname, base) { // {{{2
+    super(svc, svcId, jobname, base, 'Request')
+  }
+
+  // }}}2
+}
+const jobsHx = {}, topjobsHx = {} // {{{1
 const mapOffer2Hub = new Map(), mapWs2Hubs = new Map()
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
@@ -14,7 +32,7 @@ class JobHub { // {{{1
     let job = jobs[jobname][0]
     const agentAuth = _ => { // {{{3
       let agentId = hub.jobAgentId
-      let agent = jobs === jobsHx ? jobHxAgents[agentId] : topjobHxAgents[agentId]
+      let agent = jobs === jobsHx ? hxSvc[agentId] : hxTopSvc[agentId]
       if (agent) {
         let job = agent.jobs.find(e => e.name == jobname)
         return job.agentAuth(hub.pk, durableObject.env);
@@ -27,7 +45,7 @@ class JobHub { // {{{1
     }
 
     const userAuth = _ => { // {{{3
-      let agents = jobs === jobsHx ? jobHxAgents : topjobHxAgents
+      let agents = jobs === jobsHx ? hxSvc : hxTopSvc
       for (let jobAgentId of Object.getOwnPropertyNames(agents)) {
         let job = agents[jobAgentId].jobs.find(e => e.name == jobname)
         if (job.userAuth(hub.pk, durableObject.env)) {
@@ -106,9 +124,9 @@ const JobFairImpl = { // {{{1
     if (ctx_OR_null) { // EDGE
       let ctx = ctx_OR_null, env = env_OR_ws
       if (agent) {
-        return addJobAgent(request, env, ctx, );
+        return addOffer(request, env, ctx, );
       } else {
-        return addJob(request, env, ctx, url.pathname);
+        return addRequest(request, env, ctx, url.pathname);
       }
     }
     durableObject ??= this
@@ -117,11 +135,11 @@ const JobFairImpl = { // {{{1
     let ws = env_OR_ws
     let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
-    let pk = decodeURIComponent(path[4])
+    let pk = decodeURIComponent(path[5])
     if (agent) {
-      addJobAgentDO(ws, path, pk, jobAgentId, parms)
+      addOfferDO(ws, path, pk, jobAgentId, parms)
     } else {
-      addJobDO(ws, path, pk, parms)
+      addRequestDO(ws, path, pk, parms)
     }
   },
 
@@ -217,7 +235,7 @@ const JobFairImpl = { // {{{1
   // }}}2
 }
 
-function addJob (request, env, ctx, pathname) { // {{{1
+function addRequest (request, env, ctx, pathname) { // {{{1
   if (pathname == '/hack/do0') { // DONE
     try {
       let stub = env.KOT_DO.get(env.KOT_DO.idFromName('JobFair webSocket with Hibernation'))
@@ -231,31 +249,31 @@ function addJob (request, env, ctx, pathname) { // {{{1
   return stub.fetch(request);
 }
 
-function addJobAgent (request, env, ctx) { // {{{1
+function addOffer (request, env, ctx) { // {{{1
   let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
   return stub.fetch(request);
 }
 
-function addJobDO (ws, path, pk, parms) { // {{{1
+function addRequestDO (ws, path, pk, parms) { // {{{1
   switch (path[1] + '/' + path[2]) {
     case 'jcl/hx':
-      return new JobHub(topjobsHx, path[3], { parms, path, pk, ws, });
+      return new Request(hxTopSvc, path[4], path[3], { parms, path, pk, ws, });
     case 'job/hx':
-      return new JobHub(jobsHx, path[3], { parms, path, pk, ws, });
+      return new Request(hxSvc, path[4], path[3], { parms, path, pk, ws, });
     default:
       throw Error(path);
   }
 }
 
-function addJobAgentDO (ws, path, pk, jobAgentId, parms) { // {{{1
+function addOfferDO (ws, path, pk, jobAgentId, parms) { // {{{1
   switch (path[1] + '/' + path[2] + '/' + path[3]) {
     case 'jag/topjob/hx':
-      for (let job of topjobHxAgents[jobAgentId].jobs) {
+      for (let job of hxTopSvc[jobAgentId].jobs) {
         job.agentAuth && new JobHub(topjobsHx, job.name, { parms, jobAgentId, pk, ws, });
       }
       break
     case 'jag/job/hx':
-      for (let job of jobHxAgents[jobAgentId].jobs) {
+      for (let job of hxSvc[jobAgentId].jobs) {
         job.agentAuth && new JobHub(jobsHx, job.name, { parms, jobAgentId, pk, ws, });
       }
       break

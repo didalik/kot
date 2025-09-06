@@ -1,9 +1,20 @@
-import * as jobHxDeclarations from './module-job-hx-declaration/list.js' // {{{1
-import { uint8ToBase64, } from '../../../public/lib/util.mjs'
+//// The hX service registry {{{1
+// This file lists and exports hX services. A service consists of jobs.
+// All remote users can request a job. Still, all jobs must specify 
+// a 'userAuth' function.
+//
+// A job may require an external agent to run it. Such a job must specify
+// an 'agentAuth' function.
+//
+// If a job can be run internally on the edge, it must specify a 'userDone'
+// function.
 
-////
-// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client SSL certificate
-export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
+import { uint8ToBase64, } from '../../../public/lib/util.mjs' // {{{1
+
+//// {{{1
+// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in
+// agent's client SSL certificate. It is also being used as a service ID here:
+export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
   jobs: [
     { name: 'selftest', // {{{2
       agentAuth: (pk, env) => {
@@ -80,4 +91,3 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
     // }}}2
   ],
 }
-

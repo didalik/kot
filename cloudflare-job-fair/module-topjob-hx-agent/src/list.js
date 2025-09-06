@@ -1,8 +1,18 @@
-import * as topjobHxDeclarations from './module-topjob-hx-declaration/list.js' // {{{1
+//// The hX top service registry {{{1
+// This file lists and exports hX top services. A top service consists of top jobs.
+// Only authorized remote users can request a top job. All top jobs must specify 
+// a 'userAuth' function.
+//
+// A job may require an external agent to run it. Such a job must specify
+// an 'agentAuth' function.
+//
+// If a job can be run internally on the edge, it must specify a 'userDone'
+// function.
 
-////
-// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in agent's client SSL certificate
-export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
+//// {{{1
+// GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in
+// agent's client SSL certificate. It is also being used as a service ID here:
+export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
   jobs: [
     { name: 'dopad', // {{{2
       userAuth: (pk, env) => {

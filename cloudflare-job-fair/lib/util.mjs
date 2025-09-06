@@ -35,8 +35,15 @@ function jagURLpath (args) { // CLIENT {{{1
 }
 
 function jclURLpath (args) { // CLIENT {{{1
-  let urlPath = `/${args[1]}/${encodeURIComponent(args[0])}`
-  if (args[1] == 'hx/dopad') {
+/*
+- post_jcl args [
+  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',              // 0
+  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',  // 1
+  'hx/reset_testnet'                                           // 2
+] url ws://127.0.0.1:8787/jcl/hx/reset_testnet/GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ/n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D
+*/
+  let urlPath = `/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
+  if (args[1] == 'hx/dopad') { // FIXME
     urlPath += '/' + args[2] + '?' + `${args[3]}=${encodeURIComponent(args[4])}`
   }
   return urlPath;
@@ -54,8 +61,8 @@ function log (...args) { // CLIENT {{{1
   console.log(...args)
 }
 
-async function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = await jclURLpath(args)
+function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
+  let path = jclURLpath(args)
   let urlJcl = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jcl'
     : 'ws://127.0.0.1:8787/jcl'
   let url = `${urlJcl}${path}`
