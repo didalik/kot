@@ -4,9 +4,18 @@ import * as hxTopSvc from '../module-topjob-hx-agent/src/list.js'
 let durableObject; // {{{1
 
 class Ad { // {{{1
-  constructor (svc, svcId, jobname, base, subtype) { // {{{2
+  constructor (svc, svcId, base, subtype) { // {{{2
     let topSvc = svc === hxTopSvc
-    console.log('new Ad topSvc', topSvc, svcId, jobname, base, subtype)
+    console.log('new Ad topSvc', topSvc, svcId, base, subtype)
+  }
+
+  // }}}2
+}
+
+class Offer extends Ad { // {{{1
+
+  constructor (svc, svcId, base) { // {{{2
+    super(svc, svcId, base, 'Offer')
   }
 
   // }}}2
@@ -14,12 +23,13 @@ class Ad { // {{{1
 
 class Request extends Ad { // {{{1
 
-  constructor (svc, svcId, jobname, base) { // {{{2
-    super(svc, svcId, jobname, base, 'Request')
+  constructor (svc, svcId, base) { // {{{2
+    super(svc, svcId, base, 'Request')
   }
 
   // }}}2
 }
+
 const jobsHx = {}, topjobsHx = {} // {{{1
 const mapOffer2Hub = new Map(), mapWs2Hubs = new Map()
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
@@ -133,12 +143,14 @@ const JobFairImpl = { // {{{1
     let parms = new URLSearchParams(url.search)
     console.log('---');console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
-    let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
+    //let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
-    let pk = decodeURIComponent(path[5])
     if (agent) {
-      addOfferDO(ws, path, pk, jobAgentId, parms)
+      let topSvc = url.pathname.startsWith('/jag/hx/top') // FIXME hx hardcoded
+      let pk = decodeURIComponent(path[topSvc ? 5 : 4])
+      addOfferDO(ws, path, pk, parms, topSvc)
     } else {
+      let pk = decodeURIComponent(path[5])
       addRequestDO(ws, path, pk, parms)
     }
   },
@@ -255,30 +267,23 @@ function addOffer (request, env, ctx) { // {{{1
 }
 
 function addRequestDO (ws, path, pk, parms) { // {{{1
+  let jobname = path[3]
   switch (path[1] + '/' + path[2]) {
     case 'jcl/hx':
-      return new Request(hxTopSvc, path[4], path[3], { parms, path, pk, ws, });
+      return new Request(hxTopSvc, path[4], { jobname, parms, path, pk, ws, }); // TODO get rid of path here
     case 'job/hx':
-      return new Request(hxSvc, path[4], path[3], { parms, path, pk, ws, });
+      return new Request(hxSvc, path[4], { jobname, parms, path, pk, ws, }); // TODO get rid of path here
     default:
       throw Error(path);
   }
 }
 
-function addOfferDO (ws, path, pk, jobAgentId, parms) { // {{{1
-  switch (path[1] + '/' + path[2] + '/' + path[3]) {
-    case 'jag/topjob/hx':
-      for (let job of hxTopSvc[jobAgentId].jobs) {
-        job.agentAuth && new JobHub(topjobsHx, job.name, { parms, jobAgentId, pk, ws, });
-      }
-      break
-    case 'jag/job/hx':
-      for (let job of hxSvc[jobAgentId].jobs) {
-        job.agentAuth && new JobHub(jobsHx, job.name, { parms, jobAgentId, pk, ws, });
-      }
-      break
-    default:
-      throw Error(path);
+function addOfferDO (ws, path, pk, parms, topSvc) { // {{{1
+  let svc = topSvc ? hxTopSvc : hxSvc
+  let svcId = path[topSvc ? 4 : 3]
+  for (let job of svc[svcId].jobs) {
+    let jobname = job.name
+    job.agentAuth && new Offer(svc, svcId, { jobname, parms, path, pk, ws, }); // TODO get rid of path here
   }
 }
 

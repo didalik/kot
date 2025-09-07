@@ -26,11 +26,24 @@ function hackURLpath (args) { // CLIENT {{{1
 }
 
 function jagURLpath (args) { // CLIENT {{{1
-  switch (args[1]) {
-    case '*testnet*':
-      return `/topjob/hx/${encodeURIComponent(args[0])}`;
-    case '*selftest':
-      return `/job/hx/${encodeURIComponent(args[0])}`;
+/*
+- put_agent args [
+  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',             // 0
+  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ', // 1
+  '*testnet*',                                                // 2
+  'hx'                                                        // 3
+] url ws://127.0.0.1:8787/jag/hx/top/GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ/n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D
+*/
+  switch (args[3]) {
+    case 'hx':
+      switch (args[2]) {
+        case '*testnet*':
+          return `/${args[3]}/top/${args[1]}/${encodeURIComponent(args[0])}`;
+        case '*selftest':
+          return `/${args[3]}/${args[1]}/${encodeURIComponent(args[0])}`;
+      }
+    default:
+      throw Error(args[3]);
   }
 }
 
