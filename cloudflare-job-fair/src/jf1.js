@@ -4,18 +4,35 @@ import * as hxTopSvc from '../module-topjob-hx-agent/src/list.js'
 let durableObject; // {{{1
 
 class Ad { // {{{1
-  constructor (svc, svcId, base, subtype) { // {{{2
-    let topSvc = svc === hxTopSvc
-    console.log('new Ad topSvc', topSvc, svcId, base, subtype)
+  constructor (base) { // {{{2
+    Object.assign(this, base)
+    this.job.offerQueue ??= []
+    this.job.requestQueue ??= []
+    let match = this.match()
+    if (match) {
+      this.status = this.take(match)
+    }
   }
+
+  static TAKING_MATCH = +1 // {{{2
 
   // }}}2
 }
 
 class Offer extends Ad { // {{{1
 
-  constructor (svc, svcId, base) { // {{{2
-    super(svc, svcId, base, 'Offer')
+  constructor (base) { // {{{2
+    super(base)
+    this.status == Ad.TAKING_MATCH || this.job.offerQueue.push(this)
+    console.log('new Offer', this)
+  }
+
+  match () { // {{{2
+    return this.job.requestQueue.shift();
+  }
+
+  take (match) { // {{{2
+    return Ad.TAKING_MATCH;
   }
 
   // }}}2
@@ -23,8 +40,18 @@ class Offer extends Ad { // {{{1
 
 class Request extends Ad { // {{{1
 
-  constructor (svc, svcId, base) { // {{{2
-    super(svc, svcId, base, 'Request')
+  constructor (base) { // {{{2
+    super(base)
+    this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)
+    console.log('new Request', this)
+  }
+
+  match () { // {{{2
+    return this.job.offerQueue.shift();
+  }
+
+  take (match) { // {{{2
+    return Ad.TAKING_MATCH;
   }
 
   // }}}2
@@ -143,15 +170,15 @@ const JobFairImpl = { // {{{1
     let parms = new URLSearchParams(url.search)
     console.log('---');console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
-    //let jobAgentId = agentId(request.cf.tlsClientAuth.certSubjectDN) 
+    let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
     if (agent) {
       let topSvc = url.pathname.startsWith('/jag/hx/top') // FIXME hx hardcoded
       let pk = decodeURIComponent(path[topSvc ? 5 : 4])
-      addOfferDO(ws, path, pk, parms, topSvc)
+      addOfferDO(ws, path, pk, parms, topSvc, actor_id)
     } else {
       let pk = decodeURIComponent(path[5])
-      addRequestDO(ws, path, pk, parms)
+      addRequestDO(ws, path, pk, parms, actor_id)
     }
   },
 
@@ -266,24 +293,32 @@ function addOffer (request, env, ctx) { // {{{1
   return stub.fetch(request);
 }
 
-function addRequestDO (ws, path, pk, parms) { // {{{1
+function addRequestDO (ws, path, pk, parms, userId) { // {{{1
   let jobname = path[3]
+  let svcId = path[4]
   switch (path[1] + '/' + path[2]) {
     case 'jcl/hx':
-      return new Request(hxTopSvc, path[4], { jobname, parms, path, pk, ws, }); // TODO get rid of path here
+      for (let job of hxTopSvc[svcId].jobs) {
+        if (job.name == jobname) {
+          return new Request({ job, parms, /*path,*/ pk, userId, ws, }); // TODO get rid of path here
+        }
+      }
     case 'job/hx':
-      return new Request(hxSvc, path[4], { jobname, parms, path, pk, ws, }); // TODO get rid of path here
+      for (let job of hxSvc[svcId].jobs) {
+        if (job.name == jobname) {
+          return new Request({ job, parms, /*path,*/ pk, ws, }); // TODO get rid of path here
+        }
+      }
     default:
       throw Error(path);
   }
 }
 
-function addOfferDO (ws, path, pk, parms, topSvc) { // {{{1
+function addOfferDO (ws, path, pk, parms, topSvc, agentId) { // {{{1
   let svc = topSvc ? hxTopSvc : hxSvc
   let svcId = path[topSvc ? 4 : 3]
   for (let job of svc[svcId].jobs) {
-    let jobname = job.name
-    job.agentAuth && new Offer(svc, svcId, { jobname, parms, path, pk, ws, }); // TODO get rid of path here
+    job.agentAuth && new Offer({ agentId, job, parms, /*path,*/ pk, ws, }); // TODO get rid of path here
   }
 }
 
@@ -299,7 +334,7 @@ function agentHub (jobAgentId, jobname) { // {{{1
   throw Error('UNEXPECTED');
 }
 
-function agentId (certSubjectDN) { // {{{1
+function actorId (certSubjectDN) { // {{{1
   if (certSubjectDN.length == 0) {
     return 'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ'; // local dev
   } //      ....:....1....:....2....:....3....:....4....:....5....:.

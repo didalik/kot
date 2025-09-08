@@ -1,4 +1,5 @@
 //// The hX top service registry {{{1
+//
 // This file lists and exports hX top services. A top service consists of top jobs.
 // Only authorized remote users can request a top job. All top jobs must specify 
 // a 'userAuth' function.

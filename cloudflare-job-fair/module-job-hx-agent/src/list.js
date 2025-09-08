@@ -1,4 +1,5 @@
 //// The hX service registry {{{1
+//
 // This file lists and exports hX services. A service consists of jobs.
 // All remote users can request a job. Still, all jobs must specify 
 // a 'userAuth' function.
