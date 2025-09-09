@@ -39,11 +39,11 @@ $$HOME/.cloudflare-job-fair/%.keys: # {{{1
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}: # reset_testnet {{{1
-	@bin/bit/hx/${PHASE}/reset_testnet;\
-		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_STELLAR_NETWORK testnet;\
-		read SK PK < ${TESTNET_DIR}/HEX_Issuer.keys;\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_testnet_IssuerPK $$PK
+	@bin/bit/hx/${PHASE}/reset_testnet #;\
+		#read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
+		#bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_STELLAR_NETWORK testnet;\
+		#read SK PK < ${TESTNET_DIR}/HEX_Issuer.keys;\
+		#bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_testnet_IssuerPK $$PK
 
 ${TXIDS}: # setup_selftest {{{1
 	@bin/bit/hx/${PHASE}/setup_selftest;\

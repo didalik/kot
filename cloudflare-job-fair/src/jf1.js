@@ -11,6 +11,7 @@ class Ad { // {{{1
     let match = this.match()
     if (match) {
       this.status = this.take(match)
+      match.status = match.take(this)
     }
   }
 
@@ -32,6 +33,10 @@ class Offer extends Ad { // {{{1
   }
 
   take (match) { // {{{2
+    console.log('Offer.take match', match)
+    this.ws.send(JSON.stringify({
+      userId: match.userId,
+    }))
     return Ad.TAKING_MATCH;
   }
 
@@ -47,10 +52,29 @@ class Request extends Ad { // {{{1
   }
 
   match () { // {{{2
-    return this.job.offerQueue.shift();
+    if (this.job.offerQueue.length == 0) {
+      return null;
+    }
+    let offer =  this.job.offerQueue.shift()
+    let ws = offer.ws
+    for (let job of offer.jobs) {
+      while (job?.offerQueue.length > 0) {
+        let index = job.offerQueue.findIndex(offer => offer.ws === ws)
+        if (index < 0) {
+          break;
+        }
+        job.offerQueue.splice(index, 1)
+      }
+    }
+    console.log('Request.match offer.jobs', offer.jobs)
+    return offer;
   }
 
   take (match) { // {{{2
+    console.log('Request.take match', match)
+    this.ws.send(JSON.stringify({
+      agentId: match.agentId,
+    }))
     return Ad.TAKING_MATCH;
   }
 
@@ -180,6 +204,7 @@ const JobFairImpl = { // {{{1
       let pk = decodeURIComponent(path[5])
       addRequestDO(ws, path, pk, parms, actor_id)
     }
+    console.log('JobFairImpl.dispatch returning...')
   },
 
   wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
@@ -300,13 +325,14 @@ function addRequestDO (ws, path, pk, parms, userId) { // {{{1
     case 'jcl/hx':
       for (let job of hxTopSvc[svcId].jobs) {
         if (job.name == jobname) {
-          return new Request({ job, parms, /*path,*/ pk, userId, ws, }); // TODO get rid of path here
+          job.userAuth(pk, durableObject.env)
+          return new Request({ job, parms, pk, userId, ws, })
         }
       }
     case 'job/hx':
       for (let job of hxSvc[svcId].jobs) {
         if (job.name == jobname) {
-          return new Request({ job, parms, /*path,*/ pk, ws, }); // TODO get rid of path here
+          return new Request({ job, parms, pk, ws, })
         }
       }
     default:
@@ -317,8 +343,15 @@ function addRequestDO (ws, path, pk, parms, userId) { // {{{1
 function addOfferDO (ws, path, pk, parms, topSvc, agentId) { // {{{1
   let svc = topSvc ? hxTopSvc : hxSvc
   let svcId = path[topSvc ? 4 : 3]
-  for (let job of svc[svcId].jobs) {
-    job.agentAuth && new Offer({ agentId, job, parms, /*path,*/ pk, ws, }); // TODO get rid of path here
+  let jobs = svc[svcId].jobs
+  for (let job of jobs) {
+    if (job.agentAuth) {
+      job.agentAuth(pk, durableObject.env)
+      let offer = new Offer({ agentId, job, jobs, parms, pk, ws, })
+      if (offer.status == Ad.TAKING_MATCH) {
+        break
+      }
+    }
   }
 }
 
