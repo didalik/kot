@@ -35,6 +35,9 @@ class Offer extends Ad { // {{{1
   take (match) { // {{{2
     console.log('Offer.take match', match)
     this.ws.send(JSON.stringify({
+      job: {
+        name: this.job.name,
+      },
       userId: match.userId,
     }))
     return Ad.TAKING_MATCH;
@@ -43,12 +46,12 @@ class Offer extends Ad { // {{{1
   // }}}2
 }
 
-class Request extends Ad { // {{{1
+class Reqst extends Ad { // {{{1
 
   constructor (base) { // {{{2
     super(base)
     this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)
-    console.log('new Request', this)
+    console.log('new Reqst', this)
   }
 
   match () { // {{{2
@@ -66,12 +69,12 @@ class Request extends Ad { // {{{1
         job.offerQueue.splice(index, 1)
       }
     }
-    console.log('Request.match offer.jobs', offer.jobs)
+    console.log('Reqst.match offer.jobs', offer.jobs)
     return offer;
   }
 
   take (match) { // {{{2
-    console.log('Request.take match', match)
+    console.log('Reqst.take match', match)
     this.ws.send(JSON.stringify({
       agentId: match.agentId,
     }))
@@ -187,7 +190,7 @@ const JobFairImpl = { // {{{1
       if (agent) {
         return addOffer(request, env, ctx, );
       } else {
-        return addRequest(request, env, ctx, url.pathname);
+        return addReqst(request, env, ctx, url.pathname);
       }
     }
     durableObject ??= this
@@ -202,9 +205,10 @@ const JobFairImpl = { // {{{1
       addOfferDO(ws, path, pk, parms, topSvc, actor_id)
     } else {
       let pk = decodeURIComponent(path[5])
-      addRequestDO(ws, path, pk, parms, actor_id)
+      addReqstDO(ws, path, pk, parms, actor_id)
     }
-    console.log('JobFairImpl.dispatch returning...')
+    console.log('JobFairImpl.dispatch returning Promise.resolve(true)...')
+    return Promise.resolve(true);
   },
 
   wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
@@ -299,7 +303,7 @@ const JobFairImpl = { // {{{1
   // }}}2
 }
 
-function addRequest (request, env, ctx, pathname) { // {{{1
+function addReqst (request, env, ctx, pathname) { // {{{1
   if (pathname == '/hack/do0') { // DONE
     try {
       let stub = env.KOT_DO.get(env.KOT_DO.idFromName('JobFair webSocket with Hibernation'))
@@ -318,7 +322,7 @@ function addOffer (request, env, ctx) { // {{{1
   return stub.fetch(request);
 }
 
-function addRequestDO (ws, path, pk, parms, userId) { // {{{1
+function addReqstDO (ws, path, pk, parms, userId) { // {{{1
   let jobname = path[3]
   let svcId = path[4]
   switch (path[1] + '/' + path[2]) {
@@ -326,13 +330,13 @@ function addRequestDO (ws, path, pk, parms, userId) { // {{{1
       for (let job of hxTopSvc[svcId].jobs) {
         if (job.name == jobname) {
           job.userAuth(pk, durableObject.env)
-          return new Request({ job, parms, pk, userId, ws, })
+          return new Reqst({ job, parms, pk, userId, ws, })
         }
       }
     case 'job/hx':
       for (let job of hxSvc[svcId].jobs) {
         if (job.name == jobname) {
-          return new Request({ job, parms, pk, ws, })
+          return new Reqst({ job, parms, pk, ws, })
         }
       }
     default:
