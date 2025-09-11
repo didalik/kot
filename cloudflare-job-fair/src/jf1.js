@@ -2,6 +2,8 @@ import * as hxSvc from '../module-job-hx-agent/src/list.js' // {{{1
 import * as hxTopSvc from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
+const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
+const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
 class Ad { // {{{1
   constructor (base) { // {{{2
@@ -10,12 +12,49 @@ class Ad { // {{{1
     this.job.requestQueue ??= []
     let match = this.match()
     if (match) {
+      this.match = match
+      match.match = this
       this.status = this.take(match)
       match.status = match.take(this)
+      Ad.ws2ad.set(this.ws, this)
+      Ad.ws2ad.set(match.ws, match)
     }
   }
 
+  onmessage (message) { // {{{2
+    console.log('Ad.onmessage this', this, 'message', message)
+    switch (this.status) {
+      case Ad.TAKING_MATCH:
+        return this.verify(JSON.parse(message))
+    }
+  }
+
+  verify (json) { // {{{2
+    let a = base64ToUint8(this.pk)
+    let signature = base64ToUint8(json.sig64)
+    let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
+    crypto.subtle.importKey('raw', a.buffer, 'Ed25519', true, ['verify']).
+      then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(json.payload64))).
+      then(r => {
+        if (!r) { // TODO handle verify false - no approval
+          return;
+        }
+        let payload = signedData(json.payload64)
+        this.status = Ad.MATCH_TAKEN // TODO compare payload with the saved one in 'take' method
+        console.log('Ad.verify payload', payload, 'this', this)
+        if (this.match.status == Ad.MATCH_TAKEN) {
+          let ready = JSON.stringify({ ready: true })
+          this.ws.send(ready)
+          this.match.ws.send(ready)
+        }
+      })
+  }
+
   static TAKING_MATCH = +1 // {{{2
+
+  static MATCH_TAKEN = +2 // {{{2
+
+  static ws2ad = new Map() // {{{2
 
   // }}}2
 }
@@ -61,7 +100,10 @@ class Reqst extends Ad { // {{{1
     let offer =  this.job.offerQueue.shift()
     let ws = offer.ws
     for (let job of offer.jobs) {
-      while (job?.offerQueue.length > 0) {
+      if (!job.offerQueue) {
+        continue;
+      }
+      while (job.offerQueue.length > 0) {
         let index = job.offerQueue.findIndex(offer => offer.ws === ws)
         if (index < 0) {
           break;
@@ -86,8 +128,6 @@ class Reqst extends Ad { // {{{1
 
 const jobsHx = {}, topjobsHx = {} // {{{1
 const mapOffer2Hub = new Map(), mapWs2Hubs = new Map()
-const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
-const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
 class JobHub { // {{{1
   constructor (jobs, jobname, hub) { // {{{2
@@ -195,7 +235,8 @@ const JobFairImpl = { // {{{1
     }
     durableObject ??= this
     let parms = new URLSearchParams(url.search)
-    console.log('---');console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
+    console.log('-----------------------------')
+    console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
@@ -207,8 +248,6 @@ const JobFairImpl = { // {{{1
       let pk = decodeURIComponent(path[5])
       addReqstDO(ws, path, pk, parms, actor_id)
     }
-    console.log('JobFairImpl.dispatch returning Promise.resolve(true)...')
-    return Promise.resolve(true);
   },
 
   wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
@@ -255,6 +294,10 @@ const JobFairImpl = { // {{{1
   },
 
   wsDispatch: (data, ws) => { // {{{2
+    Ad.ws2ad.get(ws).onmessage(data)
+
+    return;
+
     let hub = mapWs2Hub.get(ws)
     if (hub.taking == 2) { // {{{3
       return hub.pipe(data);
@@ -330,13 +373,13 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
       for (let job of hxTopSvc[svcId].jobs) {
         if (job.name == jobname) {
           job.userAuth(pk, durableObject.env)
-          return new Reqst({ job, parms, pk, userId, ws, })
+          return new Reqst({ job, parms, pk, userId, ws, });
         }
       }
     case 'job/hx':
       for (let job of hxSvc[svcId].jobs) {
         if (job.name == jobname) {
-          return new Reqst({ job, parms, pk, ws, })
+          return new Reqst({ job, parms, pk, ws, });
         }
       }
     default:

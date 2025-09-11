@@ -52,6 +52,11 @@ class Connection { // {{{1
     switch (this.status) {
       case Connection.OPEN:
         return this.sign(data);
+      case Connection.APPROVED:
+        if (this.ready) {
+          this.status = Connection.READY
+        }
+        break
     }
   }
 
@@ -67,7 +72,7 @@ class Connection { // {{{1
         this.status = Connection.APPROVED
         log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this)
       }).catch(e => console.error(e))
-    return Connection.APPROVING;
+    return this.status = Connection.APPROVING;
   }
 
   static OPEN = +1 // {{{2
@@ -75,6 +80,8 @@ class Connection { // {{{1
   static APPROVING = +2 // {{{2
 
   static APPROVED = +3 // {{{2
+
+  static READY = +4 // {{{2
 
   // }}}2
 }
