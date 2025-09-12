@@ -9,6 +9,8 @@ const configuration = {} // CLIENT {{{1
 const startJob = {
   reset_testnet, reset_testnet_monitor, selftest, setup_selftest, test_signTaking,
 }
+let opts
+
 class Connection { // {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
@@ -36,7 +38,7 @@ class Connection { // {{{1
     this.ws.on('message', data => {
       data = data.toString()
       this.dispatch(data)
-      log(`${tag()} message this`, this)
+      this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
     })
     promise.then(loop => loop ? this.connect() : log(`${tag()}`, 'DONE')).
       catch(e => {
@@ -83,9 +85,10 @@ class Connection { // {{{1
 
   static READY = +4 // {{{2
 
+  static JOB_STARTED = +5 // {{{2
+
   // }}}2
 }
-
 
 class Agent extends Connection { // {{{1
   constructor (base) { // {{{2
@@ -98,6 +101,16 @@ class Agent extends Connection { // {{{1
 
   dispatch (data) { // {{{2
     super.dispatch(data)
+    switch (this.status) {
+      case Connection.READY:
+        if (this.ready) {
+          delete this.ready
+          return;
+        }
+        startJob[this.job.name].call({ ws: this.ws }, { args: this.args })
+        this.status = Connection.JOB_STARTED
+        break
+    }
   }
 
   // }}}2
@@ -113,7 +126,18 @@ class User extends Connection { // {{{1
   }
 
   dispatch (data) { // {{{2
+    //let tag = _ => this.name + '.dispatch'
+    switch (this.status) {
+      case Connection.JOB_STARTED:
+        return log(/*`${tag()} data`, */data);
+    }
     super.dispatch(data)
+    switch (this.status) {
+      case Connection.READY:
+        this.ws.send(JSON.stringify(opts))
+        this.status = Connection.JOB_STARTED
+        break
+    }
   }
 
   // }}}2
@@ -301,6 +325,11 @@ function wsDispatch (data, ws) { // {{{1
     ws.close()
   } // }}}2
 }
+
+opts = ''
+process.stdin.resume(); // {{{1
+process.stdin.on("data", function (chunk) { return opts += chunk; });
+process.stdin.on("end", _ => console.log(`${process.argv[2]} opts`, opts = JSON.parse(opts.length > 0 ? opts : '{}')));
 
 export { // {{{1
   configuration, hack, post_jcl, post_job, put_agent, setkeys, start_testnet_monitor,

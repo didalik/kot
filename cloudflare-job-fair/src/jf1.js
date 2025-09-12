@@ -25,7 +25,9 @@ class Ad { // {{{1
     console.log('Ad.onmessage this', this, 'message', message)
     switch (this.status) {
       case Ad.TAKING_MATCH:
-        return this.verify(JSON.parse(message))
+        return this.verify(JSON.parse(message));
+      case Ad.PIPING:
+        return this.match.ws.send(message);
     }
   }
 
@@ -46,6 +48,8 @@ class Ad { // {{{1
           let ready = JSON.stringify({ ready: true })
           this.ws.send(ready)
           this.match.ws.send(ready)
+          this.status = Ad.PIPING
+          this.match.status = Ad.PIPING
         }
       })
   }
@@ -53,6 +57,8 @@ class Ad { // {{{1
   static TAKING_MATCH = +1 // {{{2
 
   static MATCH_TAKEN = +2 // {{{2
+
+  static PIPING = +3 // {{{2
 
   static ws2ad = new Map() // {{{2
 

@@ -20,4 +20,4 @@ export HX_SERVICES_ID=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ #
 rm -rf cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build
 
 bin/dev.mjs put_agent $JOBAGENT_PK $HX_SERVICES_ID '*testnet*' hx &
-bin/dev.mjs post_jcl $JOBUSER_PK $HX_SERVICES_ID 'hx/reset_testnet'
+echo '{"args":[100000]}' | bin/dev.mjs post_jcl $JOBUSER_PK $HX_SERVICES_ID 'hx/reset_testnet'
