@@ -14,12 +14,13 @@ export function reset_testnet (opts = { args: ['10000'] }) { // TODO drop defaul
     { cwd: `${__dirname}/module-topjob-hx-definition/reset_testnet` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))
-  job.stderr.on('data', data => log('reset_testnet stderr', data.toString()))
+  job.stderr.on('data', data => console.error('reset_testnet stderr', data.toString()))
   job.stdout.on('data', data => {
     this.ws.send(data)
   })
   job.on('close', code => {
     this.ws.send(`reset_testnet EXIT CODE ${code}`)
+    this.ws.close()
   })
 }
 

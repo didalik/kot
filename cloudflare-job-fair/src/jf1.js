@@ -21,6 +21,13 @@ class Ad { // {{{1
     }
   }
 
+  onclose (ws, code, reason, wasClean) { // {{{2
+    this.ws.close()
+    this.match.ws.close()
+    Ad.ws2ad.delete(this.ws)
+    Ad.ws2ad.delete(this.match.ws)
+  }
+
   onmessage (message) { // {{{2
     console.log('Ad.onmessage this', this, 'message', message)
     switch (this.status) {
@@ -257,6 +264,10 @@ const JobFairImpl = { // {{{1
   },
 
   wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
+    let ad = Ad.ws2ad.get(ws)
+    ad && ad.onclose(ws, code, reason, wasClean)
+
+    return;
 
     ws.close() // our side of this ws
 
