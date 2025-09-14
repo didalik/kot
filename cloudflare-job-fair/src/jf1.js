@@ -104,9 +104,10 @@ class Reqst extends Ad { // {{{1
     super(base)
     let done = this.job.userDone
     if (done) { // job done on edge, agent not required TODO sign the request
-      done(this, durableObject).then(bool => {
-        console.log('done bool', bool)
-      })
+      this.ws.send(JSON.stringify({ jobname: this.job.name, edge: true }))
+      //done(this, durableObject).then(bool => {
+        //console.log('done bool', bool)
+      //})
       return;
     }
     this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)
@@ -133,6 +134,17 @@ class Reqst extends Ad { // {{{1
     }
     console.log('Reqst.match offer.jobs', offer.jobs)
     return offer;
+  }
+
+  onmessage (message) { // {{{2
+    if (!this.job.userDone) {
+      return super.onmessage(message);
+    }
+    if (this.status == Ad.MATCH_TAKEN) {
+      console.log('Reqst.onmessage message', message)
+      return;
+    }
+    return this.verify(JSON.parse(message));
   }
 
   take (match) { // {{{2

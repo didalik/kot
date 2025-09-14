@@ -48,8 +48,9 @@ $$HOME/.cloudflare-job-fair/%.keys: # {{{1
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}: # reset_testnet {{{1
-	@bin/bit/hx/${PHASE}/reset_testnet ;\
+	@bin/bit/hx/${PHASE}/reset_testnet;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
+		export JOBUSER_SK=$$CREATOR_SK;\
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK ${HX_SERVICES_ID} hx/dopad put hx_STELLAR_NETWORK testnet;\
 		read SK PK < ${TESTNET_DIR}/HEX_Issuer.keys;\
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK ${HX_SERVICES_ID} hx/dopad put hx_testnet_IssuerPK $$PK

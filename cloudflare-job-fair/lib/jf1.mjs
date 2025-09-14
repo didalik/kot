@@ -85,7 +85,12 @@ class Connection { // {{{1
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         this.ws.send(JSON.stringify({ payload64, sig64 }))
         this.status = Connection.APPROVED
-        log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this)
+        log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
+        let payload = JSON.parse(data)
+        if (payload.edge) {
+          this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{}'))
+          this.status = Connection.JOB_STARTED
+        }
       }).catch(e => console.error(e))
     return this.status = Connection.APPROVING;
   }
@@ -107,10 +112,6 @@ class Agent extends Connection { // {{{1
   constructor (base) { // {{{2
     super(base)
   }
-
-//  connect () { // {{{2
-  //  super.connect()
-  //}
 
   dispatch (data) { // {{{2
     super.dispatch(data)
@@ -134,15 +135,10 @@ class User extends Connection { // {{{1
     super(base)
   }
 
-//  connect () { // {{{2
-  //  super.connect()
-  //}
-
   dispatch (data) { // {{{2
-    //let tag = _ => this.name + '.dispatch'
     switch (this.status) {
       case Connection.JOB_STARTED:
-        return log(/*`${tag()} data`, */data);
+        return log(data);
     }
     super.dispatch(data)
     switch (this.status) {
