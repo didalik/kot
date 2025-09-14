@@ -1,5 +1,12 @@
 # Variable references {{{1
-AUTH ?= OWNER
+AUTH ?= OWNER # As of 9/13/25, the env.hx_ownerPK secret in dev is set to the creator's PK.
+# It is probably set to the same value in qa. The corresponding hx_OWNER_PK value in the DO storage   
+# is set to the owner's PK in both envs. This is done to test 'bin/setkeys $*' in both envs.
+# When done testing, set the hx_ownerPK secret in prod to the owner's PK. For dev, bin/dev-conf
+# takes care of that when you type 'npm run dev'.
+#
+# TODO add bin/bit/hx/prod/* jobs and replace CREATOR.keys with OWNER.keys there.
+# # # # #
 BUILD_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
 						 module-topjob-hx-definition/reset_testnet/build
 PHASE ?= dev
@@ -39,11 +46,11 @@ $$HOME/.cloudflare-job-fair/%.keys: # {{{1
 		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}: # reset_testnet {{{1
-	@bin/bit/hx/${PHASE}/reset_testnet #;\
-		#read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
-		#bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_STELLAR_NETWORK testnet;\
-		#read SK PK < ${TESTNET_DIR}/HEX_Issuer.keys;\
-		#bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_testnet_IssuerPK $$PK
+	@bin/bit/hx/${PHASE}/reset_testnet ;\
+		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
+		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_STELLAR_NETWORK testnet;\
+		read SK PK < ${TESTNET_DIR}/HEX_Issuer.keys;\
+		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_testnet_IssuerPK $$PK
 
 ${TXIDS}: # setup_selftest {{{1
 	@bin/bit/hx/${PHASE}/setup_selftest;\

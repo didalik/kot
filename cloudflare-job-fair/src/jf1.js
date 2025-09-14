@@ -25,7 +25,7 @@ class Ad { // {{{1
     this.ws.close()
     this.match.ws.close()
     Ad.ws2ad.delete(this.ws)
-    Ad.ws2ad.delete(this.match.ws)
+    console.log('Ad.onclose this', this)
   }
 
   onmessage (message) { // {{{2
@@ -265,7 +265,7 @@ const JobFairImpl = { // {{{1
 
   wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
     let ad = Ad.ws2ad.get(ws)
-    ad && ad.onclose(ws, code, reason, wasClean)
+    ad.onclose(ws, code, reason, wasClean)
 
     return;
 
