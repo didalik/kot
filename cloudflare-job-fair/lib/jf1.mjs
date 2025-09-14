@@ -29,18 +29,23 @@ class Connection { // {{{1
     })
     this.ws.on('close', data => {
       log(`${tag()} close`, data)
-      --configuration.jobCount || resolve(false)
+      this.ws.close()
+      resolve(false)
     })
     this.ws.on('open', _ => {
       this.status = Connection.OPEN
       log(`${tag()} open this`, this)
     })
     this.ws.on('message', data => {
-      data = data.toString()
-      this.dispatch(data)
+      try {
+        data = data.toString()
+        this.dispatch(data)
+      } catch(err) {
+        log(`${tag()} error`, err)
+      }
       this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
     })
-    promise.then(loop => loop ? this.connect() : log(`${tag()}`, 'DONE')).
+    promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
         console.error(e)
       })
@@ -60,6 +65,14 @@ class Connection { // {{{1
         }
         break
     }
+  }
+
+  done () { // {{{2
+    let tag = _ => {
+      return this.name + '.done';
+    }
+    log(`${tag()}`, 'DONE')
+    process.exit() // TODO exit code
   }
 
   sign (data) { // {{{2
@@ -95,9 +108,9 @@ class Agent extends Connection { // {{{1
     super(base)
   }
 
-  connect () { // {{{2
-    super.connect()
-  }
+//  connect () { // {{{2
+  //  super.connect()
+  //}
 
   dispatch (data) { // {{{2
     super.dispatch(data)
@@ -121,9 +134,9 @@ class User extends Connection { // {{{1
     super(base)
   }
 
-  connect () { // {{{2
-    super.connect()
-  }
+//  connect () { // {{{2
+  //  super.connect()
+  //}
 
   dispatch (data) { // {{{2
     //let tag = _ => this.name + '.dispatch'
@@ -189,8 +202,18 @@ function jclURLpath (args) { // CLIENT {{{1
 ] url ws://127.0.0.1:8787/jcl/hx/reset_testnet/GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ/n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D
 */
   let urlPath = `/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
-  if (args[1] == 'hx/dopad') { // FIXME
-    urlPath += '/' + args[2] + '?' + `${args[3]}=${encodeURIComponent(args[4])}`
+  if (args[2] == 'hx/dopad') {
+/*
+- post_jcl args [
+  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',              // 0
+  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',  // 1
+  'hx/dopad',                                                  // 2
+  'put',                                                       // 3
+  'hx_STELLAR_NETWORK',                                        // 4
+  'testnet'                                                    // 5
+]
+*/
+    urlPath += '/' + args[3] + '?' + `${args[4]}=${encodeURIComponent(args[5])}`
   }
   return urlPath;
 }

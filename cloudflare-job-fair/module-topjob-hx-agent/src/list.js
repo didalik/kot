@@ -23,16 +23,17 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         }
         return true;
       },
-      userDone: (hub, durableObject) => {
+      userDone: (req, durableObject) => {
         let keys = [], values = []
-        for (const key of hub.parms.keys()) {
+        for (const key of req.parms.keys()) {
           keys.push(key)
         }
-        for (const value of hub.parms.values()) {
+        for (const value of req.parms.values()) {
           values.push(value)
         }
-        return durableObject[hub.path[5]](keys[0], values[0]).then(result => {
-          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone hub', hub, 'durableObject', durableObject, 'result', result)
+        return durableObject[req.path[6]](keys[0], values[0]).then(result => {
+          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone req', req, 'durableObject', durableObject, 'result', result)
+          req.ws.close() // TODO handle result=false
           return Promise.resolve(result);
         })
       },

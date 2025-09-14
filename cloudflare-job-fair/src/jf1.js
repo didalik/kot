@@ -10,22 +10,22 @@ class Ad { // {{{1
     Object.assign(this, base)
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
+    Ad.ws2ad.set(this.ws, this)
     let match = this.match()
     if (match) {
       this.match = match
       match.match = this
       this.status = this.take(match)
       match.status = match.take(this)
-      Ad.ws2ad.set(this.ws, this)
       Ad.ws2ad.set(match.ws, match)
     }
   }
 
-  onclose (ws, code, reason, wasClean) { // {{{2
+  onclose (...args) { // {{{2
     this.ws.close()
-    this.match.ws.close()
+    this.match.ws && this.match.ws.close()
     Ad.ws2ad.delete(this.ws)
-    console.log('Ad.onclose this', this)
+    console.log('Ad.onclose this', this, 'args', args)
   }
 
   onmessage (message) { // {{{2
@@ -102,6 +102,13 @@ class Reqst extends Ad { // {{{1
 
   constructor (base) { // {{{2
     super(base)
+    let done = this.job.userDone
+    if (done) { // job done on edge, agent not required TODO sign the request
+      done(this, durableObject).then(bool => {
+        console.log('done bool', bool)
+      })
+      return;
+    }
     this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)
     console.log('new Reqst', this)
   }
@@ -263,101 +270,15 @@ const JobFairImpl = { // {{{1
     }
   },
 
-  wsClose: (ws, code, reason, wasClean) => { // the remote side of this ws has been closed {{{2
+  wsClose: (ws, ...args) => { // {{{2
+    console.log('JobFairImpl wsClose args', args)
+    ws.close()
     let ad = Ad.ws2ad.get(ws)
-    ad.onclose(ws, code, reason, wasClean)
-
-    return;
-
-    ws.close() // our side of this ws
-
-    let hubs = mapWs2Hubs.get(ws)
-    for (let hub of mapWs2Hubs.get(ws)) {
-      hub.isClosed = true
-    }
-    mapWs2Hubs.delete(ws)
-
-    const iterator = mapOffer2Hub[Symbol.iterator]()
-    for (const pair of iterator) {
-      if (!(pair[0].ws === ws)) {
-        continue;
-      }
-      mapOffer2Hub.delete(pair[0])
-    }
-    /* {{{3
-    //let hub = mapWs2Hub.get(ws)
-    let hubs = mapWs2Hubs.get(ws)
-    if (!hubs) {
-      console.log('JobFairImpl.wsClose wasClean', wasClean, 'reason', reason, 'code', code, 'closing websocket...')
-      ws.close()
-      return;
-    }
-    wasClean && ws.close()
-    hub.isClosed = true
-    for (let h of hub.passthrough) {
-      hub.jobname == h.jobname && h.ws.close()
-    }
-    let jobs = hub.jobs[hub.jobname]
-    jobs[0] === hub && jobs.shift()
-    if (hub.jobAgentId) {
-      for (let jobq of Object.getOwnPropertyNames(hub.jobs)) {
-        hub.jobs[jobq].length > 0 && hub.jobs[jobq].shift()
-      }
-    }
-    let deleted = mapWs2Hub.delete(ws)
-    console.log('JobFairImpl.wsClose hub', hub, 'deleted', deleted)
-    */
-    // }}}3
+    ad.onclose(...args)
   },
 
   wsDispatch: (data, ws) => { // {{{2
     Ad.ws2ad.get(ws).onmessage(data)
-
-    return;
-
-    let hub = mapWs2Hub.get(ws)
-    if (hub.taking == 2) { // {{{3
-      return hub.pipe(data);
-    }
-    try { // {{{3
-      let json = JSON.parse(data)
-      let a = base64ToUint8(hub.pk)
-      let signature = base64ToUint8(json.sig64)
-      let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
-      crypto.subtle.importKey('raw', a.buffer, 'Ed25519', true, ['verify']).
-        then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(json.payload64))).
-        then(r => {
-          if (!r) { // TODO handle verify false - no approval
-            return;
-          }
-          let payload = signedData(json.payload64)
-          let jobname = payload.slice(payload.lastIndexOf(' ') + 1)
-          let jobAgentId = hub.jobAgentId ?? payload.split(' ')[1]
-          if (hub.jobAgentId) { // approval from job agent ////////////
-            if (++hub.taking == 2) {
-              hub.jobStart(jobname)
-            }
-          } else {              // approval from job user /////////////
-            let jobAgentHub = agentHub(jobAgentId, jobname)
-            jobAgentHub.passthrough.push(hub)
-            hub.passthrough.push(jobAgentHub)
-            hub.jobname = jobname
-            if (++jobAgentHub.taking == 2) {
-              jobAgentHub.jobStart(jobname)
-            }
-          }
-          //console.log('JobFairImpl.wsDispatch r', r, 'jobAgentId', jobAgentId, 'hub', hub)
-        }).catch(err => console.log('JobFairImpl.wsDispatch *** ERROR *** err', err))
-    } catch (e) {
-      if (!e.toString().startsWith('SyntaxError')) {
-        throw e;
-      }
-      let str = data.toString()
-      if (str == '[object ArrayBuffer]') {
-        str = new TextDecoder('utf-8').decode(data)
-      }
-      console.log('JobFairImpl.wsDispatch e', e, 'str', str)
-    } // }}}3
   },
 
   // }}}2
@@ -390,13 +311,14 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
       for (let job of hxTopSvc[svcId].jobs) {
         if (job.name == jobname) {
           job.userAuth(pk, durableObject.env)
-          return new Reqst({ job, parms, pk, userId, ws, });
+          return new Reqst({ job, parms, path, pk, userId, ws, });
         }
       }
     case 'job/hx':
       for (let job of hxSvc[svcId].jobs) {
         if (job.name == jobname) {
-          return new Reqst({ job, parms, pk, ws, });
+          job.userAuth(pk, durableObject.env)
+          return new Reqst({ job, parms, path, pk, ws, });
         }
       }
     default:
