@@ -219,7 +219,8 @@ function jobURLpath (args) { // CLIENT {{{1
     let pair = args[2].split('=')
     configuration[pair[0]] = pair[1]
   }
-  return `/${args[1]}/${encodeURIComponent(args[0])}`;
+  let urlPath = `/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
+  return urlPath;
 }
 
 function log (...args) { // CLIENT {{{1

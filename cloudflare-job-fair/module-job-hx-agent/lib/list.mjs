@@ -24,7 +24,7 @@ export function selftest () { // {{{1
   })
 }
 
-export function setup_selftest () { // {{{1
+export function setup_selftest (opts = { args: [] }) { // {{{1
   let job = spawn(
     `${__dirname}/module-job-hx-definition/setup_selftest/bin/job`,
     [
@@ -34,12 +34,13 @@ export function setup_selftest () { // {{{1
     { cwd: `${__dirname}/module-job-hx-definition/setup_selftest` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))
-  job.stderr.on('data', data => log('setup_selftest stderr', data.toString()))
+  job.stderr.on('data', data => console.error('setup_selftest stderr', data.toString()))
   job.stdout.on('data', data => {
     this.ws.send(data)
   })
   job.on('close', code => {
     this.ws.send(`setup_selftest EXIT CODE ${code}`)
+    this.ws.close()
   })
 }
 

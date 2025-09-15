@@ -45,7 +45,8 @@ $$HOME/.cloudflare-job-fair/%.keys: # {{{1
 	@[ -e $@ ] && echo "$@ preserved" && exit 0 || bin/setkeys $*;\
 		read JOB$*_SK JOB$*_PK < $$HOME/.cloudflare-job-fair/$*.keys;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put hx_$*_PK $$JOB$*_PK
+		export JOBUSER_SK=$$CREATOR_SK;\
+		bin/${PHASE}.mjs post_jcl $$CREATOR_PK ${HX_SERVICES_ID} hx/dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}: # reset_testnet {{{1
 	@bin/bit/hx/${PHASE}/reset_testnet;\
@@ -58,7 +59,8 @@ ${TESTNET_DIR}: # reset_testnet {{{1
 ${TXIDS}: # setup_selftest {{{1
 	@bin/bit/hx/${PHASE}/setup_selftest;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
-		read < ${TXIDS}; bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx/dopad put \
+		export JOBUSER_SK=$$CREATOR_SK;read < ${TXIDS};\
+		bin/${PHASE}.mjs post_jcl $$CREATOR_PK ${HX_SERVICES_ID} hx/dopad put \
 		hx_Agent_make2map_txids "$$REPLY"
 
 .PHONY: clean # {{{1
