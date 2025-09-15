@@ -23,17 +23,18 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         }
         return true;
       },
-      userDone: (req, durableObject) => {
+      userDone: (reqst, durableObject, opts) => {
         let keys = [], values = []
-        for (const key of req.parms.keys()) {
+        for (const key of reqst.parms.keys()) {
           keys.push(key)
         }
-        for (const value of req.parms.values()) {
+        for (const value of reqst.parms.values()) {
           values.push(value)
         }
-        return durableObject[req.path[6]](keys[0], values[0]).then(result => {
-          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone req', req, 'durableObject', durableObject, 'result', result)
-          req.ws.close() // TODO handle result=false
+        return durableObject[reqst.path[6]](keys[0], values[0]).then(result => {
+          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone reqst', reqst, 'durableObject', durableObject, 'result', result, 'opts', opts)
+          reqst.ws.send(`dopad DONE ${result}`)
+          reqst.ws.close() // TODO handle result=false
           return Promise.resolve(result);
         })
       },

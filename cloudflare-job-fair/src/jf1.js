@@ -105,9 +105,6 @@ class Reqst extends Ad { // {{{1
     let done = this.job.userDone
     if (done) { // job done on edge, agent not required TODO sign the request
       this.ws.send(JSON.stringify({ jobname: this.job.name, edge: true }))
-      //done(this, durableObject).then(bool => {
-        //console.log('done bool', bool)
-      //})
       return;
     }
     this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)
@@ -142,6 +139,10 @@ class Reqst extends Ad { // {{{1
     }
     if (this.status == Ad.MATCH_TAKEN) {
       console.log('Reqst.onmessage message', message)
+      this.job.userDone(this, durableObject, JSON.parse(message)).
+        then(bool => {
+          console.log('this.job.userDone bool', bool)
+        })
       return;
     }
     return this.verify(JSON.parse(message));
@@ -153,101 +154,6 @@ class Reqst extends Ad { // {{{1
       agentId: match.agentId,
     }))
     return Ad.TAKING_MATCH;
-  }
-
-  // }}}2
-}
-
-const jobsHx = {}, topjobsHx = {} // {{{1
-const mapOffer2Hub = new Map(), mapWs2Hubs = new Map()
-
-class JobHub { // {{{1
-  constructor (jobs, jobname, hub) { // {{{2
-    this.passthrough = []
-    jobs[jobname] ??= []
-    let job = jobs[jobname][0]
-    const agentAuth = _ => { // {{{3
-      let agentId = hub.jobAgentId
-      let agent = jobs === jobsHx ? hxSvc[agentId] : hxTopSvc[agentId]
-      if (agent) {
-        let job = agent.jobs.find(e => e.name == jobname)
-        return job.agentAuth(hub.pk, durableObject.env);
-      }
-      throw Error('Not Found')
-    }
-
-    const prefix = (myId, agentId) => { // {{{3
-      return myId ? `${myId} AM` : `AGENT ${agentId} IS`;
-    }
-
-    const userAuth = _ => { // {{{3
-      let agents = jobs === jobsHx ? hxSvc : hxTopSvc
-      for (let jobAgentId of Object.getOwnPropertyNames(agents)) {
-        let job = agents[jobAgentId].jobs.find(e => e.name == jobname)
-        if (job.userAuth(hub.pk, durableObject.env)) {
-          //console.log('new JobHub userAuth job', job)
-
-          return job;
-        }
-      }
-      throw Error('Not Authorized')
-    }
-
-    if (hub.jobAgentId) { // job offer {{{3
-      agentAuth()
-      hub.taking = +0
-    } else {              // job request
-      let done = userAuth().userDone
-      if (done) { // job done on edge, agent not required
-        done(hub, durableObject).then(bool => {
-          console.log('done bool', bool)
-          hub.ws.send('DONE ' + bool)
-        })
-        return;
-      }
-      if (jobs[jobname].length > 0) {
-        job.taking = +0
-      }
-    }
-    if (jobs[jobname].length == 0 || job.jobAgentId && hub.jobAgentId || !hub.jobAgentId && !job.jobAgentId) { // same side {{{3
-      jobs[jobname].push(this)
-    } else {                                                                                                   // taking an opposite side
-      hub.isClosed || hub.ws.send(`${prefix(hub.jobAgentId, job.jobAgentId)} TAKING JOB ${jobname}`)
-      job.isClosed || job.ws.send(`${prefix(job.jobAgentId, hub.jobAgentId)} TAKING JOB ${jobname}`)
-    }
-
-    // }}}3
-    Object.assign(this, hub, { jobname, jobs })
-    //mapWs2Hub.set(this.ws, this)
-    this.#add2maps()
-    console.log('new JobHub this', this)
-  }
-
-  #add2maps () { // {{{2
-    let hubs = mapWs2Hubs.get(this.ws) ?? []
-    hubs.push(this)
-    mapWs2Hubs.set(this.ws, hubs)
-    if (!this.jobAgentId) {
-      return;
-    }
-    let offer = { ws: this.ws, jobAgentId: this.jobAgentId, jobname: this.jobname }
-    mapOffer2Hub.set(offer, this)
-  }
-
-  jobStart (jobname) { // {{{2
-    this.jobname = jobname
-    console.log('JobHub jobStart this', this)
-    this.ws.send(`START JOB ${this.jobname}`)
-    for (let hub of this.passthrough) {
-      this.jobname == hub.jobname && hub.ws.send(`AGENT ${this.jobAgentId} STARTED JOB ${this.jobname}`)
-    }
-  }
-
-  pipe (data) { // {{{2
-    console.log('JobHub pipe this', this, 'data', data)
-    for (let hub of this.passthrough) {
-      this.jobname == hub.jobname && hub.ws.send(data)
-    }
   }
 
   // }}}2
@@ -351,18 +257,6 @@ function addOfferDO (ws, path, pk, parms, topSvc, agentId) { // {{{1
       }
     }
   }
-}
-
-function agentHub (jobAgentId, jobname) { // {{{1
-  const iterator = mapWs2Hub[Symbol.iterator]()
-  for (const item of iterator) {
-    console.log('agentHub jobname', jobname, 'item', item)
-
-    if (item[1].jobAgentId == jobAgentId && item[1].jobname == jobname) {
-      return item[1];
-    }
-  }
-  throw Error('UNEXPECTED');
 }
 
 function actorId (certSubjectDN) { // {{{1

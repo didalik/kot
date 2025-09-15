@@ -88,7 +88,7 @@ class Connection { // {{{1
         log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
         let payload = JSON.parse(data)
         if (payload.edge) {
-          this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{}'))
+          this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))
           this.status = Connection.JOB_STARTED
         }
       }).catch(e => console.error(e))
