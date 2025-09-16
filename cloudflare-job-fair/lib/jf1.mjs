@@ -9,7 +9,7 @@ const configuration = {} // CLIENT {{{1
 const startJob = {
   reset_testnet, reset_testnet_monitor, selftest, setup_selftest, test_signTaking,
 }
-let opts
+let opts = ''
 
 class Connection { // {{{1
   constructor (base) { // {{{2
@@ -138,6 +138,8 @@ class User extends Connection { // {{{1
   dispatch (data) { // {{{2
     switch (this.status) {
       case Connection.JOB_STARTED:
+        configuration.browser && spawn('bin/test-browser', [configuration.browser])
+        delete configuration.browser
         return log(data);
     }
     super.dispatch(data)
@@ -215,8 +217,8 @@ function jclURLpath (args) { // CLIENT {{{1
 }
 
 function jobURLpath (args) { // CLIENT {{{1
-  if (args[1] == 'hx/selftest' && args[2] && args[2].indexOf('=')) {
-    let pair = args[2].split('=')
+  if (args[2] == 'hx/selftest' && args[3] && args[3].indexOf('=')) {
+    let pair = args[3].split('=')
     configuration[pair[0]] = pair[1]
   }
   let urlPath = `/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
@@ -284,69 +286,6 @@ function start_testnet_monitor (node, run, cmd, nwdir, ...args) { // CLIENT {{{1
   log('-', run, cmd, 'nwdir', nwdir)
 }
 
-function wsConnect (url) { // {{{1
-  let websocket = new WebSocket(url, configuration.fetch_options ?? {})
-  let [promise, resolve, reject] = promiseWithResolvers()
-  let tag = _ => {
-    return 'ws ' + process.argv[2];
-  }
-  websocket.on('error', err => {
-    err.message.endsWith('401') || err.message.endsWith('404') ||
-      log(`${tag()} error`, err)
-    reject(err)
-  })
-  websocket.on('close', data => {
-    log(`${tag()} close`, data)
-    --configuration.jobCount || resolve(false)
-  })
-  websocket.on('open', _ => {
-    log(`${tag()} open`)
-  })
-  websocket.on('message', data => {
-    data = data.toString()
-    log(`${tag()} message`, data)
-    //if (data == 'DONE') {
-      //process.exit(0)
-    //}
-    wsDispatch(data, websocket)
-  })
-  promise.then(loop => loop ? wsConnect(url) : log(`${tag()}`, 'DONE')).
-    catch(e => {
-      console.error(e)
-    })
-}
-
-function wsDispatch (data, ws) { // {{{1
-  let jobname = data.slice(1 + data.lastIndexOf(' '))
-  if (data.includes('TAKING JOB')) { // {{{2
-    if (data.includes('AM TAKING JOB')) {
-      global.jobAgentId = data.slice(0, data.indexOf(' '))
-      configuration.jobCount ??= 0
-      configuration.jobCount++
-    }
-    let payload64 = uint8ToBase64(data)
-    let sk = process.argv[2] == 'put_agent' ? process.env.JOBAGENT_SK : process.env.JOBUSER_SK
-    crypto.subtle.importKey('jwk', JSON.parse(sk), 'Ed25519', true, ['sign']).
-      then(sk => {
-        return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
-      }).then(signature => {
-        let sig64 = uint8ToBase64(new Uint8Array(signature))
-        log('wsDispatch payload64', payload64, 'sig64', sig64)
-
-        ws.send(JSON.stringify({ payload64, sig64 }))
-      }).catch(e => console.error(e))
-  } else if (data.includes('START JOB')) { // {{{2
-    global.log = log
-    startJob[jobname].call({ ws })
-  } else if (data.includes('STARTED JOB')) { // {{{2
-    configuration.browser && spawn('bin/test-browser', [configuration.browser])
-    delete configuration.browser
-  } else if (data.includes('EXIT CODE') || data.startsWith('DONE')) { // {{{2
-    ws.close()
-  } // }}}2
-}
-
-opts = ''
 process.stdin.resume(); // {{{1
 process.stdin.on("data", function (chunk) { return opts += chunk; });
 process.stdin.on("end", _ => console.log(`${process.argv[2]} opts`, opts = JSON.parse(opts.length > 0 ? opts : '{}')));

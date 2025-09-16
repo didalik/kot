@@ -6,7 +6,7 @@
 
 import { Model, Test, View, } from './lib/jc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
-import { post_job, post_job_args, } from './lib/ws.mjs'
+import { post_job, post_job_args, } from './lib/jf1.mjs'
 
 let user = {
   position: { lat: LATITUDE, lng: LONGITUDE },
@@ -14,6 +14,7 @@ let user = {
 let config = { // {{{1
   HEX_Agent_make2map_txids: 'hx_Agent_make2map_txids',
   HEX_Issuer_PK: 'hx_testnet_IssuerPK',
+  HX_SERVICES_ID: 'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ', // FIXME
   nw: 'hx_STELLAR_NETWORK',
   kit, 
   test: true, 
@@ -26,6 +27,7 @@ if (config.test) {
   window.config = config
   post_job(
     post_job_args(
+      config.HX_SERVICES_ID,
       'hx/test_signTaking',
       decodeURIComponent(config.userKeys)
     )
