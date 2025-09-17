@@ -31,10 +31,9 @@ if (config.test) {
       'hx/test_signTaking',
       decodeURIComponent(config.userKeys)
     )
-  ).then(result => console.log(result)).catch(err => {
-    throw Error(err)
-  })
+  )
 }
+/*
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
   Test.init(vm, config),
@@ -43,3 +42,4 @@ kit.initVm(config).then(vm => Promise.all([
 .then(run => Promise.all(run.map(v => v?.run())))
 .then(done => Promise.all(done.map(v => v?.done())))
 .catch(e => console.error(e)).finally(_ => console.log('DONE vm', window.vm))
+*/

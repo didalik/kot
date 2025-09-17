@@ -243,8 +243,8 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   }).connect()
 }
 
-async function post_job (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = await jobURLpath(args)
+function post_job (node, run, cmd, ...args) { // CLIENT {{{1
+  let path = jobURLpath(args)
   let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
     : 'ws://127.0.0.1:8787/job'
   let url = `${urlJob}${path}`

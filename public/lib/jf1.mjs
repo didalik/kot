@@ -1,14 +1,160 @@
 import { uint8ToBase64, } from './util.mjs' // {{{1
 
+let log = console.log // {{{1
+let opts = ''
+
+class Connection { // {{{1
+  constructor (base) { // {{{2
+    Object.assign(this, base)
+  }
+
+  connect () { // {{{2
+    this.ws = new WebSocket(this.url)
+    let { promise, resolve, reject } = Promise.withResolvers()
+    let tag = _ => {
+      return this.name + '.connect';
+    }
+    this.ws.onerror = err => {
+      err.message.endsWith('401') || err.message.endsWith('404') ||
+        log(`${tag()} error`, err)
+      reject(err)
+    }
+    this.ws.onclose = data => {
+      log(`${tag()} close`, data)
+      this.ws.close()
+      resolve(false)
+    }
+    this.ws.onopen = _ => {
+      this.status = Connection.OPEN
+      log(`${tag()} open this`, this)
+    }
+    this.ws.onmessage = data => {
+      try {
+        data = data.toString()
+        this.dispatch(data)
+      } catch(err) {
+        log(`${tag()} error`, err)
+      }
+      this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
+    }
+    promise.then(loop => loop ? this.connect() : this.done()).
+      catch(e => {
+        console.error(e)
+      })
+  }
+  
+  dispatch (data) { // {{{2
+    let o = JSON.parse(data)
+    let tag = _ => this.name + '.dispatch'
+    log(`${tag()} parsed`, o)
+    Object.assign(this, o)
+    switch (this.status) {
+      case Connection.OPEN:
+        return this.sign(data);
+      case Connection.APPROVED:
+        if (this.ready) {
+          this.status = Connection.READY
+        }
+        break
+    }
+  }
+
+  done () { // {{{2
+    let tag = _ => {
+      return this.name + '.done';
+    }
+    log(`${tag()}`, 'DONE')
+    //process.exit() // TODO exit code
+  }
+
+  sign (data) { // {{{2
+    let tag = _ => this.name + '.sign'
+    let payload64 = uint8ToBase64(data)
+    crypto.subtle.importKey('jwk', JSON.parse(this.sk), 'Ed25519', true, ['sign']).
+      then(sk => {
+        return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
+      }).then(signature => {
+        let sig64 = uint8ToBase64(new Uint8Array(signature))
+        this.ws.send(JSON.stringify({ payload64, sig64 }))
+        this.status = Connection.APPROVED
+        log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
+        let payload = JSON.parse(data)
+        if (payload.edge) {
+          this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))
+          this.status = Connection.JOB_STARTED
+        }
+      }).catch(e => console.error(e))
+    return this.status = Connection.APPROVING;
+  }
+
+  static OPEN = +1 // {{{2
+
+  static APPROVING = +2 // {{{2
+
+  static APPROVED = +3 // {{{2
+
+  static READY = +4 // {{{2
+
+  static JOB_STARTED = +5 // {{{2
+
+  // }}}2
+}
+
+class Agent extends Connection { // {{{1
+  constructor (base) { // {{{2
+    super(base)
+  }
+
+  dispatch (data) { // {{{2
+    super.dispatch(data)
+    switch (this.status) {
+      case Connection.READY:
+        if (this.ready) {
+          delete this.ready
+          return;
+        }
+        startJob[this.job.name].call({ ws: this.ws }, { args: this.args })
+        this.status = Connection.JOB_STARTED
+        break
+    }
+  }
+
+  // }}}2
+}
+
+class User extends Connection { // {{{1
+  constructor (base) { // {{{2
+    super(base)
+  }
+
+  dispatch (data) { // {{{2
+    switch (this.status) {
+      case Connection.JOB_STARTED:
+        return log(data);
+    }
+    super.dispatch(data)
+    switch (this.status) {
+      case Connection.READY:
+        this.ws.send(JSON.stringify(opts))
+        this.status = Connection.JOB_STARTED
+        break
+    }
+  }
+
+  // }}}2
+}
+
 function post_job (args) { // no client certificate required {{{1
   let originJob =
     location.protocol.startsWith('https') ? 'wss://job.kloudoftrust.org/job'
     : 'ws://ko:8787/job' // FIXME use location.host instead of ko:8787
   let url = `${originJob}/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
-  console.log('post_job url', url)
-  let { promise, resolve, reject } = Promise.withResolvers()
-  wsConnect(url, resolve, reject)
-  return promise;
+  log('post_job url', url)
+  new User({
+    name: 'user',
+    sk: args[3],
+    url
+  }).connect()
 }
 
 function post_job_args (svcId, jobname, userKeys, payload64 = null) { // {{{1
@@ -16,73 +162,7 @@ function post_job_args (svcId, jobname, userKeys, payload64 = null) { // {{{1
   if (jobname == 'hx/signTaking') { // FIXME
     return [pk, svcId, jobname, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`];
   }
-  return [pk, svcId, jobname];
-}
-
-let log = console.log, global = window // {{{1
-
-function wsConnect (url, resolveJob, rejectJob) { // {{{1
-  let [sk, pk] = decodeURIComponent(config.userKeys).split(' ')
-  let aux = { data: [], sk, pk }
-  let websocket = new WebSocket(url)
-  let { promise, resolve, reject } = Promise.withResolvers()
-  let tag = _ => 'ws post_job'
-  websocket.onerror = err => {
-    err.message.endsWith('401') || err.message.endsWith('404') ||
-      log(`${tag()} error`, err)
-    reject(err) // TODO resolve(true) on connection reset
-  }
-  websocket.onclose = data => {
-    log(`${tag()} close`, data)
-    resolve(false)
-  }
-  websocket.onopen = _ => {
-    log(`${tag()} open`)
-  }
-  websocket.onmessage = event => {
-    let data = event.data.toString()
-    log(`${tag()} message`, data, 'event.data', event.data)
-    aux.data.push(data)
-    wsDispatch(aux, data, websocket, resolveJob, rejectJob)
-  }
-  promise.then(loop => loop ? wsConnect(url, resolveJob, rejectJob) : 
-    log(`${tag()}`, 'DONE')
-  ).catch(err => rejectJob(err))
-}
-function wsDispatch (aux, data, ws, resolveJob, rejectJob) { // {{{1
-  let jobname = data.slice(1 + data.lastIndexOf(' '))
-  if (data.includes('TAKING JOB')) { // {{{2
-    if (data.includes('AM TAKING JOB')) {
-      global.jobAgentId = data.slice(0, data.indexOf(' '))
-    }
-    let payload64 = uint8ToBase64(data)
-    //log('wsDispatch data', data, 'payload64', payload64, 'aux', aux)
-    let sk = aux.sk
-/*    
-    crypto.subtle.importKey('jwk', JSON.parse(sk), 'Ed25519', true, ['sign']).
-      then(sk => {
-        return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
-      })
-*/
-      let pk = aux.pk
-      post_job(
-        post_job_args('hx/signTaking', `${sk} ${pk}`, payload64)
-      )
-      .then(sig64 => {
-        //let sig64 = uint8ToBase64(new Uint8Array(signature))
-        //log('wsDispatch payload64', payload64, 'sig64', sig64)
-
-        ws.send(JSON.stringify({ payload64, sig64 }))
-      }).catch(err => rejectJob(err))
-  } else if (data.includes('START JOB')) { // {{{2
-    global.log = log
-    startJob[jobname].call({ ws })
-  } else if (data.includes('STARTED JOB')) { // {{{2
-    aux.browser && spawn('bin/test-browser', [aux.browser])
-  } else if (data.includes('EXIT CODE') || data.startsWith('DONE')) { // {{{2
-    ws.close()
-    resolveJob(aux.data[aux.data.length - 2])
-  } // }}}2
+  return [pk, svcId, jobname, sk];
 }
 
 export { post_job, post_job_args, } // {{{1
