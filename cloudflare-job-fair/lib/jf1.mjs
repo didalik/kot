@@ -2,13 +2,10 @@ import fetch from 'node-fetch' // // CLIENT {{{1
 import WebSocket from 'ws'
 import { spawn } from 'node:child_process'
 import { base64ToUint8, generate_keypair, uint8ToBase64, } from '../../public/lib/util.mjs'
-import { reset_testnet, reset_testnet_monitor, } from '../module-topjob-hx-agent/lib/list.mjs'
-import { selftest, setup_selftest, test_signTaking, } from '../module-job-hx-agent/lib/list.mjs'
+import * as tjAg from '../module-topjob-hx-agent/lib/list.mjs'
+import * as jAg from '../module-job-hx-agent/lib/list.mjs'
 
 const configuration = {} // CLIENT {{{1
-const startJob = {
-  reset_testnet, reset_testnet_monitor, selftest, setup_selftest, test_signTaking,
-}
 let opts = ''
 
 class Connection { // {{{1
@@ -121,7 +118,10 @@ class Agent extends Connection { // {{{1
           delete this.ready
           return;
         }
-        startJob[this.job.name].call({ ws: this.ws }, { args: this.args })
+        let agent = this.job.top ? tjAg : jAg
+        agent[this.job.kit][this.job.name].call({ ws: this.ws }, 
+          { args: this.args }
+        )
         this.status = Connection.JOB_STARTED
         break
     }

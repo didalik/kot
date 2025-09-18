@@ -1,6 +1,6 @@
-//// The hX top service registry {{{1
+//// The hX top job kits {{{1
 //
-// This file lists and exports hX top services. A top service consists of top jobs.
+// This file lists and exports hX top job kits. A top job kit comprises top jobs.
 // Only authorized remote users can request a top job. All top jobs must specify 
 // a 'userAuth' function.
 //
@@ -12,7 +12,7 @@
 
 //// {{{1
 // GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in
-// agent's client SSL certificate. It is also being used as a service ID here:
+// agent's client SSL certificate. It is also being used as a kit ID here:
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
   jobs: [
     { name: 'dopad', // {{{2

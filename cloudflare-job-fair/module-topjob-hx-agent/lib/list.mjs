@@ -1,13 +1,16 @@
 import { fileURLToPath } from 'url' // {{{1
 import { dirname } from 'path'
 import { spawn } from 'node:child_process'
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-export function reset_testnet (opts = { args: ['10000'] }) { // TODO drop default value? {{{1
+export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
+  reset_testnet: function (opts) { return reset_testnet.call(this, opts); },
+  reset_testnet_monitor: function (opts) { return reset_testnet_monitor.call(this, opts); },
+}
+
+function reset_testnet (opts = { args: ['10000'] }) { // TODO drop default value? {{{1
   let amountHEXA = opts.args[0].toString()
-  //log('reset_testnet global', global, '__dirname', __dirname)
   let job = spawn(
     `${__dirname}/module-topjob-hx-definition/reset_testnet/bin/job`,
     [amountHEXA],
@@ -24,7 +27,7 @@ export function reset_testnet (opts = { args: ['10000'] }) { // TODO drop defaul
   })
 }
 
-export function reset_testnet_monitor (amountMA = '10000') { // TODO drop default value {{{1
+function reset_testnet_monitor (amountMA = '10000') { // TODO drop default value {{{1
   let job = spawn(
     `${__dirname}/module-topjob-hx-definition/reset_testnet_monitor/bin/job`,
     [amountMA, '../reset_testnet/build/testnet'],

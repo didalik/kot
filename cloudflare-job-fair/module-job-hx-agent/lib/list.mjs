@@ -1,11 +1,19 @@
 import { fileURLToPath } from 'url' // {{{1
 import { dirname } from 'path'
 import { spawn } from 'node:child_process'
-
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
-export function selftest () { // {{{1
+export const DEV_KIT = { // {{{1
+  test_signTaking: function (opts) { return test_signTaking.call(this, opts); },
+}
+
+export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
+  selftest: function (opts) { return selftest.call(this, opts); },
+  setup_selftest: function (opts) { return setup_selftest.call(this, opts); },
+}
+
+function selftest () { // {{{1
   let job = spawn(
     `${__dirname}/module-job-hx-definition/selftest/bin/job`,
     [
@@ -24,7 +32,7 @@ export function selftest () { // {{{1
   })
 }
 
-export function setup_selftest (opts = { args: [] }) { // {{{1
+function setup_selftest (opts = { args: [] }) { // {{{1
   let job = spawn(
     `${__dirname}/module-job-hx-definition/setup_selftest/bin/job`,
     [
@@ -44,9 +52,7 @@ export function setup_selftest (opts = { args: [] }) { // {{{1
   })
 }
 
-export function test_signTaking () { // {{{1
+function test_signTaking () { // {{{1
   this.ws.send('Hello from test_signTaking!')
-  //let code = 0
-  //this.ws.send(`test_signTaking EXIT CODE ${code}`)
 }
 

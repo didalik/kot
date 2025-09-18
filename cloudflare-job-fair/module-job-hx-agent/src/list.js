@@ -1,6 +1,6 @@
-//// The hX service registry {{{1
+//// The hX job kits {{{1
 //
-// This file lists and exports hX services. A service consists of jobs.
+// This file lists and exports hX job kits. A kit consists of jobs.
 // All remote users can request a job. Still, all jobs must specify 
 // a 'userAuth' function.
 //
@@ -14,7 +14,7 @@ import { uint8ToBase64, } from '../../../public/lib/util.mjs' // {{{1
 
 //// {{{1
 // GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in
-// agent's client SSL certificate. It is also being used as a service ID here:
+// agent's client SSL certificate. It is also being used as a kit ID here:
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
   jobs: [
     { name: 'selftest', // {{{2
@@ -44,27 +44,6 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         return true;
       },
     },
-    { name: 'signTaking', // {{{2
-      userAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userAuth pk', pk)
-        return true;
-      },
-      userDone: (hub, durableObject) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone hub', hub, 'durableObject', durableObject);
-        let sk = hub.parms.get('sk')
-        let payload64 = hub.parms.get('payload64')
-        return crypto.subtle.importKey(
-          'jwk', JSON.parse(sk), 'Ed25519', true, ['sign']
-        ).then(sk => crypto.subtle.sign(
-          'Ed25519', sk, new TextEncoder().encode(payload64))
-        ).then(signature => {
-          let sig64 = uint8ToBase64(new Uint8Array(signature))
-          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTaking userDone sig64', sig64)
-          hub.ws.send(sig64)
-          return Promise.resolve(true);
-        });
-      },
-    },
     { name: 'signTx', // {{{2
       agentAuth: (pk, env) => {
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTx agentAuth pk', pk)
@@ -77,15 +56,41 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         return true;
       },
     },
-    { name: 'test_signTaking', // {{{2
+  ],
+}
+
+export const DEV_KIT = { // {{{1
+  jobs: [
+    { name: 'sign', // {{{2
+      userAuth: (pk, env) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userAuth pk', pk)
+        return true;
+      },
+      userDone: (hub, durableObject) => {
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone hub', hub, 'durableObject', durableObject);
+        let sk = hub.parms.get('sk')
+        let payload64 = hub.parms.get('payload64')
+        return crypto.subtle.importKey(
+          'jwk', JSON.parse(sk), 'Ed25519', true, ['sign']
+        ).then(sk => crypto.subtle.sign(
+          'Ed25519', sk, new TextEncoder().encode(payload64))
+        ).then(signature => {
+          let sig64 = uint8ToBase64(new Uint8Array(signature))
+          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone sig64', sig64)
+          hub.ws.send(sig64)
+          return Promise.resolve(true);
+        });
+      },
+    },
+    { name: 'test_sign', // {{{2
       agentAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_signTaking agentAuth pk', pk)
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_sign agentAuth pk', pk)
         if (pk != env.hx_ownerPK) {
           throw Error('Not Authorized')
         }
       },
       userAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_signTaking userAuth pk', pk)
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_sign userAuth pk', pk)
         return true;
       },
     },

@@ -1,5 +1,5 @@
-import * as hxSvc from '../module-job-hx-agent/src/list.js' // {{{1
-import * as hxTopSvc from '../module-topjob-hx-agent/src/list.js'
+import * as hxKit from '../module-job-hx-agent/src/list.js' // {{{1
+import * as hxTopKit from '../module-topjob-hx-agent/src/list.js'
 
 let durableObject; // {{{1
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
@@ -88,7 +88,9 @@ class Offer extends Ad { // {{{1
     console.log('Offer.take match', match)
     this.ws.send(JSON.stringify({
       job: {
+        kit: this.kitId,
         name: this.job.name,
+        top: this.topKit,
       },
       userId: match.userId,
     }))
@@ -103,7 +105,7 @@ class Reqst extends Ad { // {{{1
   constructor (base) { // {{{2
     super(base)
     let done = this.job.userDone
-    if (done) { // job done on edge, agent not required TODO sign the request
+    if (done) { // job done on edge, agent not required
       this.ws.send(JSON.stringify({ jobname: this.job.name, edge: true }))
       return;
     }
@@ -179,9 +181,9 @@ const JobFairImpl = { // {{{1
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
     let path = url.pathname.split('/')
     if (agent) {
-      let topSvc = url.pathname.startsWith('/jag/hx/top') // FIXME hx hardcoded
-      let pk = decodeURIComponent(path[topSvc ? 5 : 4])
-      addOfferDO(ws, path, pk, parms, topSvc, actor_id)
+      let topKit = url.pathname.startsWith('/jag/hx/top') // FIXME hx hardcoded
+      let pk = decodeURIComponent(path[topKit ? 5 : 4])
+      addOfferDO(ws, path, pk, parms, topKit, actor_id)
     } else {
       let pk = decodeURIComponent(path[5])
       addReqstDO(ws, path, pk, parms, actor_id)
@@ -223,17 +225,17 @@ function addOffer (request, env, ctx) { // {{{1
 
 function addReqstDO (ws, path, pk, parms, userId) { // {{{1
   let jobname = path[3]
-  let svcId = path[4]
+  let kitId = path[4]
   switch (path[1] + '/' + path[2]) {
     case 'jcl/hx':
-      for (let job of hxTopSvc[svcId].jobs) {
+      for (let job of hxTopKit[kitId].jobs) {
         if (job.name == jobname) {
           job.userAuth(pk, durableObject.env)
           return new Reqst({ job, parms, path, pk, userId, ws, });
         }
       }
     case 'job/hx':
-      for (let job of hxSvc[svcId].jobs) {
+      for (let job of hxKit[kitId].jobs) {
         if (job.name == jobname) {
           job.userAuth(pk, durableObject.env)
           return new Reqst({ job, parms, path, pk, ws, });
@@ -244,14 +246,14 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
   }
 }
 
-function addOfferDO (ws, path, pk, parms, topSvc, agentId) { // {{{1
-  let svc = topSvc ? hxTopSvc : hxSvc
-  let svcId = path[topSvc ? 4 : 3]
-  let jobs = svc[svcId].jobs
+function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
+  let kit = topKit ? hxTopKit : hxKit
+  let kitId = path[topKit ? 4 : 3]
+  let jobs = kit[kitId].jobs
   for (let job of jobs) {
     if (job.agentAuth) {
       job.agentAuth(pk, durableObject.env)
-      let offer = new Offer({ agentId, job, jobs, parms, pk, ws, })
+      let offer = new Offer({ agentId, job, jobs, kitId, parms, pk, topKit, ws, })
       if (offer.status == Ad.TAKING_MATCH) {
         break
       }
