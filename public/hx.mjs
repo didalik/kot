@@ -24,11 +24,11 @@ let config = { // {{{1
 console.log(config, location)
 
 if (config.test) {
-  window.config = config
+  window.config = config // to use config in Connection.sign
   post_job(
     post_job_args(
-      config.HX_SERVICES_ID,
-      'hx/test_signTaking',
+      'DEV_KIT',
+      'hx/test_sign',
       decodeURIComponent(config.userKeys)
     )
   )

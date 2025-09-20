@@ -44,7 +44,7 @@ class Connection { // {{{1
     })
     promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
-        console.error(e)
+        console.error('UNEXPECTED', e); process.exit(1)
       })
   }
   
@@ -184,10 +184,11 @@ function jagURLpath (args) { // CLIENT {{{1
         case '*testnet*':
           return `/${args[3]}/top/${args[1]}/${encodeURIComponent(args[0])}`;
         case '*selftest':
+        case 'dk': // DEV_KIT
           return `/${args[3]}/${args[1]}/${encodeURIComponent(args[0])}`;
       }
     default:
-      throw Error(args[3]);
+      throw Error(args[2]);
   }
 }
 

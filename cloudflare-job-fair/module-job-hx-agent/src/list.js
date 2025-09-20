@@ -62,11 +62,22 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
 export const DEV_KIT = { // {{{1
   jobs: [
     { name: 'sign', // {{{2
-      userAuth: (pk, env) => {
+      payload2sign: function () { // {{{3
+        console.log('DEV_KIT sign payload2sign this', this)
+        let payload64 = payload64Edge.call(this)
+        //return JSON.stringify({ jobname: this.job.name, edge: true, XA: 'XO' });
+        crypto.subtle.importKey(
+          'jwk', JSON.parse(this.parms.get('sk')), 'Ed25519', true, ['sign']
+        ).then(sk => crypto.subtle.sign(
+          'Ed25519', sk, new TextEncoder().encode(payload64)
+        )).then(signature => send.call(this, signature)).
+          catch(e => console.error(e))
+      },
+      userAuth: (pk, env) => { // {{{3
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userAuth pk', pk)
         return true;
       },
-      userDone: (hub, durableObject) => {
+      userDone: (hub, durableObject) => { // {{{3
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone hub', hub, 'durableObject', durableObject);
         let sk = hub.parms.get('sk')
         let payload64 = hub.parms.get('payload64')
@@ -80,7 +91,7 @@ export const DEV_KIT = { // {{{1
           hub.ws.send(sig64)
           return Promise.resolve(true);
         });
-      },
+      }, // }}}3
     },
     { name: 'test_sign', // {{{2
       agentAuth: (pk, env) => {
@@ -97,3 +108,16 @@ export const DEV_KIT = { // {{{1
     // }}}2
   ],
 }
+
+function payload64Edge () { // {{{1
+  return uint8ToBase64(JSON.stringify(
+    { jobname: this.job.name, edge: true }
+  ));
+}
+
+function send (signature) { // {{{1
+  this.ws.send(JSON.stringify(
+    { sig64: uint8ToBase64(new Uint8Array(signature)) }
+  ))
+}
+

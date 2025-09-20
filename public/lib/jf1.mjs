@@ -28,19 +28,19 @@ class Connection { // {{{1
       this.status = Connection.OPEN
       log(`${tag()} open this`, this)
     }
-    this.ws.onmessage = data => {
+    this.ws.onmessage = event => {
+      let data = event.data.toString()
       try {
-        data = data.toString()
         this.dispatch(data)
       } catch(err) {
-        log(`${tag()} error`, err)
+        log(`${tag()} ERROR`, err)
       }
-      this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
+      this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this, 'data', data)
     }
-    promise.then(loop => loop ? this.connect() : this.done()).
+    return promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
         console.error(e)
-      })
+      });
   }
   
   dispatch (data) { // {{{2
@@ -65,25 +65,39 @@ class Connection { // {{{1
     }
     log(`${tag()}`, 'DONE')
     //process.exit() // TODO exit code
+    return Promise.resolve(this.result);
   }
 
   sign (data) { // {{{2
     let tag = _ => this.name + '.sign'
     let payload64 = uint8ToBase64(data)
-    crypto.subtle.importKey('jwk', JSON.parse(this.sk), 'Ed25519', true, ['sign']).
-      then(sk => {
-        return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
-      }).then(signature => {
-        let sig64 = uint8ToBase64(new Uint8Array(signature))
-        this.ws.send(JSON.stringify({ payload64, sig64 }))
-        this.status = Connection.APPROVED
-        log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
-        let payload = JSON.parse(data)
-        if (payload.edge) {
-          this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))
-          this.status = Connection.JOB_STARTED
-        }
-      }).catch(e => console.error(e))
+    let send = sig64 => {
+      this.ws.send(JSON.stringify({ payload64, sig64 }))
+      this.status = Connection.APPROVED
+      log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
+      let payload = JSON.parse(data)
+      if (payload.edge) {
+        this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))
+        this.status = Connection.JOB_STARTED
+      }
+    }
+    if (this.url.startsWith('wss://')) {
+      crypto.subtle.importKey('jwk', JSON.parse(this.sk), 'Ed25519', true, ['sign']).
+        then(sk => {
+          return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
+        }).then(signature => send(uint8ToBase64(new Uint8Array(signature)))).
+        catch(e => console.error(e))
+    } else { // use DEV_KIT.sign
+      log(`${tag()} this.url`, this.url)
+      if (++Connection.aux.count == +2) {
+        return; // avoid calling 'sign' recursively TODO complete
+      }
+      post_job(
+        post_job_args(
+          'DEV_KIT', 'hx/sign', decodeURIComponent(config.userKeys), payload64
+        )
+      ).then(sig64 => send(sig64)).catch(e => console.error(e))
+    }
     return this.status = Connection.APPROVING;
   }
 
@@ -96,6 +110,10 @@ class Connection { // {{{1
   static READY = +4 // {{{2
 
   static JOB_STARTED = +5 // {{{2
+
+  static aux = { // {{{2
+    count: +0,
+  }
 
   // }}}2
 }
@@ -149,18 +167,23 @@ function post_job (args) { // no client certificate required {{{1
     location.protocol.startsWith('https') ? 'wss://job.kloudoftrust.org/job'
     : 'ws://ko:8787/job' // FIXME use location.host instead of ko:8787
   let url = `${originJob}/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
+  if (args.length == 5) {
+    url += `?${args[4]}`
+  }
   log('post_job url', url)
-  new User({
+  return new User({
     name: 'user',
     sk: args[3],
     url
-  }).connect()
+  }).connect();
 }
 
 function post_job_args (svcId, jobname, userKeys, payload64 = null) { // {{{1
   let [sk, pk] = userKeys.split(' ')
-  if (jobname == 'hx/signTaking') { // FIXME
-    return [pk, svcId, jobname, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`];
+  if (jobname == 'hx/sign') {
+    return [
+      pk, svcId, jobname, sk, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`
+    ];
   }
   return [pk, svcId, jobname, sk];
 }

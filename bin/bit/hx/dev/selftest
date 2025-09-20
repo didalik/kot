@@ -18,4 +18,11 @@ export JOBUSER_SK JOBUSER_PK
 export HX_SERVICES_ID=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
 
 bin/dev.mjs put_agent $JOBAGENT_PK $HX_SERVICES_ID '*selftest' hx &
+while bin/dev.mjs put_agent $JOBAGENT_PK DEV_KIT dk hx; do date; done &
+CHILD=$!
+echo DEV_KIT $CHILD
+
+trap "echo -e '\n- killing $CHILD'; kill $CHILD" SIGINT
+
 echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK $HX_SERVICES_ID 'hx/selftest' browser=http://ko:8787/hx
+wait

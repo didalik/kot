@@ -106,7 +106,7 @@ class Reqst extends Ad { // {{{1
     super(base)
     let done = this.job.userDone
     if (done) { // job done on edge, agent not required
-      this.ws.send(JSON.stringify({ jobname: this.job.name, edge: true }))
+      this.job.payload2sign.call(this)
       return;
     }
     this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)

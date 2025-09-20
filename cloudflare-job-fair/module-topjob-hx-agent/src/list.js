@@ -16,14 +16,17 @@
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
   jobs: [
     { name: 'dopad', // {{{2
-      userAuth: (pk, env) => {
+      payload2sign: function () { // {{{3
+        this.ws.send(JSON.stringify({ jobname: this.job.name, edge: true }))
+      },
+      userAuth: (pk, env) => { // {{{3
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userAuth pk', pk, 'env', env)
         if (pk != env.hx_ownerPK) {
           throw Error('Not Authorized')
         }
         return true;
       },
-      userDone: (reqst, durableObject, opts) => {
+      userDone: (reqst, durableObject, opts) => { // {{{3
         let keys = [], values = []
         for (const key of reqst.parms.keys()) {
           keys.push(key)
@@ -37,7 +40,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
           reqst.ws.close() // TODO handle result=false
           return Promise.resolve(result);
         })
-      },
+      }, // }}}3
     },
     { name: 'reset_testnet', // {{{2
       agentAuth: (pk, env) => {
