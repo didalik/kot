@@ -70,17 +70,17 @@ export const DEV_KIT = { // {{{1
           'jwk', JSON.parse(this.parms.get('sk')), 'Ed25519', true, ['sign']
         ).then(sk => crypto.subtle.sign(
           'Ed25519', sk, new TextEncoder().encode(payload64)
-        )).then(signature => send.call(this, signature)).
+        )).then(signature => send.call(this, payload64, signature)).
           catch(e => console.error(e))
       },
       userAuth: (pk, env) => { // {{{3
         console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userAuth pk', pk)
         return true;
       },
-      userDone: (hub, durableObject) => { // {{{3
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone hub', hub, 'durableObject', durableObject);
-        let sk = hub.parms.get('sk')
-        let payload64 = hub.parms.get('payload64')
+      userDone: (that, durableObject) => { // {{{3
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone that', that, 'durableObject', durableObject);
+        let sk = that.parms.get('sk')
+        let payload64 = that.parms.get('payload64')
         return crypto.subtle.importKey(
           'jwk', JSON.parse(sk), 'Ed25519', true, ['sign']
         ).then(sk => crypto.subtle.sign(
@@ -88,7 +88,8 @@ export const DEV_KIT = { // {{{1
         ).then(signature => {
           let sig64 = uint8ToBase64(new Uint8Array(signature))
           console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone sig64', sig64)
-          hub.ws.send(sig64)
+          that.ws.send(JSON.stringify({ sig64 }))
+          that.ws.close()
           return Promise.resolve(true);
         });
       }, // }}}3
@@ -115,9 +116,9 @@ function payload64Edge () { // {{{1
   ));
 }
 
-function send (signature) { // {{{1
+function send (payload64, signature) { // {{{1
   this.ws.send(JSON.stringify(
-    { sig64: uint8ToBase64(new Uint8Array(signature)) }
+    { payload64, sig64: uint8ToBase64(new Uint8Array(signature)) }
   ))
 }
 

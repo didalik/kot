@@ -1,6 +1,9 @@
-import { uint8ToBase64, } from './util.mjs' // {{{1
-
-let log = console.log // {{{1
+const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0)) // {{{1
+const payload = payload64 => base64ToUint8(payload64).toString().split(',').reduce(
+  (s, c)  => s + String.fromCodePoint(c), ''
+)
+const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
+let log = console.log
 let opts = ''
 
 class Connection { // {{{1
@@ -88,9 +91,13 @@ class Connection { // {{{1
         }).then(signature => send(uint8ToBase64(new Uint8Array(signature)))).
         catch(e => console.error(e))
     } else { // use DEV_KIT.sign
-      log(`${tag()} this.url`, this.url)
+      log(`${tag()} this`, this)
+      this.payload64 && log(`${tag()} payload`, payload(this.payload64))
       if (++Connection.aux.count == +2) {
-        return; // avoid calling 'sign' recursively TODO complete
+        this.ws.send(data)
+        this.ws.send(JSON.stringify({ args: [] }))
+        this.status = Connection.JOB_STARTED
+        return; // avoid calling 'sign' recursively
       }
       post_job(
         post_job_args(
