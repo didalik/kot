@@ -5,7 +5,7 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 export const DEV_KIT = { // {{{1
-  test_signTaking: function (opts) { return test_signTaking.call(this, opts); },
+  test_sign: function (opts) { return test_sign.call(this, opts); },
 }
 
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
@@ -52,7 +52,8 @@ function setup_selftest (opts = { args: [] }) { // {{{1
   })
 }
 
-function test_signTaking () { // {{{1
-  this.ws.send('Hello from test_signTaking!')
+function test_sign () { // {{{1
+  this.ws.send('Hello from test_sign!')
+  this.ws.close()
 }
 

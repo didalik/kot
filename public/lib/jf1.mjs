@@ -96,14 +96,7 @@ class Connection { // {{{1
           payload64, uint8ToBase64(new Uint8Array(signature))
         )).catch(e => console.error(e))
     } else { // use DEV_KIT.sign
-      //log(`${tag()} this`, this)
-      //this.payload64 && log(`${tag()} payload`, payload(this.payload64))
       if (++Connection.aux.count == +2) {
-        /*
-        this.ws.send(data)
-        this.ws.send(JSON.stringify(this.opts))
-        this.status = Connection.JOB_STARTED
-        */
         send(this.payload64, this.sig64)
         return; // avoid calling 'sign' recursively
       }
