@@ -88,7 +88,7 @@ export const DEV_KIT = { // {{{1
         ).then(signature => {
           let sig64 = uint8ToBase64(new Uint8Array(signature))
           console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone sig64', sig64)
-          that.ws.send(JSON.stringify({ sig64 }))
+          that.ws.send(JSON.stringify({ payload64, sig64 }))
           that.ws.close()
           return Promise.resolve(true);
         });

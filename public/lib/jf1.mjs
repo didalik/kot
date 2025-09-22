@@ -4,7 +4,6 @@ const payload = payload64 => base64ToUint8(payload64).toString().split(',').redu
 )
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 let log = console.log
-let opts = ''
 
 class Connection { // {{{1
   constructor (base) { // {{{2
@@ -68,42 +67,51 @@ class Connection { // {{{1
     }
     log(`${tag()}`, 'DONE')
     //process.exit() // TODO exit code
-    return Promise.resolve(this.result);
+    return Promise.resolve(JSON.parse(this.result));
   }
 
   sign (data) { // {{{2
     let tag = _ => this.name + '.sign'
     let payload64 = uint8ToBase64(data)
-    let send = sig64 => {
-      this.ws.send(JSON.stringify({ payload64, sig64 }))
+    
+    let send = (payload64, sig64) => {
+      let pl = JSON.parse(
+        payload64 == this.payload64 ? payload(payload64) : data
+      )
+      log(`${tag()} payload`, pl, 'this', this, 'data', data)
+      this.ws.send(pl.edge ? data : JSON.stringify({ payload64, sig64 }))
       this.status = Connection.APPROVED
-      log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
-      let payload = JSON.parse(data)
-      if (payload.edge) {
-        this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))
+
+      if (pl.edge) {
+        this.ws.send(JSON.stringify(this.opts))
         this.status = Connection.JOB_STARTED
       }
     }
+
     if (this.url.startsWith('wss://')) {
       crypto.subtle.importKey('jwk', JSON.parse(this.sk), 'Ed25519', true, ['sign']).
         then(sk => {
           return crypto.subtle.sign('Ed25519', sk, new TextEncoder().encode(payload64));
-        }).then(signature => send(uint8ToBase64(new Uint8Array(signature)))).
-        catch(e => console.error(e))
+        }).then(signature => send(
+          payload64, uint8ToBase64(new Uint8Array(signature))
+        )).catch(e => console.error(e))
     } else { // use DEV_KIT.sign
-      log(`${tag()} this`, this)
-      this.payload64 && log(`${tag()} payload`, payload(this.payload64))
+      //log(`${tag()} this`, this)
+      //this.payload64 && log(`${tag()} payload`, payload(this.payload64))
       if (++Connection.aux.count == +2) {
+        /*
         this.ws.send(data)
-        this.ws.send(JSON.stringify({ args: [] }))
+        this.ws.send(JSON.stringify(this.opts))
         this.status = Connection.JOB_STARTED
+        */
+        send(this.payload64, this.sig64)
         return; // avoid calling 'sign' recursively
       }
       post_job(
         post_job_args(
           'DEV_KIT', 'hx/sign', decodeURIComponent(config.userKeys), payload64
         )
-      ).then(sig64 => send(sig64)).catch(e => console.error(e))
+      ).then(r => send(r.payload64, r.sig64)).catch(e => console.error(e))
     }
     return this.status = Connection.APPROVING;
   }
@@ -155,13 +163,14 @@ class User extends Connection { // {{{1
   dispatch (data) { // {{{2
     switch (this.status) {
       case Connection.JOB_STARTED:
-        return log(data);
+        return log(this.result = data);
     }
     super.dispatch(data)
     switch (this.status) {
       case Connection.READY:
-        this.ws.send(JSON.stringify(opts))
+        this.ws.send(JSON.stringify(this.opts))
         this.status = Connection.JOB_STARTED
+        log(this.name + '.dispatch Connection.JOB_STARTED', Connection.JOB_STARTED, 'this', this)
         break
     }
   }
@@ -180,6 +189,7 @@ function post_job (args) { // no client certificate required {{{1
   log('post_job url', url)
   return new User({
     name: 'user',
+    opts: { args: [] },
     sk: args[3],
     url
   }).connect();
