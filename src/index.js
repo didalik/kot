@@ -38,6 +38,9 @@ export class KoT_Do extends DurableObject { // {{{1
           return new Response(err.message, { status: 401 });
         case 'Not Found':
           return new Response(err.message, { status: 404 });
+        default:
+          let msg = this.env.hx_ownerPK + ' *** ' + err.message
+          return new Response(msg, { status: 500 });
       }
     }
   }

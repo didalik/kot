@@ -38,7 +38,7 @@ class Connection { // {{{1
         data = data.toString()
         this.dispatch(data)
       } catch(err) {
-        log(`${tag()} error`, err)
+        log(`${tag()} ERROR`, err)
       }
       this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
     })
