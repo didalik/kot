@@ -22,13 +22,15 @@ class Connection { // {{{1
       reject(err)
     }
     this.ws.onclose = data => {
-      log(`${tag()} close`, data)
+      Connection.aux.count--
+      log(`${tag()} close`, data, 'Connection.aux.count', Connection.aux.count)
       this.ws.close()
       resolve(false)
     }
     this.ws.onopen = _ => {
       this.status = Connection.OPEN
-      log(`${tag()} open this`, this)
+      Connection.aux.count++
+      log(`${tag()} open this`, this, 'Connection.aux.count', Connection.aux.count)
     }
     this.ws.onmessage = event => {
       let data = event.data.toString()
@@ -67,7 +69,9 @@ class Connection { // {{{1
     }
     log(`${tag()}`, 'DONE')
     //process.exit() // TODO exit code
-    return Promise.resolve(JSON.parse(this.result));
+    return Promise.resolve(
+      this.result.startsWith('{') ? JSON.parse(this.result) : this.result
+    );
   }
 
   sign (data) { // {{{2
@@ -96,7 +100,7 @@ class Connection { // {{{1
           payload64, uint8ToBase64(new Uint8Array(signature))
         )).catch(e => console.error(e))
     } else { // use DEV_KIT.sign
-      if (++Connection.aux.count == +2) {
+      if (this.url.indexOf('hx/sign') > 0) {
         send(this.payload64, this.sig64)
         return; // avoid calling 'sign' recursively
       }

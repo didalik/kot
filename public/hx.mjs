@@ -25,13 +25,15 @@ console.log(config, location)
 
 if (config.test) {
   window.config = config // to use config in Connection.sign
-  post_job(
-    post_job_args(
-      'DEV_KIT',
-      'hx/test_sign',
-      decodeURIComponent(config.userKeys)
+  for (let i = 0; i < 3; i++) {
+    post_job(
+      post_job_args(
+        'DEV_KIT',
+        'hx/test_sign',
+        decodeURIComponent(config.userKeys)
+      )
     )
-  )
+  }
 }
 /*
 kit.initVm(config).then(vm => Promise.all([
