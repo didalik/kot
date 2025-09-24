@@ -102,7 +102,7 @@ class Connection { // {{{1
     } else { // use DEV_KIT.sign
       if (this.url.indexOf('hx/sign') > 0) {
         send(this.payload64, this.sig64)
-        return; // avoid calling 'sign' recursively
+        return;
       }
       post_job(
         post_job_args(

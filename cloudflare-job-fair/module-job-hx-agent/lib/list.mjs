@@ -8,9 +8,18 @@ export const DEV_KIT = { // {{{1
   test_sign: function (opts) { return test_sign.call(this, opts); },
 }
 
+export const HX_KIT = { // {{{1
+  issuerSign: function (opts) { return issuerSign.call(this, opts); },
+}
+
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
   selftest: function (opts) { return selftest.call(this, opts); },
   setup_selftest: function (opts) { return setup_selftest.call(this, opts); },
+}
+
+function issuerSign (opts) { // {{{1
+  this.ws.send('Hello from issuerSign!')
+  this.ws.close()
 }
 
 function selftest () { // {{{1
