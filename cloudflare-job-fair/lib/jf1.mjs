@@ -185,6 +185,7 @@ function jagURLpath (args) { // CLIENT {{{1
           return `/${args[3]}/top/${args[1]}/${encodeURIComponent(args[0])}`;
         case '*selftest':
         case 'dk': // DEV_KIT
+        case 'hx': // HX_KIT
           return `/${args[3]}/${args[1]}/${encodeURIComponent(args[0])}`;
       }
     default:

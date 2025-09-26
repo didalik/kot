@@ -74,11 +74,11 @@ export const DEV_KIT = { // {{{1
           catch(e => console.error(e))
       },
       userAuth: (pk, env) => { // {{{3
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userAuth pk', pk)
+        console.log('DEV_KIT sign userAuth pk', pk)
         return true;
       },
       userDone: (that, durableObject) => { // {{{3
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone that', that, 'durableObject', durableObject);
+        console.log('DEV_KIT sign userDone that', that, 'durableObject', durableObject);
         let sk = that.parms.get('sk')
         let payload64 = that.parms.get('payload64')
         return crypto.subtle.importKey(
@@ -87,7 +87,7 @@ export const DEV_KIT = { // {{{1
           'Ed25519', sk, new TextEncoder().encode(payload64))
         ).then(signature => {
           let sig64 = uint8ToBase64(new Uint8Array(signature))
-          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ sign userDone sig64', sig64)
+          console.log('DEV_KIT sign userDone sig64', sig64)
           that.ws.send(JSON.stringify({ payload64, sig64 }))
           that.ws.close()
           return Promise.resolve(true);
@@ -96,13 +96,55 @@ export const DEV_KIT = { // {{{1
     },
     { name: 'test_sign', // {{{2
       agentAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_sign agentAuth pk', pk)
+        console.log('DEV_KIT test_sign agentAuth pk', pk)
         if (pk != env.hx_ownerPK) {
           throw Error('Not Authorized')
         }
       },
       userAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ test_sign userAuth pk', pk)
+        console.log('DEV_KIT test_sign userAuth pk', pk)
+        return true;
+      },
+    },
+    // }}}2
+  ],
+}
+
+export const HX_KIT = { // {{{1
+  jobs: [
+    { name: 'get_txid_pos', // {{{2
+      agentAuth: (pk, env) => {
+        console.log('HX_KIT get_txid_pos agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('HX_KIT get_txid_pos userAuth pk', pk)
+        return true;
+      },
+    },
+    { name: 'issuerSign', // {{{2
+      agentAuth: (pk, env) => {
+        console.log('HX_KIT issuerSign agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('HX_KIT issuerSign userAuth pk', pk)
+        return true;
+      },
+    },
+    { name: 'put_txid_pos', // {{{2
+      agentAuth: (pk, env) => {
+        console.log('HX_KIT put_txid_pos agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('HX_KIT put_txid_pos userAuth pk', pk)
         return true;
       },
     },

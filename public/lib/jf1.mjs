@@ -175,7 +175,7 @@ class User extends Connection { // {{{1
   // }}}2
 }
 
-function post_job (args) { // no client certificate required {{{1
+function post_job (args, opts = {args:[]}) { // no client certificate required {{{1
   let originJob =
     location.protocol.startsWith('https') ? 'wss://job.kloudoftrust.org/job'
     : 'ws://ko:8787/job' // FIXME use location.host instead of ko:8787
@@ -186,15 +186,16 @@ function post_job (args) { // no client certificate required {{{1
   log('post_job url', url)
   return new User({
     name: 'user',
-    opts: { args: [] },
+    opts,
     sk: args[3],
+    svcId: args[1],
     url
   }).connect();
 }
 
 function post_job_args (svcId, jobname, userKeys, payload64 = null) { // {{{1
   let [sk, pk] = userKeys.split(' ')
-  if (jobname == 'hx/sign') {
+  if (svcId == 'DEV_KIT' && jobname == 'hx/sign') {
     return [
       pk, svcId, jobname, sk, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`
     ];

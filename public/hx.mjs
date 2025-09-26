@@ -21,11 +21,11 @@ let config = { // {{{1
   user,
   userKeys: 'hx_userKeys', // TODO generate job fair sk & pk in the browser
 }
+window.config = config
 /*
 console.log(config, location)
 
 if (config.test) {
-  window.config = config // to use config in Connection.sign
   for (let i = 0; i < 3; i++) {
     post_job(
       post_job_args(

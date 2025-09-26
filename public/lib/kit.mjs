@@ -17,6 +17,7 @@ import {
 import { addStream, cbEffect, postBody, } from './aux.mjs'
 import { addLine, retrieveItem, storeItem, } from './util.mjs'
 import { JobChannel, Channel, Model, Test, } from './jc.mjs'
+import { post_job, post_job_args, } from './jf1.mjs'
 import {
   Keypair, MemoHash, MemoText, TransactionBuilder,
 } from '@stellar/stellar-sdk'
@@ -395,7 +396,7 @@ class ModalPane { // {{{1
         'Closing Deal...'
       updateInfoWindow(tX.infoWindow, iwc, tX.marker)
       let make = vm.d.tXs_mapped.find(x => x.txid == tX.memo2str)
-      let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
+      //let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
       toHEXA.call(vm, make.amount, issuerSign).then(_ => {
         iwc = iwc.slice(0, iwc.indexOf('Closing Deal...')) +
           'Deal closed. You got HEXA ' + make.amount
@@ -475,7 +476,7 @@ class User { // {{{1
       }
       vm.e.log('new User updateTrustlineHEXA updateTrustlineAndPay.call')
      
-      let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
+      //let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
       updateTrustlineAndPay.call(vm, 
         vm.d.user.account, Keypair.fromSecret(vm.d.user.keys[0]), 
         vm.d.user.keys[1], '100000', // vm.d.limit == '1000000' 
@@ -524,7 +525,7 @@ class User { // {{{1
     let make = d.tXs_mapped.find(v => v.txid == tX.memo2str)
     e.log('User breakDeal tX', tX, 'c.latest', c.latest)
 
-    let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
+    //let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
     let amount = make ? make.amount : tX.amount
     return clawback.call(this.vm,
       d.user.account, Keypair.fromSecret(d.user.keys[0]), 
@@ -592,7 +593,7 @@ class User { // {{{1
   openDeal (tX) { // {{{2
     let { s, e, c, d } = this.vm
     let make = d.tXs_mapped.find(v => v.txid == tX.memo2str)
-    tX.opts.issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
+    tX.opts.issuerSign = issuerSign //(body, tag) => postBody(_originCFW, '/' + tag, body)
     e.log('User openDeal tX', tX, 'make', make)
 
     let f = tX.offer ? offerTakeDeal : requestTakeDeal
@@ -1074,6 +1075,17 @@ function initView (config, resolve, reject) { // {{{1
     resolve(ModalPane.init(this))
   })
   .catch(e => { console.error(e); }); 
+}
+
+function issuerSign (txXDR, tag) { // {{{1
+  return post_job(
+    post_job_args(
+      'HX_KIT',
+      'hx/issuerSign',
+      decodeURIComponent(config.userKeys), // using window.config
+    ),
+    { txXDR, tag }
+  );
 }
 
 function makeX (offer, content, x, secret, keep) { // {{{1

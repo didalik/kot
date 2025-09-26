@@ -1,7 +1,6 @@
 import * as hxKit from '../module-job-hx-agent/src/list.js' // {{{1
 import * as hxTopKit from '../module-topjob-hx-agent/src/list.js'
 
-let durableObject; // {{{1
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
@@ -141,7 +140,7 @@ class Reqst extends Ad { // {{{1
     }
     if (this.status == Ad.MATCH_TAKEN) {
       console.log('Reqst.onmessage message', message)
-      this.job.userDone(this, durableObject, JSON.parse(message)).
+      this.job.userDone(this, this.durableObject, JSON.parse(message)).
         then(bool => {
           console.log('this.job.userDone bool', bool)
         })
@@ -173,9 +172,10 @@ const JobFairImpl = { // {{{1
         return addReqst(request, env, ctx, url.pathname);
       }
     }
-    durableObject ??= this
     let parms = new URLSearchParams(url.search)
-    console.log('-----------------------------')
+    console.log('-----------------------------', 
+      this.ctx.id.equals(this.env.KOT_DO_WSH_ID)
+    )
     console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
@@ -183,10 +183,10 @@ const JobFairImpl = { // {{{1
     if (agent) {
       let topKit = url.pathname.startsWith('/jag/hx/top') // FIXME hx hardcoded
       let pk = decodeURIComponent(path[topKit ? 5 : 4])
-      addOfferDO(ws, path, pk, parms, topKit, actor_id)
+      addOfferDO.call(this, ws, path, pk, parms, topKit, actor_id)
     } else {
       let pk = decodeURIComponent(path[5])
-      addReqstDO(ws, path, pk, parms, actor_id)
+      addReqstDO.call(this, ws, path, pk, parms, actor_id)
     }
   },
 
@@ -204,6 +204,28 @@ const JobFairImpl = { // {{{1
   // }}}2
 }
 
+function addOffer (request, env, ctx) { // {{{1
+  let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
+  return stub.fetch(request);
+}
+
+function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
+  let kit = topKit ? hxTopKit : hxKit
+  let kitId = path[topKit ? 4 : 3]
+  let jobs = kit[kitId].jobs
+  for (let job of jobs) {
+    if (job.agentAuth) {
+      job.agentAuth(pk, this.env)
+      let offer = new Offer(
+        { agentId, durableObject: this, job, jobs, kitId, parms, pk, topKit, ws, }
+      )
+      if (offer.status == Ad.TAKING_MATCH) {
+        break
+      }
+    }
+  }
+}
+
 function addReqst (request, env, ctx, pathname) { // {{{1
   if (pathname == '/hack/do0') { // DONE
     try {
@@ -218,11 +240,6 @@ function addReqst (request, env, ctx, pathname) { // {{{1
   return stub.fetch(request);
 }
 
-function addOffer (request, env, ctx) { // {{{1
-  let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
-  return stub.fetch(request);
-}
-
 function addReqstDO (ws, path, pk, parms, userId) { // {{{1
   let jobname = path[3]
   let kitId = path[4]
@@ -230,34 +247,23 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
     case 'jcl/hx':
       for (let job of hxTopKit[kitId].jobs) {
         if (job.name == jobname) {
-          job.userAuth(pk, durableObject.env)
-          return new Reqst({ job, parms, path, pk, userId, ws, });
+          job.userAuth(pk, this.env)
+          return new Reqst(
+            { durableObject: this, job, parms, path, pk, userId, ws, }
+          );
         }
       }
     case 'job/hx':
       for (let job of hxKit[kitId].jobs) {
         if (job.name == jobname) {
-          job.userAuth(pk, durableObject.env)
-          return new Reqst({ job, parms, path, pk, ws, });
+          job.userAuth(pk, this.env)
+          return new Reqst(
+            { durableObject: this, job, parms, path, pk, ws, }
+          );
         }
       }
     default:
       throw Error(path);
-  }
-}
-
-function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
-  let kit = topKit ? hxTopKit : hxKit
-  let kitId = path[topKit ? 4 : 3]
-  let jobs = kit[kitId].jobs
-  for (let job of jobs) {
-    if (job.agentAuth) {
-      job.agentAuth(pk, durableObject.env)
-      let offer = new Offer({ agentId, job, jobs, kitId, parms, pk, topKit, ws, })
-      if (offer.status == Ad.TAKING_MATCH) {
-        break
-      }
-    }
   }
 }
 

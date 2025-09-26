@@ -9,7 +9,9 @@ export const DEV_KIT = { // {{{1
 }
 
 export const HX_KIT = { // {{{1
+  get_txid_pos: function (opts) { return get_txid_pos.call(this, opts); },
   issuerSign: function (opts) { return issuerSign.call(this, opts); },
+  put_txid_pos: function (opts) { return put_txid_pos.call(this, opts); },
 }
 
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
@@ -17,8 +19,16 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
   setup_selftest: function (opts) { return setup_selftest.call(this, opts); },
 }
 
+function get_txid_pos (opts) { // {{{1
+  this.ws.send('Hello from get_txid_pos!')
+  this.ws.close()
+}
 function issuerSign (opts) { // {{{1
   this.ws.send('Hello from issuerSign!')
+  this.ws.close()
+}
+function put_txid_pos (opts) { // {{{1
+  this.ws.send('Hello from put_txid_pos!')
   this.ws.close()
 }
 
