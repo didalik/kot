@@ -40,6 +40,7 @@ export class KoT_Do extends DurableObject { // {{{1
           return new Response(err.message, { status: 404 });
         default:
           let msg = this.env.hx_ownerPK + ' *** ' + err.message
+          console.error('KoT_Do.fetch err', err)
           return new Response(msg, { status: 500 });
       }
     }

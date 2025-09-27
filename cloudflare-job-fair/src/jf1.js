@@ -66,6 +66,8 @@ class Ad { // {{{1
 
   static PIPING = +3 // {{{2
 
+  //static durableObject // {{{2
+
   static ws2ad = new Map() // {{{2
 
   // }}}2
@@ -84,7 +86,7 @@ class Offer extends Ad { // {{{1
   }
 
   take (match) { // {{{2
-    console.log('Offer.take match', match)
+    //console.log('Offer.take match', match)
     this.ws.send(JSON.stringify({
       job: {
         kit: this.kitId,
@@ -130,7 +132,7 @@ class Reqst extends Ad { // {{{1
         job.offerQueue.splice(index, 1)
       }
     }
-    console.log('Reqst.match offer.jobs', offer.jobs)
+    //console.log('Reqst.match this', this, 'offer', offer)
     return offer;
   }
 
@@ -150,7 +152,7 @@ class Reqst extends Ad { // {{{1
   }
 
   take (match) { // {{{2
-    console.log('Reqst.take match', match)
+    //console.log('Reqst.take match', match)
     this.ws.send(JSON.stringify({
       agentId: match.agentId,
     }))
@@ -172,10 +174,11 @@ const JobFairImpl = { // {{{1
         return addReqst(request, env, ctx, url.pathname);
       }
     }
-    let parms = new URLSearchParams(url.search)
+    //Ad.durableObject ??= this
     console.log('-----------------------------', 
       this.ctx.id.equals(this.env.KOT_DO_WSH_ID)
     )
+    let parms = new URLSearchParams(url.search)
     console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
     let ws = env_OR_ws
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
@@ -217,7 +220,7 @@ function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
     if (job.agentAuth) {
       job.agentAuth(pk, this.env)
       let offer = new Offer(
-        { agentId, durableObject: this, job, jobs, kitId, parms, pk, topKit, ws, }
+        { agentId, job, jobs, kitId, parms, pk, topKit, ws, }
       )
       if (offer.status == Ad.TAKING_MATCH) {
         break
@@ -249,7 +252,7 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
         if (job.name == jobname) {
           job.userAuth(pk, this.env)
           return new Reqst(
-            { durableObject: this, job, parms, path, pk, userId, ws, }
+            { job, parms, path, pk, userId, ws, }
           );
         }
       }
@@ -258,7 +261,7 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
         if (job.name == jobname) {
           job.userAuth(pk, this.env)
           return new Reqst(
-            { durableObject: this, job, parms, path, pk, ws, }
+            { job, parms, path, pk, ws, }
           );
         }
       }

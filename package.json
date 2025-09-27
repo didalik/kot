@@ -13,6 +13,6 @@
     "@stellar/stellar-sdk": "latest",
     "esbuild": "latest",
     "node-fetch": "^3.3.2",
-    "wrangler": "^4.35.0"
+    "wrangler": "^4.40.2"
   }
 }

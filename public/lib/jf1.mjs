@@ -11,11 +11,15 @@ class Connection { // {{{1
   }
 
   connect () { // {{{2
-    this.ws = new WebSocket(this.url)
-    let { promise, resolve, reject } = Promise.withResolvers()
     let tag = _ => {
       return this.name + '.connect';
     }
+    try {
+      this.ws = new WebSocket(this.url)
+    } catch(err) {
+      log(`${tag()} E R R O R `, err)
+    }
+    let { promise, resolve, reject } = Promise.withResolvers()
     this.ws.onerror = err => {
       err.message.endsWith('401') || err.message.endsWith('404') ||
         log(`${tag()} error`, err)
@@ -99,7 +103,7 @@ class Connection { // {{{1
         }).then(signature => send(
           payload64, uint8ToBase64(new Uint8Array(signature))
         )).catch(e => console.error(e))
-    } else { // use DEV_KIT.sign
+    } else { // use DEV_KIT.sign TODO handle Cloudflare Workers limitation
       if (this.url.indexOf('hx/sign') > 0) {
         send(this.payload64, this.sig64)
         return;
@@ -183,7 +187,7 @@ function post_job (args, opts = {args:[]}) { // no client certificate required {
   if (args.length == 5) {
     url += `?${args[4]}`
   }
-  log('post_job url', url)
+  log('post_job url', url, 'opts', opts)
   return new User({
     name: 'user',
     opts,
