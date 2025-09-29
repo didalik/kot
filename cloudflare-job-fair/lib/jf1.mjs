@@ -19,21 +19,22 @@ class Connection { // {{{1
     let tag = _ => {
       return this.name + '.connect';
     }
-    this.ws.on('error', err => {
+    this.ws.on('error', err => { // {{{3
       err.message.endsWith('401') || err.message.endsWith('404') ||
         log(`${tag()} error`, err)
       reject(err)
     })
-    this.ws.on('close', data => {
+    this.ws.on('close', data => { // {{{3
       log(`${tag()} close`, data)
       this.ws.close()
       resolve(false)
     })
-    this.ws.on('open', _ => {
+    this.ws.on('open', _ => { // {{{3
       this.status = Connection.OPEN
+      this.ws.send(this.taking())
       log(`${tag()} open this`, this)
     })
-    this.ws.on('message', data => {
+    this.ws.on('message', data => { // {{{3
       try {
         data = data.toString()
         this.dispatch(data)
@@ -41,7 +42,7 @@ class Connection { // {{{1
         log(`${tag()} ERROR`, err)
       }
       this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
-    })
+    }) // }}}3
     promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
         console.error('UNEXPECTED', e); process.exit(1)
@@ -127,6 +128,10 @@ class Agent extends Connection { // {{{1
     }
   }
 
+  taking () { // {{{2
+    return JSON.stringify({ kitId: this.kitId });
+  }
+
   // }}}2
 }
 
@@ -149,6 +154,10 @@ class User extends Connection { // {{{1
         this.status = Connection.JOB_STARTED
         break
     }
+  }
+
+  taking () { // {{{2
+    return JSON.stringify({ jobpath: this.jobpath, kitId: this.kitId });
   }
 
   // }}}2
@@ -252,6 +261,8 @@ function post_job (node, run, cmd, ...args) { // CLIENT {{{1
   let url = `${urlJob}${path}`
   log('- post_job args', args, 'url', url)
   new User({
+    jobpath: args[2],
+    kitId: args[1],
     name: 'user',
     sk: process.env.JOBUSER_SK,
     url
@@ -274,6 +285,7 @@ async function put_agent (node, run, cmd, ...args) { // CLIENT {{{1
   let url = `${urlJag}${path}`
   log('- put_agent args', args, 'url', url)
   new Agent({
+    kitId: args[1],
     name: 'agent',
     sk: process.env.JOBAGENT_SK,
     url

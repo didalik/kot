@@ -9,15 +9,8 @@ class Ad { // {{{1
     Object.assign(this, base)
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
-    Ad.ws2ad.set(this.ws, this)
-    let match = this.match()
-    if (match) {
-      this.match = match
-      match.match = this
-      this.status = this.take(match)
-      match.status = match.take(this)
-      Ad.ws2ad.set(match.ws, match)
-    }
+    this.openTs = Date.now()
+    Ad.ws2ad.set(this.ws, this) // FIXME
   }
 
   onclose (...args) { // {{{2
@@ -27,8 +20,18 @@ class Ad { // {{{1
     console.log('Ad.onclose this', this, 'args', args)
   }
 
-  onmessage (message) { // {{{2
-    console.log('Ad.onmessage this', this, 'message', message)
+  onmessage (message, match) { // {{{2
+    if (this.openTs) {
+      this.taking = message
+      if (this[match]?.taking) { // TODO have this and this[match] claim (sign) the takes
+        this.ws.send(JSON.stringify({ cmd: 'claim', take: this[match].taking }))
+        this[match].ws.send(JSON.stringify({ cmd: 'claim', take: this.taking }))
+        delete this.openTs
+        delete this[match].openTs
+      }
+      console.log('Ad.onmessage this', this, 'message', message)
+      return;
+    }
     switch (this.status) {
       case Ad.TAKING_MATCH:
         return this.verify(JSON.parse(message));
@@ -77,12 +80,23 @@ class Offer extends Ad { // {{{1
 
   constructor (base) { // {{{2
     super(base)
-    this.status == Ad.TAKING_MATCH || this.job.offerQueue.push(this)
+    let match = this.match()
+    if (match) {
+      this.reqst = match
+      match.offer = this
+      Ad.ws2ad.set(match.ws, match) // FIXME
+    } else {
+      this.job.offerQueue.push(this)
+    }
     console.log('new Offer', this)
   }
 
   match () { // {{{2
     return this.job.requestQueue.shift();
+  }
+
+  onmessage (message) { // {{{2
+    super.onmessage(message, 'reqst')
   }
 
   take (match) { // {{{2
@@ -109,7 +123,14 @@ class Reqst extends Ad { // {{{1
       this.job.payload2sign.call(this)
       return;
     }
-    this.status == Ad.TAKING_MATCH || this.job.requestQueue.push(this)
+    let match = this.match()
+    if (match) {
+      this.offer = match
+      match.reqst = this
+      Ad.ws2ad.set(match.ws, match) // FIXME
+    } else {
+      this.job.requestQueue.push(this)
+    }
     console.log('new Reqst', this)
   }
 
@@ -136,6 +157,9 @@ class Reqst extends Ad { // {{{1
   }
 
   onmessage (message) { // {{{2
+    super.onmessage(message, 'offer')
+    return;
+
     if (!this.job.userDone) {
       return super.onmessage(message);
     }

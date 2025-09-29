@@ -12,10 +12,9 @@
 
 import { uint8ToBase64, } from '../../../public/lib/util.mjs' // {{{1
 
-//// {{{1
+export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
 // GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ is OU in
-// agent's client SSL certificate. It is also being used as a kit ID here:
-export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
+// agent's client SSL certificate. It is also being used as a kit ID here.
   jobs: [
     { name: 'selftest', // {{{2
       agentAuth: (pk, env) => {
@@ -44,18 +43,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         return true;
       },
     },
-    { name: 'signTx', // {{{2
-      agentAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTx agentAuth pk', pk)
-        if (pk != env.hx_ownerPK) {
-          throw Error('Not Authorized')
-        }
-      },
-      userAuth: (pk, env) => {
-        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ signTx userAuth pk', pk)
-        return true;
-      },
-    },
+    // }}}2
   ],
 }
 

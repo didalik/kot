@@ -20,23 +20,24 @@ class Connection { // {{{1
       log(`${tag()} E R R O R `, err)
     }
     let { promise, resolve, reject } = Promise.withResolvers()
-    this.ws.onerror = err => {
+    this.ws.onerror = err => { // {{{3
       err.message.endsWith('401') || err.message.endsWith('404') ||
         log(`${tag()} error`, err)
       reject(err)
     }
-    this.ws.onclose = data => {
+    this.ws.onclose = data => { // {{{3
       Connection.aux.count--
       log(`${tag()} close`, data, 'Connection.aux.count', Connection.aux.count)
       this.ws.close()
       resolve(false)
     }
-    this.ws.onopen = _ => {
+    this.ws.onopen = _ => { // {{{3
       this.status = Connection.OPEN
       Connection.aux.count++
+      this.ws.send(this.taking())
       log(`${tag()} open this`, this, 'Connection.aux.count', Connection.aux.count)
     }
-    this.ws.onmessage = event => {
+    this.ws.onmessage = event => { // {{{3
       let data = event.data.toString()
       try {
         this.dispatch(data)
@@ -44,7 +45,7 @@ class Connection { // {{{1
         log(`${tag()} ERROR`, err)
       }
       this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this, 'data', data)
-    }
+    } // }}}3
     return promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
         console.error(e)
@@ -153,6 +154,10 @@ class Agent extends Connection { // {{{1
     }
   }
 
+  taking () { // {{{2
+    return 'taking a job';
+  }
+
   // }}}2
 }
 
@@ -176,6 +181,10 @@ class User extends Connection { // {{{1
     }
   }
 
+  taking () { // {{{2
+    return JSON.stringify({ jobpath: this.jobpath, kitId: this.kitId });
+  }
+
   // }}}2
 }
 
@@ -189,22 +198,23 @@ function post_job (args, opts = {args:[]}) { // no client certificate required {
   }
   log('post_job url', url, 'opts', opts)
   return new User({
+    jobpath: args[2],
+    kitId: args[1],
     name: 'user',
     opts,
     sk: args[3],
-    svcId: args[1],
     url
   }).connect();
 }
 
-function post_job_args (svcId, jobname, userKeys, payload64 = null) { // {{{1
+function post_job_args (kitId, jobpath, userKeys, payload64 = null) { // {{{1
   let [sk, pk] = userKeys.split(' ')
-  if (svcId == 'DEV_KIT' && jobname == 'hx/sign') {
+  if (kitId == 'DEV_KIT' && jobpath == 'hx/sign') {
     return [
-      pk, svcId, jobname, sk, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`
+      pk, kitId, jobpath, sk, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`
     ];
   }
-  return [pk, svcId, jobname, sk];
+  return [pk, kitId, jobpath, sk];
 }
 
 export { post_job, post_job_args, } // {{{1
