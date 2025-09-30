@@ -1,4 +1,4 @@
-import { JobFairImpl as impl, } from '../cloudflare-job-fair/src/jf2.js' // {{{1
+import { JobFairImpl as impl, } from '../cloudflare-job-fair/src/jf3.js' // {{{1
 
 class DOpad { // {{{1
   constructor (page) {

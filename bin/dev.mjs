@@ -2,8 +2,13 @@
 
 import path from 'path'; // {{{1
 import { 
-  hack, post_jcl, post_job, put_agent, start_testnet_monitor,
-} from '../cloudflare-job-fair/lib/jf1.mjs'
+  configuration,
+  hack, post_jcl, post_job, 
+  promiseWithResolvers,
+  put_agent, start_testnet_monitor,
+} from '../cloudflare-job-fair/lib/jf3.mjs'
+
+Object.assign(configuration, promiseWithResolvers())
 
 const execute = { // {{{1
   hack, post_jcl, post_job, put_agent, start_testnet_monitor,

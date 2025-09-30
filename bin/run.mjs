@@ -6,7 +6,7 @@ import https from 'https';
 import os from 'os'
 import {
   configuration, hack, post_jcl, post_job, put_agent, setkeys, start_testnet_monitor,
-} from '../cloudflare-job-fair/lib/jf1.mjs'
+} from '../cloudflare-job-fair/lib/jf3.mjs'
 
 const mTLS_private_key // {{{1
   = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.key`
@@ -21,7 +21,7 @@ const options = {
 
 Object.assign(configuration, {
   fetch_options: { agent: new https.Agent(options), },
-})
+}, promiseWithResolvers())
 
 const execute = { // {{{1
   hack, post_jcl, post_job, put_agent, setkeys, start_testnet_monitor,

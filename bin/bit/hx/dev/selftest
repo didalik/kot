@@ -15,19 +15,15 @@ read JOBAGENT_SK JOBAGENT_PK < $HOME/.cloudflare-job-fair/CREATOR.keys # {{{1
 export JOBAGENT_SK JOBAGENT_PK
 read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/CREATOR.keys
 export JOBUSER_SK JOBUSER_PK
-export HX_SERVICES_ID=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
+export HX_QA_KIT=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ
 
-bin/dev.mjs put_agent $JOBAGENT_PK $HX_SERVICES_ID '*selftest' hx &
+echo '{"jobs":["selftest"],"top":false}' | bin/dev.mjs put_agent $JOBAGENT_PK hx $HX_QA_KIT &
 CHILD_SELFTEST=$!
-#while bin/dev.mjs put_agent $JOBAGENT_PK DEV_KIT dk hx; do date; done &
-#CHILD_DEV_KIT_LOOP=$!
-while bin/dev.mjs put_agent $JOBAGENT_PK HX_KIT hx hx; do date; done &
+while echo '{"jobs":["get_txid_pos","issuerSign","put_txid_pos"]}' | bin/dev.mjs put_agent $JOBAGENT_PK hx HX_KIT; do date; done &
 CHILD_HX_KIT_LOOP=$!
-#echo SELFTEST $CHILD_SELFTEST DEV_KIT $CHILD_DEV_KIT_LOOP HX_KIT $CHILD_HX_KIT_LOOP
 echo SELFTEST $CHILD_SELFTEST HX_KIT $CHILD_HX_KIT_LOOP
 
-#trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP $CHILD_HX_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP $CHILD_HX_KIT_LOOP" SIGINT
 trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_HX_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_HX_KIT_LOOP" SIGINT
 
-echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK $HX_SERVICES_ID 'hx/selftest' browser=http://ko:8787/hx
+echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK $HX_QA_KIT 'hx/selftest' browser=http://ko:8787/hx
 wait
