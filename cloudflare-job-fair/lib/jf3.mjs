@@ -281,6 +281,8 @@ function promiseWithResolvers () { // {{{1
 function put_agent (node, run, cmd, ...args) { // {{{1
   configuration.promise.then(opts => {
     console.log('put_agent opts', opts)
+    return process.exit(1);
+
     let path = jagURLpath(args)
     let urlJag = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jag'
       : 'ws://127.0.0.1:8787/jag'
@@ -305,7 +307,9 @@ function start_testnet_monitor (node, run, cmd, nwdir, ...args) { // CLIENT {{{1
 
 process.stdin.resume(); // {{{1
 process.stdin.on("data", function (chunk) { return opts += chunk; });
-process.stdin.on("end", _ => console.log(`${process.argv[2]} opts`, opts = JSON.parse(opts.length > 0 ? opts : '{}')));
+process.stdin.on("end", _ => configuration.resolve(
+  opts = JSON.parse(opts.length > 0 ? opts : '{}')
+));
 
 export { // {{{1
   configuration, hack, 
