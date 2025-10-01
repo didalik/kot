@@ -25,5 +25,5 @@ echo SELFTEST $CHILD_SELFTEST HX_KIT $CHILD_HX_KIT_LOOP
 
 trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_HX_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_HX_KIT_LOOP" SIGINT
 
-echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK $HX_QA_KIT 'hx/selftest' browser=http://ko:8787/hx
+echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK hx $HX_QA_KIT selftest browser=http://ko:8787/hx
 wait

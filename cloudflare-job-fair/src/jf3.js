@@ -10,7 +10,7 @@ class Ad { // {{{1
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
     this.openTs = Date.now()
-    Ad.ws2ad.set(this.ws, this) // FIXME
+    Ad.ws2ad.set(this.ws, this)
   }
 
   onclose (...args) { // {{{2
@@ -189,7 +189,7 @@ const JobFairImpl = { // {{{1
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     let url = new URL(request.url)
     let agent = url.pathname.startsWith('/jag')
-    if (ctx_OR_null) { // EDGE
+    if (ctx_OR_null) { // EDGE {{{3
       let ctx = ctx_OR_null, env = env_OR_ws
       if (agent) {
         return addOffer(request, env, ctx, );
@@ -197,23 +197,42 @@ const JobFairImpl = { // {{{1
         return addReqst(request, env, ctx, url.pathname);
       }
     }
-    //Ad.durableObject ??= this
+    //Ad.durableObject ??= this {{{3
     console.log('-----------------------------', 
       this.ctx.id.equals(this.env.KOT_DO_WSH_ID)
     )
+    let path = url.pathname.split('/')
     let parms = new URLSearchParams(url.search)
-    console.log('JobFairImpl.dispatch pathname', url.pathname, 'parms', parms)
+    console.log('JobFairImpl.dispatch path', path, 'parms', parms)
+/*
+JobFairImpl.dispatch path [
+  '',
+  'job',
+  'hx',
+  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',
+  'selftest',
+  'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
+] parms URLSearchParams(0) {}
+---
+JobFairImpl.dispatch path [
+  '',
+  'jag',
+  'hx',
+  'HX_KIT',
+  'get_txid_pos',
+  'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
+] parms URLSearchParams(0) {}
+*/
     let ws = env_OR_ws
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
-    let path = url.pathname.split('/')
     if (agent) {
-      let topKit = url.pathname.startsWith('/jag/hx/top') // FIXME hx hardcoded
-      let pk = decodeURIComponent(path[topKit ? 5 : 4])
+      let topKit = path[3] == 'top'
+      let pk = decodeURIComponent(path[topKit ? 6 : 5])
       addOfferDO.call(this, ws, path, pk, parms, topKit, actor_id)
     } else {
       let pk = decodeURIComponent(path[5])
       addReqstDO.call(this, ws, path, pk, parms, actor_id)
-    }
+    } // }}}3
   },
 
   wsClose: (ws, ...args) => { // {{{2
@@ -236,19 +255,24 @@ function addOffer (request, env, ctx) { // {{{1
 }
 
 function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
+/*
+  console.log('addOfferDO path', path)
+addOfferDO path [
+  '',
+  'jag',
+  'hx',
+  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',
+  'selftest',
+  'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
+]
+*/
   let kit = topKit ? hxTopKit : hxKit
-  let kitId = path[topKit ? 4 : 3]
-  let jobs = kit[kitId].jobs
-  for (let job of jobs) {
-    if (job.agentAuth) {
-      job.agentAuth(pk, this.env)
-      let offer = new Offer(
-        { agentId, job, jobs, kitId, parms, pk, topKit, ws, }
-      )
-      if (offer.status == Ad.TAKING_MATCH) {
-        break
-      }
-    }
+  let index = topKit ? 4 : 3
+  let kitId = path[index]
+  let job = kit[kitId].jobs.find(job => job.name == path[index + 1])
+  if (job.agentAuth) {
+    job.agentAuth(pk, this.env)
+    new Offer({ agentId, job, kitId, parms, pk, topKit, ws, })
   }
 }
 

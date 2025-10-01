@@ -178,30 +178,6 @@ function hackURLpath (args) { // CLIENT {{{1
   return '/' + args[0];
 }
 
-function jagURLpath (args) { // CLIENT {{{1
-/*
-- put_agent args [
-  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',             // 0
-  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ', // 1
-  '*testnet*',                                                // 2
-  'hx'                                                        // 3
-] url ws://127.0.0.1:8787/jag/hx/top/GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ/n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D
-*/
-  switch (args[3]) {
-    case 'hx':
-      switch (args[2]) {
-        case '*testnet*':
-          return `/${args[3]}/top/${args[1]}/${encodeURIComponent(args[0])}`;
-        case '*selftest':
-        case 'dk': // DEV_KIT
-        case 'hx': // HX_KIT
-          return `/${args[3]}/${args[1]}/${encodeURIComponent(args[0])}`;
-      }
-    default:
-      throw Error(args[2]);
-  }
-}
-
 function jclURLpath (args) { // CLIENT {{{1
 /*
 - post_jcl args [
@@ -227,15 +203,6 @@ function jclURLpath (args) { // CLIENT {{{1
   return urlPath;
 }
 
-function jobURLpath (args) { // CLIENT {{{1
-  if (args[2] == 'hx/selftest' && args[3] && args[3].indexOf('=')) {
-    let pair = args[3].split('=')
-    configuration[pair[0]] = pair[1]
-  }
-  let urlPath = `/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
-  return urlPath;
-}
-
 function log (...args) { // CLIENT {{{1
   console.log(...args)
 }
@@ -254,19 +221,35 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   }).connect()
 }
 
-function post_job (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = jobURLpath(args)
-  let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
-    : 'ws://127.0.0.1:8787/job'
-  let url = `${urlJob}${path}`
-  log('- post_job args', args, 'url', url)
-  new User({
-    jobpath: args[2],
-    kitId: args[1],
-    name: 'user',
-    sk: process.env.JOBUSER_SK,
-    url
-  }).connect()
+function post_job (node, run, cmd, ...args) { // {{{1
+/*
+- post_job args [
+  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',
+  'hx',
+  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',
+  'selftest',
+  'browser=http://ko:8787/hx'
+]
+*/
+  configuration.promise.then(opts => {
+    let path = '/' + args[1] + (opts.top ? '/top/' : '/') + args[2] + '/' +
+      args[3] + '/' + encodeURIComponent(args[0])
+    let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
+      : 'ws://127.0.0.1:8787/job'
+    let url = `${urlJob}${path}`
+    if (args[4].startsWith('browser=')) {
+      configuration.browser = args[4].slice(8)
+    }
+    log('- post_job args', args, 'opts', opts, 'url', url, 'configuration', configuration)
+    new User({
+      jobpath: args[2],
+      kitId: args[1],
+      name: 'user',
+      opts,
+      sk: process.env.JOBUSER_SK,
+      url
+    }).connect()
+  })
 }
 
 function promiseWithResolvers () { // {{{1
@@ -280,20 +263,21 @@ function promiseWithResolvers () { // {{{1
 
 function put_agent (node, run, cmd, ...args) { // {{{1
   configuration.promise.then(opts => {
-    console.log('put_agent opts', opts)
-    return process.exit(1);
-
-    let path = jagURLpath(args)
-    let urlJag = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jag'
-      : 'ws://127.0.0.1:8787/jag'
-    let url = `${urlJag}${path}`
-    log('- put_agent args', args, 'url', url)
-    new Agent({
-      kitId: args[1],
-      name: 'agent',
-      sk: process.env.JOBAGENT_SK,
-      url
-    }).connect()
+    log('- put_agent args', args, 'opts', opts)
+    for (let job of opts.jobs) {
+      let path = '/' + args[1] + (opts.top ? '/top/' : '/') + args[2] + '/' +
+        job + '/' + encodeURIComponent(args[0])
+      let urlJag = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jag'
+        : 'ws://127.0.0.1:8787/jag'
+      let url = `${urlJag}${path}`
+      log('- put_agent url', url)
+      new Agent({
+        kitId: args[2],
+        name: 'agent',
+        sk: process.env.JOBAGENT_SK,
+        url
+      }).connect()
+    }
   })
 }
 

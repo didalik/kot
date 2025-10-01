@@ -5,7 +5,9 @@ import fs from 'fs';
 import https from 'https';
 import os from 'os'
 import {
-  configuration, hack, post_jcl, post_job, put_agent, setkeys, start_testnet_monitor,
+  configuration, hack, post_jcl, post_job, 
+  promiseWithResolvers,
+  put_agent, setkeys, start_testnet_monitor,
 } from '../cloudflare-job-fair/lib/jf3.mjs'
 
 const mTLS_private_key // {{{1
