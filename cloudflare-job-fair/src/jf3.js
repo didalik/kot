@@ -4,12 +4,11 @@ import * as hxTopKit from '../module-topjob-hx-agent/src/list.js'
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
-class Ad { // {{{1
+class Ad { // match -> make -> claim -> take {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
-    this.openTs = Date.now()
     Ad.ws2ad.set(this.ws, this)
   }
 
@@ -84,11 +83,23 @@ class Offer extends Ad { // {{{1
     if (match) {
       this.reqst = match
       match.offer = this
-      Ad.ws2ad.set(match.ws, match) // FIXME
+      Ad.ws2ad.set(match.ws, match)
+      this.make(match)
     } else {
       this.job.offerQueue.push(this)
     }
     console.log('new Offer', this)
+  }
+
+  make (match) { // {{{2
+    let making = {
+      agentId: this.agentId, 
+      jobname: this.job.name, 
+      kitId: this.kitId, 
+      topKit: this.topKit
+    }
+    this.ws.send(JSON.stringify(making))
+    match && match.make()
   }
 
   match () { // {{{2
@@ -127,33 +138,27 @@ class Reqst extends Ad { // {{{1
     if (match) {
       this.offer = match
       match.reqst = this
-      Ad.ws2ad.set(match.ws, match) // FIXME
+      Ad.ws2ad.set(match.ws, match) // TODO close other offers from that agent
+      this.make(match)
     } else {
       this.job.requestQueue.push(this)
     }
     console.log('new Reqst', this)
   }
 
+  make (match) { // {{{2
+    let making = {
+      jobname: this.job.name, 
+      kitId: this.kitId, 
+      topKit: this.topKit,
+      userId: this.userId, 
+    }
+    this.ws.send(JSON.stringify(making))
+    match && match.make()
+  }
+
   match () { // {{{2
-    if (this.job.offerQueue.length == 0) {
-      return null;
-    }
-    let offer =  this.job.offerQueue.shift()
-    let ws = offer.ws
-    for (let job of offer.jobs) {
-      if (!job.offerQueue) {
-        continue;
-      }
-      while (job.offerQueue.length > 0) {
-        let index = job.offerQueue.findIndex(offer => offer.ws === ws)
-        if (index < 0) {
-          break;
-        }
-        job.offerQueue.splice(index, 1)
-      }
-    }
-    //console.log('Reqst.match this', this, 'offer', offer)
-    return offer;
+    return this.job.offerQueue.shift();
   }
 
   onmessage (message) { // {{{2
@@ -255,21 +260,20 @@ function addOffer (request, env, ctx) { // {{{1
 }
 
 function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
-/*
-  console.log('addOfferDO path', path)
-addOfferDO path [
+/* {{{2
+JobFairImpl.dispatch path [
   '',
   'jag',
   'hx',
-  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',
-  'selftest',
+  'HX_KIT',
+  'issuerSign',
   'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
 ]
-*/
+*/ // }}}2
   let kit = topKit ? hxTopKit : hxKit
   let index = topKit ? 4 : 3
-  let kitId = path[index]
-  let job = kit[kitId].jobs.find(job => job.name == path[index + 1])
+  let [kitId, jobname] = path.slice(index, index + 2)
+  let job = kit[kitId].jobs.find(job => job.name == jobname)
   if (job.agentAuth) {
     job.agentAuth(pk, this.env)
     new Offer({ agentId, job, kitId, parms, pk, topKit, ws, })
@@ -291,30 +295,13 @@ function addReqst (request, env, ctx, pathname) { // {{{1
 }
 
 function addReqstDO (ws, path, pk, parms, userId) { // {{{1
-  let jobname = path[3]
-  let kitId = path[4]
-  switch (path[1] + '/' + path[2]) {
-    case 'jcl/hx':
-      for (let job of hxTopKit[kitId].jobs) {
-        if (job.name == jobname) {
-          job.userAuth(pk, this.env)
-          return new Reqst(
-            { job, parms, path, pk, userId, ws, }
-          );
-        }
-      }
-    case 'job/hx':
-      for (let job of hxKit[kitId].jobs) {
-        if (job.name == jobname) {
-          job.userAuth(pk, this.env)
-          return new Reqst(
-            { job, parms, path, pk, ws, }
-          );
-        }
-      }
-    default:
-      throw Error(path);
-  }
+  let topKit = path[1] == 'jcl'
+  let kit = topKit ? hxTopKit : hxKit
+  let index = topKit ? 4 : 3
+  let [kitId, jobname] = path.slice(index, index + 2)
+  let job = kit[kitId].jobs.find(job => job.name == jobname)
+  job.userAuth(pk, this.env)
+  new Reqst({ job, kitId, parms, path, pk, topKit, userId, ws, })
 }
 
 function actorId (certSubjectDN) { // {{{1
