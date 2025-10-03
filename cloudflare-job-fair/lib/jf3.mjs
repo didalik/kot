@@ -31,7 +31,7 @@ class Connection { // {{{1
     })
     this.ws.on('open', _ => { // {{{3
       this.status = Connection.OPEN
-      this.ws.send(this.taking())
+      //this.ws.send(this.taking())
       log(`${tag()} open this`, this)
     })
     this.ws.on('message', data => { // {{{3
@@ -119,8 +119,8 @@ class Agent extends Connection { // {{{1
           delete this.ready
           return;
         }
-        let agent = this.job.top ? tjAg : jAg
-        agent[this.job.kit][this.job.name].call({ ws: this.ws }, 
+        let agent = this.topKit ? tjAg : jAg
+        agent[this.kitId][this.jobname].call({ ws: this.ws }, 
           { args: this.args }
         )
         this.status = Connection.JOB_STARTED
@@ -222,7 +222,7 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
 }
 
 function post_job (node, run, cmd, ...args) { // {{{1
-/*
+/* {{{2
 - post_job args [
   'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',
   'hx',
@@ -230,7 +230,7 @@ function post_job (node, run, cmd, ...args) { // {{{1
   'selftest',
   'browser=http://ko:8787/hx'
 ]
-*/
+*/ // }}}2
   configuration.promise.then(opts => {
     let path = '/' + args[1] + (opts.top ? '/top/' : '/') + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])

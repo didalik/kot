@@ -12,6 +12,12 @@ class Ad { // match -> make -> claim -> take {{{1
     Ad.ws2ad.set(this.ws, this)
   }
 
+  make (making, match) { // {{{2
+    this.state = Ad.MAKING
+    this.ws.send(JSON.stringify(making))
+    match && match.make()
+  }
+
   onclose (...args) { // {{{2
     this.ws.close()
     this.match.ws && this.match.ws.close()
@@ -20,51 +26,44 @@ class Ad { // match -> make -> claim -> take {{{1
   }
 
   onmessage (message, match) { // {{{2
-    if (this.openTs) {
-      this.taking = message
-      if (this[match]?.taking) { // TODO have this and this[match] claim (sign) the takes
-        this.ws.send(JSON.stringify({ cmd: 'claim', take: this[match].taking }))
-        this[match].ws.send(JSON.stringify({ cmd: 'claim', take: this.taking }))
-        delete this.openTs
-        delete this[match].openTs
-      }
-      console.log('Ad.onmessage this', this, 'message', message)
-      return;
-    }
-    switch (this.status) {
-      case Ad.TAKING_MATCH:
-        return this.verify(JSON.parse(message));
+    //console.log('Ad.onmessage this', this, 'message', message, 'match', match)
+    switch (this.state) {
+      case Ad.MAKING:
+        this.state = Ad.CLAIMING
+        return this.verify(JSON.parse(message), match);
       case Ad.PIPING:
-        return this.match.ws.send(message);
+        return this[match].ws.send(message);
     }
   }
 
-  verify (json) { // {{{2
+  verify (jso, match) { // {{{2
     let a = base64ToUint8(this.pk)
-    let signature = base64ToUint8(json.sig64)
+    let signature = base64ToUint8(jso.sig64)
     let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
     crypto.subtle.importKey('raw', a.buffer, 'Ed25519', true, ['verify']).
-      then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(json.payload64))).
+      then(pk => crypto.subtle.verify('Ed25519', pk, signature, new TextEncoder().encode(jso.payload64))).
       then(r => {
         if (!r) { // TODO handle verify false - no approval
           return;
         }
-        let payload = signedData(json.payload64)
-        this.status = Ad.MATCH_TAKEN // TODO compare payload with the saved one in 'take' method
+        let payload = signedData(jso.payload64)
+        this.state = Ad.TAKING // TODO compare payload with the saved one in 'take' method
         console.log('Ad.verify payload', payload, 'this', this)
-        if (this.match.status == Ad.MATCH_TAKEN) {
+        if (this[match].state == Ad.TAKING) {
           let ready = JSON.stringify({ ready: true })
           this.ws.send(ready)
-          this.match.ws.send(ready)
-          this.status = Ad.PIPING
-          this.match.status = Ad.PIPING
+          this[match].ws.send(ready)
+          this.state = Ad.PIPING
+          this[match].state = Ad.PIPING
         }
       })
   }
 
-  static TAKING_MATCH = +1 // {{{2
+  static MAKING = +0 // {{{2
 
-  static MATCH_TAKEN = +2 // {{{2
+  static CLAIMING = +1 // client: sign {{{2
+
+  static TAKING = +2 // edge: verify {{{2
 
   static PIPING = +3 // {{{2
 
@@ -88,18 +87,14 @@ class Offer extends Ad { // {{{1
     } else {
       this.job.offerQueue.push(this)
     }
-    console.log('new Offer', this)
+    //console.log('new Offer', this)
   }
 
   make (match) { // {{{2
-    let making = {
-      agentId: this.agentId, 
-      jobname: this.job.name, 
-      kitId: this.kitId, 
-      topKit: this.topKit
-    }
-    this.ws.send(JSON.stringify(making))
-    match && match.make()
+    super.make(
+      { agentId: this.agentId, jobname: this.job.name, kitId: this.kitId, topKit: this.topKit },
+      match
+    )
   }
 
   match () { // {{{2
@@ -119,7 +114,7 @@ class Offer extends Ad { // {{{1
       },
       userId: match.userId,
     })))
-    return Ad.TAKING_MATCH;
+    return Ad.MAKING;
   }
 
   // }}}2
@@ -143,18 +138,14 @@ class Reqst extends Ad { // {{{1
     } else {
       this.job.requestQueue.push(this)
     }
-    console.log('new Reqst', this)
+    //console.log('new Reqst', this)
   }
 
   make (match) { // {{{2
-    let making = {
-      jobname: this.job.name, 
-      kitId: this.kitId, 
-      topKit: this.topKit,
-      userId: this.userId, 
-    }
-    this.ws.send(JSON.stringify(making))
-    match && match.make()
+    super.make(
+      { jobname: this.job.name, kitId: this.kitId, topKit: this.topKit, userId: this.userId },
+      match
+    )
   }
 
   match () { // {{{2
@@ -168,7 +159,7 @@ class Reqst extends Ad { // {{{1
     if (!this.job.userDone) {
       return super.onmessage(message);
     }
-    if (this.status == Ad.MATCH_TAKEN) {
+    if (this.state == Ad.TAKING) {
       console.log('Reqst.onmessage message', message)
       this.job.userDone(this, this.durableObject, JSON.parse(message)).
         then(bool => {
@@ -184,7 +175,7 @@ class Reqst extends Ad { // {{{1
     this.ws.send(JSON.stringify({
       agentId: match.agentId,
     }))
-    return Ad.TAKING_MATCH;
+    return Ad.MAKING;
   }
 
   // }}}2
@@ -301,7 +292,7 @@ function addReqstDO (ws, path, pk, parms, userId) { // {{{1
   let [kitId, jobname] = path.slice(index, index + 2)
   let job = kit[kitId].jobs.find(job => job.name == jobname)
   job.userAuth(pk, this.env)
-  new Reqst({ job, kitId, parms, path, pk, topKit, userId, ws, })
+  new Reqst({ job, kitId, parms, pk, topKit, userId, ws, })
 }
 
 function actorId (certSubjectDN) { // {{{1
