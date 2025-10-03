@@ -1,10 +1,10 @@
 # Stellar Help Exchange + Cloudflare Job Fair = Proof of Concept
 
-**Stellar Help Exchange** is an equitable cloud-based marketplace where you exchange all kinds of help for HEXA - Help EXchange Asset. If you don't get the help you paid for, you get your HEXA back, and the help provider's reputation suffers. Stellar Help Exchange runs on [Stellar](https://stellar.com/).
+**Stellar Help Exchange (hX)** is an equitable cloud-based marketplace where you exchange all kinds of help for HEXA - my Help EXchange Asset. If you don't get the help you paid for, you get your HEXA back, and the help provider's reputation suffers. Stellar Help Exchange runs on [Stellar](https://stellar.com/).
 
-**Cloudflare Job Fair** is a place where all types of Job Requests meet all kinds of Job Agents. When an Agent gets authorized to do a Job, the job becomes a Help Exchange item with a certain amount of HEXA assigned to it. It runs on [Cloudflare](https://www.cloudflare.com/).
+**Cloudflare Job Fair (jF)** is a place where all types of Job Requests meet all kinds of Job Agents. When an Agent gets authorized to do a Job, the job becomes an hX item with a certain amount of HEXA assigned to it. It runs on [Cloudflare](https://www.cloudflare.com/).
 
-These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, they provide global access to the proof of concept demo from **kloudoftrust.org**.
+These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, jF provides global access to the proof of concept demo from **kloudoftrust.org**.
 
 ## Getting Started
 
