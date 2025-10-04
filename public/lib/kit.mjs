@@ -17,7 +17,7 @@ import {
 import { addStream, cbEffect, postBody, } from './aux.mjs'
 import { addLine, retrieveItem, storeItem, } from './util.mjs'
 import { JobChannel, Channel, Model, Test, } from './jc.mjs'
-import { post_job, post_job_args, } from './jf1.mjs'
+import { post_job, post_job_args, } from './jf3.mjs'
 import {
   Keypair, MemoHash, MemoText, TransactionBuilder,
 } from '@stellar/stellar-sdk'
@@ -1080,8 +1080,9 @@ function initView (config, resolve, reject) { // {{{1
 function issuerSign (txXDR, tag) { // {{{1
   return post_job(
     post_job_args(
+      'hx',
       'HX_KIT',
-      'hx/issuerSign',
+      'issuerSign',
       decodeURIComponent(config.userKeys), // using window.config
     ),
     { txXDR, tag }

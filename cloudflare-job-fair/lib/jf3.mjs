@@ -31,7 +31,6 @@ class Connection { // {{{1
     })
     this.ws.on('open', _ => { // {{{3
       this.status = Connection.OPEN
-      //this.ws.send(this.taking())
       log(`${tag()} open this`, this)
     })
     this.ws.on('message', data => { // {{{3
@@ -128,10 +127,6 @@ class Agent extends Connection { // {{{1
     }
   }
 
-  taking () { // {{{2
-    return JSON.stringify({ kitId: this.kitId });
-  }
-
   // }}}2
 }
 
@@ -154,10 +149,6 @@ class User extends Connection { // {{{1
         this.status = Connection.JOB_STARTED
         break
     }
-  }
-
-  taking () { // {{{2
-    return JSON.stringify({ jobpath: this.jobpath, kitId: this.kitId });
   }
 
   // }}}2
@@ -242,7 +233,6 @@ function post_job (node, run, cmd, ...args) { // {{{1
     }
     log('- post_job args', args, 'opts', opts, 'url', url, 'configuration', configuration)
     new User({
-      jobpath: args[2],
       kitId: args[1],
       name: 'user',
       opts,

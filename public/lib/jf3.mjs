@@ -34,7 +34,6 @@ class Connection { // {{{1
     this.ws.onopen = _ => { // {{{3
       this.status = Connection.OPEN
       Connection.aux.count++
-      this.ws.send(this.taking())
       log(`${tag()} open this`, this, 'Connection.aux.count', Connection.aux.count)
     }
     this.ws.onmessage = event => { // {{{3
@@ -104,14 +103,14 @@ class Connection { // {{{1
         }).then(signature => send(
           payload64, uint8ToBase64(new Uint8Array(signature))
         )).catch(e => console.error(e))
-    } else { // use DEV_KIT.sign TODO handle Cloudflare Workers limitation
-      if (this.url.indexOf('hx/sign') > 0) {
+    } else { // use DEV_KIT.sign
+      if (this.url.indexOf('/hx/DEV_KIT/sign/') > 0) {
         send(this.payload64, this.sig64)
         return;
       }
       post_job(
         post_job_args(
-          'DEV_KIT', 'hx/sign', decodeURIComponent(config.userKeys), payload64
+          'hx', 'DEV_KIT', 'sign', decodeURIComponent(config.userKeys), payload64
         )
       ).then(r => send(r.payload64, r.sig64)).catch(e => console.error(e))
     }
@@ -154,10 +153,6 @@ class Agent extends Connection { // {{{1
     }
   }
 
-  taking () { // {{{2
-    return 'taking a job';
-  }
-
   // }}}2
 }
 
@@ -181,10 +176,6 @@ class User extends Connection { // {{{1
     }
   }
 
-  taking () { // {{{2
-    return JSON.stringify({ jobpath: this.jobpath, kitId: this.kitId });
-  }
-
   // }}}2
 }
 
@@ -192,29 +183,33 @@ function post_job (args, opts = {args:[]}) { // no client certificate required {
   let originJob =
     location.protocol.startsWith('https') ? 'wss://job.kloudoftrust.org/job'
     : 'ws://ko:8787/job' // FIXME use location.host instead of ko:8787
-  let url = `${originJob}/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
-  if (args.length == 5) {
-    url += `?${args[4]}`
+  let url = `${originJob}/${args[1]}/${args[2]}/${args[3]}/${encodeURIComponent(args[0])}`
+  if (args.length == 6) {
+    url += `?${args[5]}`
   }
-  log('post_job url', url, 'opts', opts)
+  log('post_job url', url, 'args', args, 'opts', opts)
   return new User({
-    jobpath: args[2],
     kitId: args[1],
     name: 'user',
     opts,
-    sk: args[3],
+    sk: args[4],
     url
   }).connect();
 }
 
-function post_job_args (kitId, jobpath, userKeys, payload64 = null) { // {{{1
+function post_job_args (appId, kitId, jobname, userKeys, payload64 = null) { // {{{1
   let [sk, pk] = userKeys.split(' ')
-  if (kitId == 'DEV_KIT' && jobpath == 'hx/sign') {
+  if (kitId == 'DEV_KIT' && appId + '/' + jobname == 'hx/sign') {
     return [
-      pk, kitId, jobpath, sk, `sk=${encodeURIComponent(sk)}&payload64=${payload64}`
+      pk, 
+      appId, 
+      kitId, 
+      jobname, 
+      sk, 
+      `sk=${encodeURIComponent(sk)}&payload64=${payload64}`
     ];
   }
-  return [pk, kitId, jobpath, sk];
+  return [pk, appId, kitId, jobname, sk];
 }
 
 export { post_job, post_job_args, } // {{{1

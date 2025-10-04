@@ -36,7 +36,7 @@ class Ad { // match -> make -> claim -> take {{{1
     }
   }
 
-  verify (jso, match) { // {{{2
+  verify (jso, match = null) { // {{{2
     let a = base64ToUint8(this.pk)
     let signature = base64ToUint8(jso.sig64)
     let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
@@ -49,7 +49,7 @@ class Ad { // match -> make -> claim -> take {{{1
         let payload = signedData(jso.payload64)
         this.state = Ad.TAKING // TODO compare payload with the saved one in 'take' method
         console.log('Ad.verify payload', payload, 'this', this)
-        if (this[match].state == Ad.TAKING) {
+        if (!!match && this[match].state == Ad.TAKING) {
           let ready = JSON.stringify({ ready: true })
           this.ws.send(ready)
           this[match].ws.send(ready)
@@ -153,14 +153,12 @@ class Reqst extends Ad { // {{{1
   }
 
   onmessage (message) { // {{{2
-    super.onmessage(message, 'offer')
-    return;
-
     if (!this.job.userDone) {
-      return super.onmessage(message);
+      return super.onmessage(message, 'offer');
     }
+    //console.log('Reqst.onmessage message', message, 'this', this)
+
     if (this.state == Ad.TAKING) {
-      console.log('Reqst.onmessage message', message)
       this.job.userDone(this, this.durableObject, JSON.parse(message)).
         then(bool => {
           console.log('this.job.userDone bool', bool)

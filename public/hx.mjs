@@ -6,7 +6,7 @@
 
 import { Model, Test, View, } from './lib/jc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
-import { post_job, post_job_args, } from './lib/jf1.mjs'
+import { post_job, post_job_args, } from './lib/jf3.mjs'
 
 let user = {
   position: { lat: LATITUDE, lng: LONGITUDE },
@@ -22,21 +22,21 @@ let config = { // {{{1
   userKeys: 'hx_userKeys', // TODO generate job fair sk & pk in the browser
 }
 window.config = config
-/*
 console.log(config, location)
 
 if (config.test) {
   for (let i = 0; i < 3; i++) {
     post_job(
       post_job_args(
+        'hx',
         'DEV_KIT',
-        'hx/test_sign',
+        'test_sign',
         decodeURIComponent(config.userKeys)
       )
     )
   }
 }
-*/
+/*
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
   Test.init(vm, config),
@@ -45,3 +45,4 @@ kit.initVm(config).then(vm => Promise.all([
 .then(run => Promise.all(run.map(v => v?.run())))
 .then(done => Promise.all(done.map(v => v?.done())))
 .catch(e => console.error(e)).finally(_ => console.log('DONE vm', window.vm))
+*/
