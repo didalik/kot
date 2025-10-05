@@ -4,7 +4,7 @@ import * as hxTopKit from '../module-topjob-hx-agent/src/list.js'
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
-class Ad { // match -> make -> claim -> take {{{1
+class Ad { // match -> open -> make -> claim -> take {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
     this.job.offerQueue ??= []
@@ -14,7 +14,7 @@ class Ad { // match -> make -> claim -> take {{{1
 
   make (making, match) { // {{{2
     this.state = Ad.MAKING
-    this.ws.send(JSON.stringify(making))
+    this.ws.send(JSON.stringify(making)) // TODO complete after client is open. This is a limitation of Cloudflare Workers.
     match && match.make()
   }
 
@@ -26,17 +26,25 @@ class Ad { // match -> make -> claim -> take {{{1
   }
 
   onmessage (message, match) { // {{{2
-    //console.log('Ad.onmessage this', this, 'message', message, 'match', match)
-    switch (this.state) {
-      case Ad.MAKING:
-        this.state = Ad.CLAIMING
-        return this.verify(JSON.parse(message), match);
-      case Ad.PIPING:
-        return this[match].ws.send(message);
+    console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
+    if (this.isOpen) {
+      switch (this.state) {
+        case Ad.MAKING:
+          this.state = Ad.CLAIMING
+        case Ad.TAKING:
+          return this.verify(JSON.parse(message), match);
+        case Ad.PIPING:
+          return this[match].ws.send(message);
+        default:
+          throw Error('Ad onmessage this.state ' + this.state);
+      }
     }
+    this.isOpen = true
+    this.make()
   }
 
   verify (jso, match = null) { // {{{2
+    console.log('Ad.verify jso', jso)
     let a = base64ToUint8(this.pk)
     let signature = base64ToUint8(jso.sig64)
     let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
@@ -48,7 +56,7 @@ class Ad { // match -> make -> claim -> take {{{1
         }
         let payload = signedData(jso.payload64)
         this.state = Ad.TAKING // TODO compare payload with the saved one in 'take' method
-        console.log('Ad.verify payload', payload, 'this', this)
+        //console.log('Ad.verify payload', payload, 'this', this)
         if (!!match && this[match].state == Ad.TAKING) {
           let ready = JSON.stringify({ ready: true })
           this.ws.send(ready)
@@ -83,11 +91,9 @@ class Offer extends Ad { // {{{1
       this.reqst = match
       match.offer = this
       Ad.ws2ad.set(match.ws, match)
-      this.make(match)
     } else {
       this.job.offerQueue.push(this)
     }
-    //console.log('new Offer', this)
   }
 
   make (match) { // {{{2
@@ -103,18 +109,6 @@ class Offer extends Ad { // {{{1
 
   onmessage (message) { // {{{2
     super.onmessage(message, 'reqst')
-  }
-
-  take (match) { // {{{2
-    setTimeout(_ => this.ws.send(JSON.stringify({
-      job: {
-        kit: this.kitId,
-        name: this.job.name,
-        top: this.topKit,
-      },
-      userId: match.userId,
-    })))
-    return Ad.MAKING;
   }
 
   // }}}2
@@ -134,11 +128,9 @@ class Reqst extends Ad { // {{{1
       this.offer = match
       match.reqst = this
       Ad.ws2ad.set(match.ws, match) // TODO close other offers from that agent
-      this.make(match)
     } else {
       this.job.requestQueue.push(this)
     }
-    //console.log('new Reqst', this)
   }
 
   make (match) { // {{{2
@@ -156,24 +148,14 @@ class Reqst extends Ad { // {{{1
     if (!this.job.userDone) {
       return super.onmessage(message, 'offer');
     }
-    //console.log('Reqst.onmessage message', message, 'this', this)
-
     if (this.state == Ad.TAKING) {
-      this.job.userDone(this, this.durableObject, JSON.parse(message)).
+      this.job.userDone(this). //, this.durableObject, JSON.parse(message)).
         then(bool => {
-          console.log('this.job.userDone bool', bool)
+          console.log('reqst.job.userDone bool', bool)
         })
       return;
     }
     return this.verify(JSON.parse(message));
-  }
-
-  take (match) { // {{{2
-    //console.log('Reqst.take match', match)
-    this.ws.send(JSON.stringify({
-      agentId: match.agentId,
-    }))
-    return Ad.MAKING;
   }
 
   // }}}2

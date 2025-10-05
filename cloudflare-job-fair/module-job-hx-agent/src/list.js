@@ -65,8 +65,8 @@ export const DEV_KIT = { // {{{1
         console.log('DEV_KIT sign userAuth pk', pk)
         return true;
       },
-      userDone: (that, durableObject) => { // {{{3
-        console.log('DEV_KIT sign userDone that', that, 'durableObject', durableObject);
+      userDone: (that) => { // {{{3
+        console.log('DEV_KIT sign userDone that', that)
         let sk = that.parms.get('sk')
         let payload64 = that.parms.get('payload64')
         return crypto.subtle.importKey(

@@ -34,6 +34,7 @@ class Connection { // {{{1
     this.ws.onopen = _ => { // {{{3
       this.status = Connection.OPEN
       Connection.aux.count++
+      this.url.indexOf('/hx/DEV_KIT/sign/') < 0 && this.ws.send('open')
       log(`${tag()} open this`, this, 'Connection.aux.count', Connection.aux.count)
     }
     this.ws.onmessage = event => { // {{{3

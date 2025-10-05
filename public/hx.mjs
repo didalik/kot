@@ -24,6 +24,7 @@ let config = { // {{{1
 window.config = config
 console.log(config, location)
 
+/*
 if (config.test) {
   for (let i = 0; i < 3; i++) {
     post_job(
@@ -36,7 +37,7 @@ if (config.test) {
     )
   }
 }
-/*
+*/
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
   Test.init(vm, config),
@@ -45,4 +46,3 @@ kit.initVm(config).then(vm => Promise.all([
 .then(run => Promise.all(run.map(v => v?.run())))
 .then(done => Promise.all(done.map(v => v?.done())))
 .catch(e => console.error(e)).finally(_ => console.log('DONE vm', window.vm))
-*/

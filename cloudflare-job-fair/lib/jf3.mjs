@@ -31,6 +31,7 @@ class Connection { // {{{1
     })
     this.ws.on('open', _ => { // {{{3
       this.status = Connection.OPEN
+      this.ws.send('open')
       log(`${tag()} open this`, this)
     })
     this.ws.on('message', data => { // {{{3
