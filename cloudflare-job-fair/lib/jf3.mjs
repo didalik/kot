@@ -32,7 +32,7 @@ class Connection { // {{{1
     this.ws.on('open', _ => { // {{{3
       this.status = Connection.OPEN
       this.ws.send('open')
-      log(`${tag()} open this`, this)
+      log(`${tag()} open`)
     })
     this.ws.on('message', data => { // {{{3
       try {
@@ -41,7 +41,7 @@ class Connection { // {{{1
       } catch(err) {
         log(`${tag()} ERROR`, err)
       }
-      this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this)
+      //this.status != Connection.JOB_STARTED && log(`${tag()} message data`, data)
     }) // }}}3
     promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
@@ -83,7 +83,7 @@ class Connection { // {{{1
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         this.ws.send(JSON.stringify({ payload64, sig64 }))
         this.status = Connection.APPROVED
-        log(`${tag()} payload64`, payload64, 'sig64', sig64, 'this', this, 'data', data)
+        log(`${tag()} payload64`, payload64, 'sig64', sig64, 'data', data)
         let payload = JSON.parse(data)
         if (payload.edge) {
           this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))

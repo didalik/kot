@@ -23,7 +23,7 @@ while echo '{"jobs":["test_sign"]}' | bin/dev.mjs put_agent $JOBAGENT_PK hx DEV_
 CHILD_DEV_KIT_LOOP=$!
 while echo '{"jobs":["get_txid_pos","issuerSign","put_txid_pos"]}' | bin/dev.mjs put_agent $JOBAGENT_PK hx HX_KIT; do date; done &
 CHILD_HX_KIT_LOOP=$!
-echo SELFTEST $CHILD_SELFTEST HX_KIT $CHILD_HX_KIT_LOOP
+echo SELFTEST $CHILD_SELFTEST HX_KIT $CHILD_HX_KIT_LOOP DEV_KIT $CHILD_DEV_KIT_LOOP
 
 trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP $CHILD_HX_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP $CHILD_HX_KIT_LOOP" SIGINT
 

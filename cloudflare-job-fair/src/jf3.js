@@ -31,7 +31,6 @@ class Ad { // match -> open -> make -> claim -> take {{{1
       switch (this.state) {
         case Ad.MAKING:
           this.state = Ad.CLAIMING
-        case Ad.TAKING:
           return this.verify(JSON.parse(message), match);
         case Ad.PIPING:
           return this[match].ws.send(message);
@@ -44,7 +43,7 @@ class Ad { // match -> open -> make -> claim -> take {{{1
   }
 
   verify (jso, match = null) { // {{{2
-    console.log('Ad.verify jso', jso)
+    console.log('Ad.verify jso', jso, 'match', match, 'this.job', this.job, 'this.state', this.state)
     let a = base64ToUint8(this.pk)
     let signature = base64ToUint8(jso.sig64)
     let signedData = data => base64ToUint8(data).toString().split(',').reduce((s, c) => s + String.fromCodePoint(c), '')
@@ -56,14 +55,16 @@ class Ad { // match -> open -> make -> claim -> take {{{1
         }
         let payload = signedData(jso.payload64)
         this.state = Ad.TAKING // TODO compare payload with the saved one in 'take' method
-        //console.log('Ad.verify payload', payload, 'this', this)
         if (!!match && this[match].state == Ad.TAKING) {
+          this.state = Ad.PIPING
+          this[match].state = Ad.PIPING
           let ready = JSON.stringify({ ready: true })
           this.ws.send(ready)
           this[match].ws.send(ready)
+        } else if (this.job.userDone) {
           this.state = Ad.PIPING
-          this[match].state = Ad.PIPING
         }
+        console.log('Ad.verify payload', payload, 'match', match, 'this.job', this.job, 'this.state', this.state)
       })
   }
 
@@ -148,7 +149,7 @@ class Reqst extends Ad { // {{{1
     if (!this.job.userDone) {
       return super.onmessage(message, 'offer');
     }
-    if (this.state == Ad.TAKING) {
+    if (this.state == Ad.PIPING) {
       this.job.userDone(this). //, this.durableObject, JSON.parse(message)).
         then(bool => {
           console.log('reqst.job.userDone bool', bool)
