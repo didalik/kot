@@ -11,6 +11,8 @@ let opts = ''
 class Connection { // {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
+    this.archived = []
+    Connection.aux.connections.push(this)
   }
 
   connect () { // {{{2
@@ -27,10 +29,11 @@ class Connection { // {{{1
     this.ws.on('close', data => { // {{{3
       log(`${tag()} close`, data)
       this.ws.close()
+      log(`${tag()} close archived`, this.archived)
       resolve(false)
     })
     this.ws.on('open', _ => { // {{{3
-      this.status = Connection.OPEN
+      this.state = Connection.OPEN
       this.ws.send('open')
       log(`${tag()} open`)
     })
@@ -41,7 +44,7 @@ class Connection { // {{{1
       } catch(err) {
         log(`${tag()} ERROR`, err)
       }
-      //this.status != Connection.JOB_STARTED && log(`${tag()} message data`, data)
+      //this.state != Connection.JOB_STARTED && log(`${tag()} message data`, data)
     }) // }}}3
     promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
@@ -54,12 +57,13 @@ class Connection { // {{{1
     let tag = _ => this.name + '.dispatch'
     log(`${tag()} parsed`, o)
     Object.assign(this, o)
-    switch (this.status) {
+    this.archived.push({ now: Date.now(), o, state: this.state })
+    switch (this.state) {
       case Connection.OPEN:
         return this.sign(data);
       case Connection.APPROVED:
         if (this.ready) {
-          this.status = Connection.READY
+          this.state = Connection.READY
         }
         break
     }
@@ -82,15 +86,15 @@ class Connection { // {{{1
       }).then(signature => {
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         this.ws.send(JSON.stringify({ payload64, sig64 }))
-        this.status = Connection.APPROVED
+        this.state = Connection.APPROVED
         log(`${tag()} payload64`, payload64, 'sig64', sig64, 'data', data)
         let payload = JSON.parse(data)
         if (payload.edge) {
           this.ws.send(JSON.stringify(opts.length > 0 ? opts : '{"args":[]}'))
-          this.status = Connection.JOB_STARTED
+          this.state = Connection.JOB_STARTED
         }
       }).catch(e => console.error(e))
-    return this.status = Connection.APPROVING;
+    return this.state = Connection.APPROVING;
   }
 
   static OPEN = +1 // {{{2
@@ -103,6 +107,11 @@ class Connection { // {{{1
 
   static JOB_STARTED = +5 // {{{2
 
+  static aux = { // {{{2
+    connections: [],
+    count: +0,
+  }
+
   // }}}2
 }
 
@@ -113,7 +122,7 @@ class Agent extends Connection { // {{{1
 
   dispatch (data) { // {{{2
     super.dispatch(data)
-    switch (this.status) {
+    switch (this.state) {
       case Connection.READY:
         if (this.ready) {
           delete this.ready
@@ -123,7 +132,7 @@ class Agent extends Connection { // {{{1
         agent[this.kitId][this.jobname].call({ ws: this.ws }, 
           { args: this.args }
         )
-        this.status = Connection.JOB_STARTED
+        this.state = Connection.JOB_STARTED
         break
     }
   }
@@ -137,17 +146,17 @@ class User extends Connection { // {{{1
   }
 
   dispatch (data) { // {{{2
-    switch (this.status) {
+    switch (this.state) {
       case Connection.JOB_STARTED:
         configuration.browser && spawn('bin/test-browser', [configuration.browser])
         delete configuration.browser
         return log(data);
     }
     super.dispatch(data)
-    switch (this.status) {
+    switch (this.state) {
       case Connection.READY:
         this.ws.send(JSON.stringify(opts))
-        this.status = Connection.JOB_STARTED
+        this.state = Connection.JOB_STARTED
         break
     }
   }
@@ -285,7 +294,13 @@ process.stdin.on("data", function (chunk) { return opts += chunk; });
 process.stdin.on("end", _ => configuration.resolve(
   opts = JSON.parse(opts.length > 0 ? opts : '{}')
 ));
-
+process.on('SIGINT', _ => {
+  console.log('process.on SIGINT', process.argv)
+  for (let c of Connection.aux.connections) {
+    console.log(c.archived)
+  }
+  process.exit(2)
+})
 export { // {{{1
   configuration, hack, 
   post_jcl, post_job, 

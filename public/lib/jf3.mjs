@@ -8,6 +8,8 @@ let log = console.log
 class Connection { // {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
+    this.archived = []
+    Connection.aux.connections.push(this)
   }
 
   connect () { // {{{2
@@ -29,10 +31,11 @@ class Connection { // {{{1
       Connection.aux.count--
       log(`${tag()} close`, data, 'Connection.aux.count', Connection.aux.count)
       this.ws.close()
+      log(`${tag()} close archived`, this.archived)
       resolve(false)
     }
     this.ws.onopen = _ => { // {{{3
-      this.status = Connection.OPEN
+      this.state = Connection.OPEN
       Connection.aux.count++
       this.url.indexOf('/hx/DEV_KIT/sign/') < 0 && this.ws.send('open')
       log(`${tag()} open this`, this, 'Connection.aux.count', Connection.aux.count)
@@ -44,7 +47,7 @@ class Connection { // {{{1
       } catch(err) {
         log(`${tag()} ERROR`, err)
       }
-      this.status != Connection.JOB_STARTED && log(`${tag()} message this`, this, 'data', data)
+      this.state != Connection.JOB_STARTED && log(`${tag()} message this`, this, 'data', data)
     } // }}}3
     return promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
@@ -57,12 +60,13 @@ class Connection { // {{{1
     let tag = _ => this.name + '.dispatch'
     log(`${tag()} parsed`, o)
     Object.assign(this, o)
-    switch (this.status) {
+    this.archived.push({ now: Date.now(), o, state: this.state })
+    switch (this.state) {
       case Connection.OPEN:
         return this.sign(data);
       case Connection.APPROVED:
         if (this.ready) {
-          this.status = Connection.READY
+          this.state = Connection.READY
         }
         break
     }
@@ -89,11 +93,11 @@ class Connection { // {{{1
       )
       log(`${tag()} payload`, pl, 'this', this, 'data', data)
       this.ws.send(pl.edge ? data : JSON.stringify({ payload64, sig64 }))
-      this.status = Connection.APPROVED
+      this.state = Connection.APPROVED
 
       if (pl.edge) {
         this.ws.send(JSON.stringify(this.opts))
-        this.status = Connection.JOB_STARTED
+        this.state = Connection.JOB_STARTED
       }
     }
 
@@ -115,7 +119,7 @@ class Connection { // {{{1
         )
       ).then(r => send(r.payload64, r.sig64)).catch(e => console.error(e))
     }
-    return this.status = Connection.APPROVING;
+    return this.state = Connection.APPROVING;
   }
 
   static OPEN = +1 // {{{2
@@ -129,6 +133,7 @@ class Connection { // {{{1
   static JOB_STARTED = +5 // {{{2
 
   static aux = { // {{{2
+    connections: [],
     count: +0,
   }
 
@@ -142,14 +147,14 @@ class Agent extends Connection { // {{{1
 
   dispatch (data) { // {{{2
     super.dispatch(data)
-    switch (this.status) {
+    switch (this.state) {
       case Connection.READY:
         if (this.ready) {
           delete this.ready
           return;
         }
         startJob[this.job.name].call({ ws: this.ws }, { args: this.args })
-        this.status = Connection.JOB_STARTED
+        this.state = Connection.JOB_STARTED
         break
     }
   }
@@ -163,15 +168,15 @@ class User extends Connection { // {{{1
   }
 
   dispatch (data) { // {{{2
-    switch (this.status) {
+    switch (this.state) {
       case Connection.JOB_STARTED:
         return log(this.result = data);
     }
     super.dispatch(data)
-    switch (this.status) {
+    switch (this.state) {
       case Connection.READY:
         this.ws.send(JSON.stringify(this.opts))
-        this.status = Connection.JOB_STARTED
+        this.state = Connection.JOB_STARTED
         log(this.name + '.dispatch Connection.JOB_STARTED', Connection.JOB_STARTED, 'this', this)
         break
     }

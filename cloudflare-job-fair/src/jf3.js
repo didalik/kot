@@ -4,18 +4,19 @@ import * as hxTopKit from '../module-topjob-hx-agent/src/list.js'
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
-class Ad { // match -> open -> make -> claim -> take {{{1
+class Ad { // handshake: open -> match -> make -> claim -> take -> pipe {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
+    this.state = Ad.OPENING
     Ad.ws2ad.set(this.ws, this)
   }
 
   make (making, match) { // {{{2
     this.state = Ad.MAKING
-    this.ws.send(JSON.stringify(making)) // TODO complete after client is open. This is a limitation of Cloudflare Workers.
-    match && match.make()
+    this.ws.send(JSON.stringify(making))
+    match && this[match].make()
   }
 
   onclose (...args) { // {{{2
@@ -27,19 +28,17 @@ class Ad { // match -> open -> make -> claim -> take {{{1
 
   onmessage (message, match) { // {{{2
     console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
-    if (this.isOpen) {
-      switch (this.state) {
-        case Ad.MAKING:
-          this.state = Ad.CLAIMING
-          return this.verify(JSON.parse(message), match);
-        case Ad.PIPING:
-          return this[match].ws.send(message);
-        default:
-          throw Error('Ad onmessage this.state ' + this.state);
-      }
+    switch (this.state) {
+      case Ad.OPENING:
+        return !!this[match] && this.make(match);
+      case Ad.MAKING:
+        this.state = Ad.CLAIMING
+        return this.verify(JSON.parse(message), match);
+      case Ad.PIPING:
+        return this[match].ws.send(message);
+      default:
+        throw Error('Ad onmessage this.state ' + this.state);
     }
-    this.isOpen = true
-    this.make()
   }
 
   verify (jso, match = null) { // {{{2
@@ -67,6 +66,8 @@ class Ad { // match -> open -> make -> claim -> take {{{1
         console.log('Ad.verify payload', payload, 'match', match, 'this.job', this.job, 'this.state', this.state)
       })
   }
+
+  static OPENING = -1 // {{{2
 
   static MAKING = +0 // {{{2
 
