@@ -4,19 +4,20 @@ import * as hxTopKit from '../module-topjob-hx-agent/src/list.js'
 const base64ToUint8 = (str) => Uint8Array.from(atob(str), (c) => c.charCodeAt(0))
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
-class Ad { // handshake: open -> match -> make -> claim -> take -> pipe {{{1
+class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
   constructor (base) { // {{{2
     Object.assign(this, base)
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
     this.state = Ad.OPENING
+    this.matched = {}; Object.assign(this.matched, Promise.withResolvers())
     Ad.ws2ad.set(this.ws, this)
   }
 
-  make (making, match) { // {{{2
-    this.state = Ad.MAKING
+  make (making) { // {{{2
+    delete this.matched
     this.ws.send(JSON.stringify(making))
-    match && this[match].make()
+    this.state = Ad.CLAIMING // claiming the making of the match
   }
 
   onclose (...args) { // {{{2
@@ -30,9 +31,8 @@ class Ad { // handshake: open -> match -> make -> claim -> take -> pipe {{{1
     console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
     switch (this.state) {
       case Ad.OPENING:
-        return !!this[match] && this.make(match);
-      case Ad.MAKING:
-        this.state = Ad.CLAIMING
+        return this.matched.promise.then(_ => this.make(this[match]));
+      case Ad.CLAIMING:
         return this.verify(JSON.parse(message), match);
       case Ad.PIPING:
         return this[match].ws.send(message);
@@ -53,8 +53,8 @@ class Ad { // handshake: open -> match -> make -> claim -> take -> pipe {{{1
           return;
         }
         let payload = signedData(jso.payload64)
-        this.state = Ad.TAKING // TODO compare payload with the saved one in 'take' method
-        if (!!match && this[match].state == Ad.TAKING) {
+        this.state = Ad.TAKEN // TODO compare payload with the saved one in 'take' method
+        if (!!match && this[match].state == Ad.TAKEN) {
           this.state = Ad.PIPING
           this[match].state = Ad.PIPING
           let ready = JSON.stringify({ ready: true })
@@ -67,13 +67,11 @@ class Ad { // handshake: open -> match -> make -> claim -> take -> pipe {{{1
       })
   }
 
-  static OPENING = -1 // {{{2
-
-  static MAKING = +0 // {{{2
+  static OPENING = +0 // {{{2
 
   static CLAIMING = +1 // client: sign {{{2
 
-  static TAKING = +2 // edge: verify {{{2
+  static TAKEN = +2 // edge: verify {{{2
 
   static PIPING = +3 // {{{2
 
@@ -92,6 +90,8 @@ class Offer extends Ad { // {{{1
     if (match) {
       this.reqst = match
       match.offer = this
+      this.matched.resolve()
+      match.matched.resolve()
       Ad.ws2ad.set(match.ws, match)
     } else {
       this.job.offerQueue.push(this)
@@ -99,10 +99,9 @@ class Offer extends Ad { // {{{1
   }
 
   make (match) { // {{{2
-    super.make(
-      { agentId: this.agentId, jobname: this.job.name, kitId: this.kitId, topKit: this.topKit },
-      match
-    )
+    let { kitId, topKit, userId } = match
+    let making = { jobname: match.job.name, kitId, topKit, userId }
+    super.make(making)
   }
 
   match () { // {{{2
@@ -129,6 +128,8 @@ class Reqst extends Ad { // {{{1
     if (match) {
       this.offer = match
       match.reqst = this
+      this.matched.resolve()
+      match.matched.resolve()
       Ad.ws2ad.set(match.ws, match) // TODO close other offers from that agent
     } else {
       this.job.requestQueue.push(this)
@@ -136,10 +137,9 @@ class Reqst extends Ad { // {{{1
   }
 
   make (match) { // {{{2
-    super.make(
-      { jobname: this.job.name, kitId: this.kitId, topKit: this.topKit, userId: this.userId },
-      match
-    )
+    let { agentId, kitId, topKit } = match
+    let making = { agentId, jobname: match.job.name, kitId, topKit }
+    super.make(making)
   }
 
   match () { // {{{2
