@@ -64,7 +64,7 @@ class Connection { // {{{1
     switch (this.state) {
       case Connection.OPEN:
         return this.sign(data);
-      case Connection.APPROVED:
+      case Connection.CLAIMED:
         if (this.ready) {
           this.state = Connection.READY
         }
@@ -93,7 +93,7 @@ class Connection { // {{{1
       )
       log(`${tag()} payload`, pl, 'this', this, 'data', data)
       this.ws.send(pl.edge ? data : JSON.stringify({ payload64, sig64 }))
-      this.state = Connection.APPROVED
+      this.state = Connection.CLAIMED
 
       if (pl.edge) {
         this.ws.send(JSON.stringify(this.opts))
@@ -108,7 +108,7 @@ class Connection { // {{{1
         }).then(signature => send(
           payload64, uint8ToBase64(new Uint8Array(signature))
         )).catch(e => console.error(e))
-    } else { // use DEV_KIT.sign
+    } else { // DO NOT use DEV_KIT.sign
       if (this.url.indexOf('/hx/DEV_KIT/sign/') > 0) {
         send(this.payload64, this.sig64)
         return;
@@ -118,19 +118,22 @@ class Connection { // {{{1
           'hx', 'DEV_KIT', 'sign', decodeURIComponent(config.userKeys), payload64
         )
       ).then(r => send(r.payload64, r.sig64)).catch(e => console.error(e))
+      /*
+      log(`${tag()} DO SOMETHING`, 'this', this, 'data', data)
+      */
     }
-    return this.state = Connection.APPROVING;
+    return this.state = Connection.CLAIMING;
   }
 
-  static OPEN = +1 // {{{2
+  static OPEN = +0 // {{{2
 
-  static APPROVING = +2 // {{{2
+  static CLAIMING = +1 // {{{2
 
-  static APPROVED = +3 // {{{2
+  static CLAIMED = +2 // {{{2
 
-  static READY = +4 // {{{2
+  static READY = +3 // {{{2
 
-  static JOB_STARTED = +5 // {{{2
+  static JOB_STARTED = +4 // {{{2
 
   static aux = { // {{{2
     connections: [],

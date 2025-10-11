@@ -10,19 +10,18 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
     this.state = Ad.OPENING
-    this.matched = {}; Object.assign(this.matched, Promise.withResolvers())
     Ad.ws2ad.set(this.ws, this)
   }
 
-  make (making) { // {{{2
-    delete this.matched
+  make (making, match) { // {{{2
     this.ws.send(JSON.stringify(making))
     this.state = Ad.CLAIMING // claiming the making of the match
+    return true;
   }
 
   onclose (...args) { // {{{2
-    this.ws.close()
-    this.match.ws && this.match.ws.close()
+    !!this.offer?.ws && this.offer.ws.close()
+    !!this.reqst?.ws && this.reqst.ws.close()
     Ad.ws2ad.delete(this.ws)
     console.log('Ad.onclose this', this, 'args', args)
   }
@@ -31,9 +30,24 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
     console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
     switch (this.state) {
       case Ad.OPENING:
-        return this.matched.promise.then(_ => this.make(this[match]));
+        /*
+        if (this.job.name == 'issuerSign') {
+          return this[match] && this[match].state == Ad.OPENING ? this.make(this[match]) : null;
+        }
+        */
+        return this[match] && this[match].state == Ad.OPENING ? this.make(this[match]) && this[match].make(this): null;
       case Ad.CLAIMING:
-        return this.verify(JSON.parse(message), match);
+        if (message == 'open') {
+          return null;
+        }
+        try {
+          return this.verify(JSON.parse(message), match);
+        } catch(err) {
+          throw new Error(
+            'this.state '+this.state+', this.job.name '+this.job.name+', message '+message+', match '+match,
+            { cause: err }
+          )
+        }
       case Ad.PIPING:
         return this[match].ws.send(message);
       default:
@@ -63,7 +77,7 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
         } else if (this.job.userDone) {
           this.state = Ad.PIPING
         }
-        console.log('Ad.verify payload', payload, 'match', match, 'this.job', this.job, 'this.state', this.state)
+        console.log('Ad.verify payload', payload, 'match', match, 'this.job', this.job, 'this.state', this.state, 'this[match].state', this[match].state)
       })
   }
 
@@ -90,8 +104,6 @@ class Offer extends Ad { // {{{1
     if (match) {
       this.reqst = match
       match.offer = this
-      this.matched.resolve()
-      match.matched.resolve()
       Ad.ws2ad.set(match.ws, match)
     } else {
       this.job.offerQueue.push(this)
@@ -101,7 +113,7 @@ class Offer extends Ad { // {{{1
   make (match) { // {{{2
     let { kitId, topKit, userId } = match
     let making = { jobname: match.job.name, kitId, topKit, userId }
-    super.make(making)
+    return super.make(making, match);
   }
 
   match () { // {{{2
@@ -128,8 +140,6 @@ class Reqst extends Ad { // {{{1
     if (match) {
       this.offer = match
       match.reqst = this
-      this.matched.resolve()
-      match.matched.resolve()
       Ad.ws2ad.set(match.ws, match) // TODO close other offers from that agent
     } else {
       this.job.requestQueue.push(this)
@@ -139,7 +149,7 @@ class Reqst extends Ad { // {{{1
   make (match) { // {{{2
     let { agentId, kitId, topKit } = match
     let making = { agentId, jobname: match.job.name, kitId, topKit }
-    super.make(making)
+    return super.make(making, match);
   }
 
   match () { // {{{2

@@ -13,6 +13,17 @@ Page.use({ dopad, hx, hx_style, sandbox, style, template, })
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) { // {{{2
 		super(ctx, env);
+    this.sessions = new Map()
+    this.ctx.getWebSockets().forEach(ws => {
+      let attachment = ws.deserializeAttachment()
+      if (attachment) {
+        console.log('new KoT_Do attachment', attachment)
+        this.sessions.set(ws, { ...attachment })
+      }
+    })
+    this.ctx.setWebSocketAutoResponse(
+      new WebSocketRequestResponsePair("ping", "pong"),
+    )
 	}
   async delete (key) { // {{{2
     let value = await this.ctx.storage.delete(key)
@@ -28,6 +39,9 @@ export class KoT_Do extends DurableObject { // {{{1
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
     this.ctx.acceptWebSocket(server)
+    const id = crypto.randomUUID()
+    server.serializeAttachment({ id })
+    this.sessions.set(server, { id })
     try {
       JobFair.dispatch.call(this, request, server)
       return new Response(null, { status: 101, webSocket: client });

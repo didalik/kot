@@ -55,13 +55,13 @@ class Connection { // {{{1
   dispatch (data) { // {{{2
     let o = JSON.parse(data)
     let tag = _ => this.name + '.dispatch'
-    log(`${tag()} parsed`, o)
+    log(`${tag()} parsed`, o, 'this.state', this.state)
     Object.assign(this, o)
     this.archived.push({ now: Date.now(), o, state: this.state })
     switch (this.state) {
       case Connection.OPEN:
         return this.sign(data);
-      case Connection.APPROVED:
+      case Connection.CLAIMED:
         if (this.ready) {
           this.state = Connection.READY
         }
@@ -86,7 +86,7 @@ class Connection { // {{{1
       }).then(signature => {
         let sig64 = uint8ToBase64(new Uint8Array(signature))
         this.ws.send(JSON.stringify({ payload64, sig64 }))
-        this.state = Connection.APPROVED
+        this.state = Connection.CLAIMED
         log(`${tag()} payload64`, payload64, 'sig64', sig64, 'data', data)
         let payload = JSON.parse(data)
         if (payload.edge) {
@@ -94,18 +94,18 @@ class Connection { // {{{1
           this.state = Connection.JOB_STARTED
         }
       }).catch(e => console.error(e))
-    return this.state = Connection.APPROVING;
+    return this.state = Connection.CLAIMING;
   }
 
-  static OPEN = +1 // {{{2
+  static OPEN = +0 // {{{2
 
-  static APPROVING = +2 // {{{2
+  static CLAIMING = +1 // {{{2
 
-  static APPROVED = +3 // {{{2
+  static CLAIMED = +2 // {{{2
 
-  static READY = +4 // {{{2
+  static READY = +3 // {{{2
 
-  static JOB_STARTED = +5 // {{{2
+  static JOB_STARTED = +4 // {{{2
 
   static aux = { // {{{2
     connections: [],
