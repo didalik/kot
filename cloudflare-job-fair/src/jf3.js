@@ -10,19 +10,19 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
     this.job.offerQueue ??= []
     this.job.requestQueue ??= []
     this.state = Ad.OPENING
-    Ad.ws2ad.set(this.ws, this)
+    Ad.wsId2ad.set(this.wsId, this)
   }
 
   make (making, match) { // {{{2
-    this.ws.send(JSON.stringify(making))
+    websocket(this.wsId).send(JSON.stringify(making))
     this.state = Ad.CLAIMING // claiming the making of the match
     return true;
   }
 
   onclose (...args) { // {{{2
-    !!this.offer?.ws && this.offer.ws.close()
-    !!this.reqst?.ws && this.reqst.ws.close()
-    Ad.ws2ad.delete(this.ws)
+    !!this.offer?.wsId && websocket(this.offer.wsId).close()
+    !!this.reqst?.wsId && websocket(this.reqst.wsId).close()
+    Ad.wsId2ad.delete(this.wsId)
     console.log('Ad.onclose this', this, 'args', args)
   }
 
@@ -30,11 +30,6 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
     console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
     switch (this.state) {
       case Ad.OPENING:
-        /*
-        if (this.job.name == 'issuerSign') {
-          return this[match] && this[match].state == Ad.OPENING ? this.make(this[match]) : null;
-        }
-        */
         return this[match] && this[match].state == Ad.OPENING ? this.make(this[match]) && this[match].make(this): null;
       case Ad.CLAIMING:
         if (message == 'open') {
@@ -49,7 +44,7 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
           )
         }
       case Ad.PIPING:
-        return this[match].ws.send(message);
+        return websocket(this[match].wsId).send(message);
       default:
         throw Error('Ad onmessage this.state ' + this.state);
     }
@@ -72,8 +67,8 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
           this.state = Ad.PIPING
           this[match].state = Ad.PIPING
           let ready = JSON.stringify({ ready: true })
-          this.ws.send(ready)
-          this[match].ws.send(ready)
+          websocket(this.wsId).send(ready)
+          websocket(this[match].wsId).send(ready)
         } else if (this.job.userDone) {
           this.state = Ad.PIPING
         }
@@ -89,9 +84,9 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
 
   static PIPING = +3 // {{{2
 
-  //static durableObject // {{{2
+  static durableObject // {{{2
 
-  static ws2ad = new Map() // {{{2
+  static wsId2ad = new Map() // {{{2
 
   // }}}2
 }
@@ -104,7 +99,7 @@ class Offer extends Ad { // {{{1
     if (match) {
       this.reqst = match
       match.offer = this
-      Ad.ws2ad.set(match.ws, match)
+      //Ad.wsId2ad.set(match.ws, match)
     } else {
       this.job.offerQueue.push(this)
     }
@@ -133,6 +128,7 @@ class Reqst extends Ad { // {{{1
     super(base)
     let done = this.job.userDone
     if (done) { // job done on edge, agent not required
+      this.ws = websocket.call(Ad.durableObject, this.wsId)
       this.job.payload2sign.call(this)
       return;
     }
@@ -140,7 +136,7 @@ class Reqst extends Ad { // {{{1
     if (match) {
       this.offer = match
       match.reqst = this
-      Ad.ws2ad.set(match.ws, match) // TODO close other offers from that agent
+      //Ad.wsId2ad.set(match.ws, match) // TODO close other offers from that agent
     } else {
       this.job.requestQueue.push(this)
     }
@@ -174,6 +170,10 @@ class Reqst extends Ad { // {{{1
 }
 
 const JobFairImpl = { // {{{1
+  attach: function (ws, attachment) { // {{{2
+    this.ws2wsId.set(ws, { ...attachment })
+  },
+
   dispatch: function (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     let url = new URL(request.url)
     let agent = url.pathname.startsWith('/jag')
@@ -185,14 +185,14 @@ const JobFairImpl = { // {{{1
         return addReqst(request, env, ctx, url.pathname);
       }
     }
-    //Ad.durableObject ??= this {{{3
+    Ad.durableObject ??= this // {{{3
     console.log('-----------------------------', 
       this.ctx.id.equals(this.env.KOT_DO_WSH_ID)
     )
     let path = url.pathname.split('/')
     let parms = new URLSearchParams(url.search)
     console.log('JobFairImpl.dispatch path', path, 'parms', parms)
-/*
+/* {{{4
 JobFairImpl.dispatch path [
   '',
   'job',
@@ -210,28 +210,34 @@ JobFairImpl.dispatch path [
   'get_txid_pos',
   'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
 ] parms URLSearchParams(0) {}
-*/
+*/ // }}}4
     let ws = env_OR_ws
+    const wsId = crypto.randomUUID()
+    ws.serializeAttachment({ wsId })
+    this.ws2wsId.set(ws, { wsId })
+
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
     if (agent) {
       let topKit = path[3] == 'top'
       let pk = decodeURIComponent(path[topKit ? 6 : 5])
-      addOfferDO.call(this, ws, path, pk, parms, topKit, actor_id)
+      addOfferDO.call(this, wsId, path, pk, parms, topKit, actor_id)
     } else {
       let pk = decodeURIComponent(path[5])
-      addReqstDO.call(this, ws, path, pk, parms, actor_id)
+      addReqstDO.call(this, wsId, path, pk, parms, actor_id) // TODO something better than reusing actor_id
     } // }}}3
   },
 
-  wsClose: (ws, ...args) => { // {{{2
+  wsClose: function (ws, ...args) { // {{{2
     console.log('JobFairImpl wsClose args', args)
     ws.close()
-    let ad = Ad.ws2ad.get(ws)
+    Ad.durableObject = this
+    let ad = Ad.wsId2ad.get(wsId.call(this, ws))
     ad.onclose(...args)
   },
 
-  wsDispatch: (data, ws) => { // {{{2
-    Ad.ws2ad.get(ws).onmessage(data)
+  wsDispatch: function (data, ws) { // {{{2
+    Ad.durableObject = this
+    Ad.wsId2ad.get(wsId.call(this, ws)).onmessage(data)
   },
 
   // }}}2
@@ -242,7 +248,7 @@ function addOffer (request, env, ctx) { // {{{1
   return stub.fetch(request);
 }
 
-function addOfferDO (ws, path, pk, parms, topKit, agentId) { // {{{1
+function addOfferDO (wsId, path, pk, parms, topKit, agentId) { // {{{1
 /* {{{2
 JobFairImpl.dispatch path [
   '',
@@ -259,7 +265,7 @@ JobFairImpl.dispatch path [
   let job = kit[kitId].jobs.find(job => job.name == jobname)
   if (job.agentAuth) {
     job.agentAuth(pk, this.env)
-    new Offer({ agentId, job, kitId, parms, pk, topKit, ws, })
+    new Offer({ agentId, job, kitId, parms, pk, topKit, wsId, })
   }
 }
 
@@ -277,14 +283,14 @@ function addReqst (request, env, ctx, pathname) { // {{{1
   return stub.fetch(request);
 }
 
-function addReqstDO (ws, path, pk, parms, userId) { // {{{1
+function addReqstDO (wsId, path, pk, parms, userId) { // {{{1
   let topKit = path[1] == 'jcl'
   let kit = topKit ? hxTopKit : hxKit
   let index = topKit ? 4 : 3
   let [kitId, jobname] = path.slice(index, index + 2)
   let job = kit[kitId].jobs.find(job => job.name == jobname)
   job.userAuth(pk, this.env)
-  new Reqst({ job, kitId, parms, pk, topKit, userId, ws, })
+  new Reqst({ job, kitId, parms, pk, topKit, userId, wsId, })
 }
 
 function actorId (certSubjectDN) { // {{{1
@@ -293,6 +299,26 @@ function actorId (certSubjectDN) { // {{{1
   } //      ....:....1....:....2....:....3....:....4....:....5....:.
   let index = certSubjectDN.indexOf('OU=') + 3
   return certSubjectDN.slice(index, index + 56);
+}
+
+function websocket (wsId) { // {{{1
+  let result
+  Ad.durableObject.ws2wsId.forEach((attachment, connectedWs) => {
+    if (attachment.wsId == wsId) {
+      result = connectedWs
+    }
+  })
+  return result;
+}
+
+function wsId (ws) { // {{{1
+  let result
+  this.ws2wsId.forEach((attachment, connectedWs) => {
+    if (ws === connectedWs) {
+      result = attachment.wsId;
+    }
+  })
+  return result;
 }
 
 export { JobFairImpl, } // {{{1

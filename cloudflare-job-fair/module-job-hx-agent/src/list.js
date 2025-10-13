@@ -53,7 +53,6 @@ export const DEV_KIT = { // {{{1
       payload2sign: function () { // {{{3
         console.log('DEV_KIT sign payload2sign this', this)
         let payload64 = payload64Edge.call(this)
-        //return JSON.stringify({ jobname: this.job.name, edge: true, XA: 'XO' });
         crypto.subtle.importKey(
           'jwk', JSON.parse(this.parms.get('sk')), 'Ed25519', true, ['sign']
         ).then(sk => crypto.subtle.sign(

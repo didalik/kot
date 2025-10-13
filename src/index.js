@@ -13,13 +13,10 @@ Page.use({ dopad, hx, hx_style, sandbox, style, template, })
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) { // {{{2
 		super(ctx, env);
-    this.sessions = new Map()
+    this.ws2wsId = new Map()
     this.ctx.getWebSockets().forEach(ws => {
       let attachment = ws.deserializeAttachment()
-      if (attachment) {
-        console.log('new KoT_Do attachment', attachment)
-        this.sessions.set(ws, { ...attachment })
-      }
+      attachment && JobFair.attach.call(this, ws, attachment)
     })
     this.ctx.setWebSocketAutoResponse(
       new WebSocketRequestResponsePair("ping", "pong"),
@@ -39,9 +36,6 @@ export class KoT_Do extends DurableObject { // {{{1
     const webSocketPair = new WebSocketPair()
     const [client, server] = Object.values(webSocketPair)
     this.ctx.acceptWebSocket(server)
-    const id = crypto.randomUUID()
-    server.serializeAttachment({ id })
-    this.sessions.set(server, { id })
     try {
       JobFair.dispatch.call(this, request, server)
       return new Response(null, { status: 101, webSocket: client });
@@ -82,11 +76,10 @@ export class KoT_Do extends DurableObject { // {{{1
     return result;
   }
   async webSocketClose(ws, code, reason, wasClean) { // {{{2
-    JobFair.wsClose(ws, code, reason, wasClean)
+    JobFair.wsClose.call(this, ws, code, reason, wasClean)
   }
   async webSocketMessage(ws, message) { // {{{2
-    //console.log('webSocketMessage message', message, 'websockets', this.ctx.getWebSockets())
-    JobFair.wsDispatch(message, ws)
+    JobFair.wsDispatch.call(this, message, ws)
   } // }}}2
 }
 

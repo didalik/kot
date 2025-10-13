@@ -65,16 +65,20 @@ class JobFair { // {{{1
   constructor () { // {{{2
   }
 
+  static attach (ws, attachment) { // {{{2
+    return impl.attach.call(this, ws, attachment)
+  }
+
   static dispatch (request, env_OR_ws, ctx_OR_null = null) { // {{{2
     return impl.dispatch.call(this, request, env_OR_ws, ctx_OR_null);
   }
 
   static wsClose (ws, code, reason, wasClean) { // {{{2
-    return impl.wsClose(ws, code, reason, wasClean);
+    return impl.wsClose.call(this, ws, code, reason, wasClean);
   }
 
   static wsDispatch (message, ws) { // {{{2
-    return impl.wsDispatch(message, ws);
+    return impl.wsDispatch.call(this, message, ws);
   }
 
   // }}}2
