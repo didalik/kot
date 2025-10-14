@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'url' // {{{1
 import { dirname } from 'path'
 import { spawn } from 'node:child_process'
+import { Keypair, TransactionBuilder, } from '@stellar/stellar-sdk'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -24,7 +25,8 @@ function get_txid_pos (opts) { // {{{1
   this.ws.close()
 }
 function issuerSign (opts) { // {{{1
-  this.ws.send('Hello from issuerSign!')
+  console.log('issuerSign opts', opts)
+  this.ws.send('issuerSign opts '+JSON.stringify(opts))
   this.ws.close()
 }
 function put_txid_pos (opts) { // {{{1
