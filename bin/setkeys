@@ -20,7 +20,7 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
-  echo '{"why":"?"}' | bin/${2}.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
+  echo '{"key":"value"}' | bin/${2}.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
 }
 
 validate () { # {{{1

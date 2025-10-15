@@ -4,7 +4,20 @@
 
 **Cloudflare Job Fair (jF)** is a place where all types of Job Requests meet all kinds of Job Agents. When an Agent gets authorized to do a Job, the job becomes an **hX** item with a certain amount of HEXA assigned to it. It runs on [Cloudflare](https://www.cloudflare.com/).
 
-These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, **jF** provides global access to the **hX + jF** proof of concept demo from [kloudoftrust.org](https://kloudoftrust.org).
+These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, **jF** provides global access to the **hX + jF** proof of concept demo from [kloudoftrust.org](https://kloudoftrust.org):
+
+```
++-- Stellar --+         +-- Browser ---------------+        +-- Cloudflare --+
+|             |<--------| https://kloudoftrust.org |------->|                |
+|      hX     | streams +--------------------------+ ws w/h |       jF       |
+|             |                                             |                |
++-------------+                                             +----------------+
+       A                                                            A
+       |                                                            |
+       \                +-----------------+                         /
+        \---------------| jF agent for hX |------------------------/
+                streams +-----------------+ WebSockets with Hibernate
+```
 
 The **hX + jF** concept can be applied to both the real world and the Internet. Some real-world examples could be open-sourced (AirBnb | Uber)-like applications. The digital world applications look more promising, as delivering both help and jobs over the Internet minimizes logistics. An open-sourced YouTube-like app, anybody?
 
