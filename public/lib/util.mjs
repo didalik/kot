@@ -219,7 +219,8 @@ async function generate_keypair () { // {{{1
   let sk = await this.exportKey('jwk', keypair.privateKey)
   pk = uint8ToBase64(new Uint8Array(pk))
   sk = JSON.stringify(sk)
-  return `${sk} ${pk}`;
+  //console.error('generate_keypair sk', sk, 'pk', pk)
+  return Promise.resolve(`${sk} ${pk}`);
 }
 
 async function pGET ( // {{{1

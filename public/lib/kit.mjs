@@ -1085,10 +1085,7 @@ function issuerSign (txXDR, tag) { // {{{1
       decodeURIComponent(config.userKeys), // using window.config
     ),
     { args: { txXDR, tag } }
-  ).then(r => {
-    console.log('issuerSign post_job then r', r)
-    return Promise.resolve(r);
-  }));
+  ).then(r => Promise.resolve(r)));
 }
 
 function makeX (offer, content, x, secret, keep) { // {{{1

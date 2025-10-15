@@ -180,47 +180,26 @@ function hackURLpath (args) { // CLIENT {{{1
   return '/' + args[0];
 }
 
-function jclURLpath (args) { // CLIENT {{{1
-/*
-- post_jcl args [
-  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',              // 0
-  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',  // 1
-  'hx/reset_testnet'                                           // 2
-] url ws://127.0.0.1:8787/jcl/hx/reset_testnet/GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ/n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D
-*/
-  let urlPath = `/${args[2]}/${args[1]}/${encodeURIComponent(args[0])}`
-  if (args[2] == 'hx/dopad') {
-/*
-- post_jcl args [
-  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',              // 0
-  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',  // 1
-  'hx/dopad',                                                  // 2
-  'put',                                                       // 3
-  'hx_STELLAR_NETWORK',                                        // 4
-  'testnet'                                                    // 5
-]
-*/
-    urlPath += '/' + args[3] + '?' + `${args[4]}=${encodeURIComponent(args[5])}`
-  }
-  return urlPath;
-}
-
 function log (...args) { // CLIENT {{{1
   console.log(...args)
 }
 
 function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
-  let path = jclURLpath(args)
-  let urlJcl = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jcl'
-    : 'ws://127.0.0.1:8787/jcl'
-  let url = `${urlJcl}${path}`
-  log('- post_jcl args', args, 'url', url)
-  new User({
-    name: 'user',
-    sk: process.env.JOBUSER_SK,
-    topSvc: true, 
-    url
-  }).connect()
+  configuration.promise.then(opts => {
+    let path = '/' + args[1] + args[2] + '/' +
+      args[3] + '/' + encodeURIComponent(args[0])
+    let urlJob = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jcl'
+      : 'ws://127.0.0.1:8787/jcl'
+    let url = `${urlJob}${path}`
+    log('- post_jcl args', args, 'opts', opts, 'url', url, 'configuration', configuration)
+    new User({
+      kitId: args[1],
+      name: 'user',
+      opts,
+      sk: process.env.JOBUSER_SK,
+      url
+    }).connect()
+  })
 }
 
 function post_job (node, run, cmd, ...args) { // {{{1
@@ -234,7 +213,7 @@ function post_job (node, run, cmd, ...args) { // {{{1
 ]
 */ // }}}2
   configuration.promise.then(opts => {
-    let path = '/' + args[1] + (opts.top ? '/top/' : '/') + args[2] + '/' +
+    let path = '/' + args[1] + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])
     let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
       : 'ws://127.0.0.1:8787/job'
@@ -283,7 +262,13 @@ function put_agent (node, run, cmd, ...args) { // {{{1
 }
 
 function setkeys() { // {{{1
-  generate_keypair.call(crypto.subtle, ).then(keys => log(keys))
+  configuration.promise.then(jso => {
+    console.error('setkeys jso', jso)
+    generate_keypair.call(crypto.subtle).then(keys => {
+      //console.error('setkeys keys', keys)
+      log(keys)
+    })
+  })
 }
 
 function start_testnet_monitor (node, run, cmd, nwdir, ...args) { // CLIENT {{{1

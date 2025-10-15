@@ -8,7 +8,7 @@ help () { # {{{1
   local red=$(git config --get-color color.diff.whitespace "red")
   local reset=$(git config --get-color "" "reset")
   echo -n "${red}"
-	echo -e "ERROR $error\n\tRequired argument is job side - 'user' or 'agent'. Usage examples:\n\n\t$0 user\n\t$0 agent\n"
+	echo -e "ERROR $error\n\tRequired arguments are job side and PHASE. Usage examples:\n\n\t$0 user dev\n\t$0 agent qa\n"
   echo -n "${reset}"
 }
 
@@ -20,12 +20,12 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
-  bin/run.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
+  echo '{"why":"?"}' | bin/${2}.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
 }
 
 validate () { # {{{1
 	log "$USER validate $# $@"
-  if [ $# -ne 1 ]; then
+  if [ $# -ne 2 ]; then
     return 1
   fi
   return 0
