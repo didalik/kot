@@ -9,7 +9,7 @@ These are my hobby projects. Combined, they make it possible for me and you to u
 ```
 +-- Stellar --+         +-- Browser ---------------+        +-- Cloudflare --+
 |             |<--------| https://kloudoftrust.org |------->|                |
-|      hX     | streams +--------------------------+ ws w/h |       jF       |
+|      hX     | streams +--------------------------+ WS w/H |       jF       |
 |             |                                             |                |
 +-------------+                                             +----------------+
        A                                                            A
