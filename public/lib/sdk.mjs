@@ -550,10 +550,9 @@ async function updateTrustline( // {{{1
 
   tx.sign(accountKeypair)
   if (sign) {
-    return sign.call(this, tx.toXDR(), 'updateTrustline').then(txXdr => {
-      console.log('updateTrustline txXdr', txXdr)
+    return sign(tx.toXDR(), 'updateTrustline').then(txXdr => 
       e.server.submitTransaction(TransactionBuilder.fromXDR(txXdr, e.nw))
-    });
+    );
   }
   tx =  await e.server.submitTransaction(tx).catch(e => console.error(
     '*** ERROR ***', e.response.data.extras.result_codes
@@ -582,9 +581,10 @@ async function updateTrustlineAndPay( // {{{1
 
   tx.sign(accountKeypair)
   if (sign) {
-    return sign(tx.toXDR(), 'updateTrustlineAndPay').then(txXdr => 
-      e.server.submitTransaction(TransactionBuilder.fromXDR(txXdr, e.nw))
-    );
+    return sign(tx.toXDR(), 'updateTrustlineAndPay').then(txXdr => {
+      console.log('updateTrustlineAndPay txXdr', txXdr)
+      return e.server.submitTransaction(TransactionBuilder.fromXDR(txXdr, e.nw));
+    });
   }
   tx =  await e.server.submitTransaction(tx).catch(e => console.error(
     '*** ERROR ***', e.response.data.extras.result_codes
