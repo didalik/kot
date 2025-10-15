@@ -4,7 +4,7 @@
 
 **Cloudflare Job Fair (jF)** is a place where all types of Job Requests meet all kinds of Job Agents. When an Agent gets authorized to do a Job, the job becomes an **hX** item with a certain amount of HEXA assigned to it. It runs on [Cloudflare](https://www.cloudflare.com/).
 
-These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, **jF** provides global access to the **hX + jF** proof of concept demo from [kloudoftrust.org](https://kloudoftrust.org):
+These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, **jF** enables global access to the **hX + jF** proof of concept demo from [kloudoftrust.org](https://kloudoftrust.org):
 
 ```
 +-- Stellar --+         +-- Browser ---------------+        +-- Cloudflare --+
