@@ -76,7 +76,7 @@ class Connection { // {{{1
     let tag = _ => {
       return this.name + '.done';
     }
-    log(`${tag()}`, 'DONE')
+    log(`${tag()}`, 'DONE this.result', this.result)
     //process.exit() // TODO exit code
     return Promise.resolve(
       this.result.startsWith('{') ? JSON.parse(this.result) : this.result

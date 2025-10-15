@@ -476,7 +476,6 @@ class User { // {{{1
       }
       vm.e.log('new User updateTrustlineHEXA updateTrustlineAndPay.call')
      
-      //let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
       updateTrustlineAndPay.call(vm, 
         vm.d.user.account, Keypair.fromSecret(vm.d.user.keys[0]), 
         vm.d.user.keys[1], '100000', // vm.d.limit == '1000000' 
@@ -1085,7 +1084,7 @@ function issuerSign (txXDR, tag) { // {{{1
       'issuerSign',
       decodeURIComponent(config.userKeys), // using window.config
     ),
-    { txXDR, tag }
+    { args: { txXDR, tag } }
   );
 }
 

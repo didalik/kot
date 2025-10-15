@@ -130,7 +130,7 @@ class Agent extends Connection { // {{{1
           return;
         }
         agent[this.kitId][this.jobname].call({ ws: this.ws }, 
-          { args: this.args, args_issuerSign: { tag: this.tag, txXDR: this.txXDR } }
+          { args: this.args }
         )
         this.state = Connection.JOB_STARTED
         //console.log('Agent.dispatch this', this)

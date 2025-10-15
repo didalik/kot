@@ -550,9 +550,10 @@ async function updateTrustline( // {{{1
 
   tx.sign(accountKeypair)
   if (sign) {
-    return sign.call(this, tx.toXDR(), 'updateTrustline').then(txXdr => 
+    return sign.call(this, tx.toXDR(), 'updateTrustline').then(txXdr => {
+      console.log('updateTrustline txXdr', txXdr)
       e.server.submitTransaction(TransactionBuilder.fromXDR(txXdr, e.nw))
-    );
+    });
   }
   tx =  await e.server.submitTransaction(tx).catch(e => console.error(
     '*** ERROR ***', e.response.data.extras.result_codes

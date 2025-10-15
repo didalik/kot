@@ -1,7 +1,9 @@
 import { fileURLToPath } from 'url' // {{{1
 import { dirname } from 'path'
 import { spawn } from 'node:child_process'
-import { Keypair, TransactionBuilder, } from '@stellar/stellar-sdk'
+import * as fs from "node:fs"
+import { loadKeys, } from '../../../public/lib/sdk.mjs'
+import { Keypair, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
@@ -24,9 +26,14 @@ function get_txid_pos (opts) { // {{{1
   this.ws.send('Hello from get_txid_pos!')
   this.ws.close()
 }
-function issuerSign (opts) { // {{{1
-  console.log('issuerSign opts', opts)
-  this.ws.send('issuerSign opts '+JSON.stringify(opts))
+function issuerSign (opts) { // TODO use opts.args.tag {{{1
+  let nwdir = '/home/alik/project/kot/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet' // FIXME
+  let keysIssuer = loadKeys(fs, nwdir + '/HEX_Issuer.keys')
+  let keypair = Keypair.fromSecret(keysIssuer[0])
+  console.log('issuerSign opts', opts, 'keysIssuer', keysIssuer)
+  let t = TransactionBuilder.fromXDR(opts.args.txXDR, Networks.TESTNET) // FIXME
+  t.sign(keypair)
+  this.ws.send(t.toXDR())
   this.ws.close()
 }
 function put_txid_pos (opts) { // {{{1
@@ -44,7 +51,7 @@ function selftest () { // {{{1
     { cwd: `${__dirname}/module-job-hx-definition/selftest` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))
-  job.stderr.on('data', data => log('selftest stderr', data.toString()))
+  job.stderr.on('data', data => console.log('selftest stderr', data.toString()))
   job.stdout.on('data', data => {
     this.ws.send(data)
   })
