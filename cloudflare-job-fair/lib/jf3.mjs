@@ -186,8 +186,11 @@ function log (...args) { // CLIENT {{{1
 
 function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
   configuration.promise.then(opts => {
-    let path = '/' + args[1] + args[2] + '/' +
+    let path = '/' + args[1] + '/' + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])
+    if (args[1] == 'hx' && args[3] == 'dopad') {
+      path += '/' + args[4] + '?' + `${args[5]}=${encodeURIComponent(args[6])}`
+    }
     let urlJob = configuration.fetch_options ? 'wss://jag.kloudoftrust.org/jcl'
       : 'ws://127.0.0.1:8787/jcl'
     let url = `${urlJob}${path}`
@@ -213,7 +216,7 @@ function post_job (node, run, cmd, ...args) { // {{{1
 ]
 */ // }}}2
   configuration.promise.then(opts => {
-    let path = '/' + args[1] + args[2] + '/' +
+    let path = '/' + args[1] + '/' + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])
     let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
       : 'ws://127.0.0.1:8787/job'

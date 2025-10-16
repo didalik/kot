@@ -26,7 +26,8 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         }
         return true;
       },
-      userDone: (reqst, durableObject, opts) => { // {{{3
+      userDone: (reqst) => { // {{{3
+        console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone reqst', reqst)
         let keys = [], values = []
         for (const key of reqst.parms.keys()) {
           keys.push(key)
@@ -34,8 +35,8 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = {
         for (const value of reqst.parms.values()) {
           values.push(value)
         }
-        return durableObject[reqst.path[6]](keys[0], values[0]).then(result => {
-          console.log('GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ dopad userDone reqst', reqst, 'durableObject', durableObject, 'result', result, 'opts', opts)
+        return reqst.durableObject[reqst.path[6]](keys[0], values[0]).
+        then(result => {
           reqst.ws.send(`dopad DONE ${result}`)
           reqst.ws.close() // TODO handle result=false
           return Promise.resolve(result);

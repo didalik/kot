@@ -157,11 +157,16 @@ class Reqst extends Ad { // {{{1
       return super.onmessage(message, 'offer');
     }
     if (this.state == Ad.PIPING) {
+      this.durableObject = Ad.durableObject
+      this.ws = websocket.call(Ad.durableObject, this.wsId)
       this.job.userDone(this). //, this.durableObject, JSON.parse(message)).
         then(bool => {
           console.log('reqst.job.userDone bool', bool)
         })
       return;
+    }
+    if (message == 'open') {
+      return null;
     }
     return this.verify(JSON.parse(message));
   }
@@ -286,11 +291,11 @@ function addReqst (request, env, ctx, pathname) { // {{{1
 function addReqstDO (wsId, path, pk, parms, userId) { // {{{1
   let topKit = path[1] == 'jcl'
   let kit = topKit ? hxTopKit : hxKit
-  let index = topKit ? 4 : 3
+  let index = /* topKit ? 4 : */ 3
   let [kitId, jobname] = path.slice(index, index + 2)
   let job = kit[kitId].jobs.find(job => job.name == jobname)
   job.userAuth(pk, this.env)
-  new Reqst({ job, kitId, parms, pk, topKit, userId, wsId, })
+  new Reqst({ job, kitId, parms, path, pk, topKit, userId, wsId, })
 }
 
 function actorId (certSubjectDN) { // {{{1

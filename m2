@@ -46,7 +46,7 @@ $$HOME/.cloudflare-job-fair/%.keys: # {{{1
 		read JOB$*_SK JOB$*_PK < $$HOME/.cloudflare-job-fair/$*.keys;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
 		export JOBUSER_SK=$$CREATOR_SK;\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_$*_PK $$JOB$*_PK
+		echo '{"key":"value"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}: # reset_testnet {{{1
 	@bin/bit/hx/${PHASE}/reset_testnet;\
