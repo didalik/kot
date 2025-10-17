@@ -15,7 +15,11 @@ read JOBAGENT_SK JOBAGENT_PK < $HOME/.cloudflare-job-fair/CREATOR.keys # {{{1
 export JOBAGENT_SK JOBAGENT_PK
 read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/CREATOR.keys
 export JOBUSER_SK JOBUSER_PK
-export HX_SERVICES_ID=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
+export HX_QA_KIT=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
 
-bin/dev.mjs put_agent $JOBAGENT_PK $HX_SERVICES_ID '*selftest' hx &
-echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK $HX_SERVICES_ID 'hx/setup_selftest'
+echo '{"jobs":["setup_selftest"],"top":false}' | bin/dev.mjs put_agent $JOBAGENT_PK hx $HX_QA_KIT &
+CHILD_SETUP_SELFTEST=$!
+echo SETUP_SELFTEST $CHILD_SETUP_SELFTEST
+
+trap "echo -e '\n- killing $CHILD_SETUP_SELFTEST'; kill $CHILD_SETUP_SELFTEST" SIGINT
+echo '{"args":[100000]}' | bin/dev.mjs post_job $JOBUSER_PK hx $HX_QA_KIT setup_selftest

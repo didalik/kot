@@ -221,7 +221,7 @@ function post_job (node, run, cmd, ...args) { // {{{1
     let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
       : 'ws://127.0.0.1:8787/job'
     let url = `${urlJob}${path}`
-    if (args[4].startsWith('browser=')) {
+    if (args[4]?.startsWith('browser=')) {
       configuration.browser = args[4].slice(8)
     }
     log('- post_job args', args, 'opts', opts, 'url', url, 'configuration', configuration)

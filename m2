@@ -46,21 +46,22 @@ $$HOME/.cloudflare-job-fair/%.keys: # {{{1
 		read JOB$*_SK JOB$*_PK < $$HOME/.cloudflare-job-fair/$*.keys;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
 		export JOBUSER_SK=$$CREATOR_SK;\
-		echo '{"key":"value"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_$*_PK $$JOB$*_PK
+		echo '{"hx_$*_PK":"$$JOB$*_PK"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_$*_PK $$JOB$*_PK
 
 ${TESTNET_DIR}: # reset_testnet {{{1
 	@bin/bit/hx/${PHASE}/reset_testnet;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
 		export JOBUSER_SK=$$CREATOR_SK;\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_STELLAR_NETWORK testnet;\
+		echo '{"hx_STELLAR_NETWORK":"testnet"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_STELLAR_NETWORK testnet;\
 		read SK PK < ${TESTNET_DIR}/HEX_Issuer.keys;\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_testnet_IssuerPK $$PK
+		echo '{"hx_testnet_IssuerPK":"$$PK"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_testnet_IssuerPK $$PK
 
 ${TXIDS}: # setup_selftest {{{1
 	@bin/bit/hx/${PHASE}/setup_selftest;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
-		export JOBUSER_SK=$$CREATOR_SK;read < ${TXIDS};\
-		bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_Agent_make2map_txids "$$REPLY"
+		export JOBUSER_SK=$$CREATOR_SK;\
+		read < ${TXIDS};\
+		echo '{"hx_Agent_make2map_txids":"$$REPLY"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_Agent_make2map_txids "$$REPLY"
 
 .PHONY: clean # rm /home/alik/.cloudflare-job-fair/OWNER.keys to start from scratch {{{1
 clean:
