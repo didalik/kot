@@ -688,9 +688,8 @@ class User { // {{{1
         c.latest ??= {}
         c.latest.take ??= {}
         c.latest.take.balanceId = r.balanceId
-        let body = JSON.stringify([r.txId, pos])
-        postBody(_originCFW, '/put_txid_pos', body)
-        .then(text => e.log('User take put_txid_pos', text));
+        put_txid_pos(r.txId, pos).
+          then(text => e.log('User take put_txid_pos', text))
         d.user.balanceIds ??= []
         d.user.balanceIds.push(r.balanceId)
         return Promise.resolve('in progress.');
@@ -1196,6 +1195,18 @@ async function onUserEffect (effect) { // claimable_balance_claimant_created {{{
   let { s, e, c, d } = this
   e.log('onUserEffect effect', effect)
 
+}
+
+function put_txid_pos (txid, pos) { // {{{1
+  return Promise.resolve(post_job(
+    post_job_args(
+      'hx',
+      'HX_KIT',
+      'put_txid_pos',
+      decodeURIComponent(config.userKeys), // using window.config
+    ),
+    { args: { txid, pos } }
+  ).then(r => Promise.resolve(r)));
 }
 
 function pushDeal (make, take, deal) { // {{{1

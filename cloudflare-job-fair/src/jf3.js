@@ -19,15 +19,44 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
     return true;
   }
 
+  match (ad, adPropertyName, thisPropertyName) { // {{{2
+    this[adPropertyName] = ad
+    ad[thisPropertyName] = this
+
+    let jobs4ad = ad => (ad.topKit ? hxTopKit : hxKit)[ad.kitId]?.jobs
+    let jobs = jobs4ad(this)
+    //console.log('Ad.match this', this, 'jobs', jobs)
+    if (this.offer) { // this is Reqst
+      Ad.wsId2ad.forEach(ad => {
+        console.log('Ad.match Reqst ad', ad)
+        let adjobs = jobs4ad(ad)
+        if (!adjobs || jobs === adjobs) {
+          return;
+        }
+      })
+    } else {          // this is Offer
+      Ad.wsId2ad.forEach(ad => {
+        let adjobs = jobs4ad(ad)
+        if (!adjobs || jobs === adjobs) {
+          return;
+        }
+        console.log('Ad.match Offer ad', ad)
+      })
+    }
+  }
+
   onclose (...args) { // {{{2
-    !!this.offer?.wsId && websocket(this.offer.wsId).close()
-    !!this.reqst?.wsId && websocket(this.reqst.wsId).close()
-    Ad.wsId2ad.delete(this.wsId)
     console.log('Ad.onclose this', this, 'args', args)
+    !!this.offer?.wsId && websocket(this.offer.wsId)?.close()
+    !!this.reqst?.wsId && websocket(this.reqst.wsId)?.close()
+    !!this.job?.requestQueue && this.job.requestQueue.shift() // FIXME
+    !!this.job?.offerQueue && this.job.offerQueue.shift() // FIXME
+    Ad.wsId2ad.delete(this.wsId)
   }
 
   onmessage (message, match) { // {{{2
     console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
+    this.isOpen ??= Date.now()
     switch (this.state) {
       case Ad.OPENING:
         return this[match] && this[match].state == Ad.OPENING ? this.make(this[match]) && this[match].make(this): null;
@@ -97,9 +126,7 @@ class Offer extends Ad { // {{{1
     super(base)
     let match = this.match()
     if (match) {
-      this.reqst = match
-      match.offer = this
-      //Ad.wsId2ad.set(match.ws, match)
+      super.match(match, 'reqst', 'offer')
     } else {
       this.job.offerQueue.push(this)
     }
@@ -134,9 +161,7 @@ class Reqst extends Ad { // {{{1
     }
     let match = this.match()
     if (match) {
-      this.offer = match
-      match.reqst = this
-      //Ad.wsId2ad.set(match.ws, match) // TODO close other offers from that agent
+      super.match(match, 'offer', 'reqst')
     } else {
       this.job.requestQueue.push(this)
     }
@@ -238,6 +263,7 @@ JobFairImpl.dispatch path [
     Ad.durableObject = this
     let ad = Ad.wsId2ad.get(wsId.call(this, ws))
     ad.onclose(...args)
+    this.ws2wsId.delete(ws)
   },
 
   wsDispatch: function (data, ws) { // {{{2
@@ -291,7 +317,7 @@ function addReqst (request, env, ctx, pathname) { // {{{1
 function addReqstDO (wsId, path, pk, parms, userId) { // {{{1
   let topKit = path[1] == 'jcl'
   let kit = topKit ? hxTopKit : hxKit
-  let index = /* topKit ? 4 : */ 3
+  let index = 3
   let [kitId, jobname] = path.slice(index, index + 2)
   let job = kit[kitId].jobs.find(job => job.name == jobname)
   job.userAuth(pk, this.env)

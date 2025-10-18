@@ -26,7 +26,7 @@ function get_txid_pos (opts) { // {{{1
   this.ws.send('Hello from get_txid_pos!')
   this.ws.close()
 }
-function issuerSign (opts) { // TODO use opts.args.tag {{{1
+function issuerSign (opts = {}) { // TODO use opts.args.tag {{{1
   let nwdir = '/home/alik/project/kot/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet' // FIXME
   let keysIssuer = loadKeys(fs, nwdir + '/HEX_Issuer.keys')
   let keypair = Keypair.fromSecret(keysIssuer[0])
@@ -36,8 +36,8 @@ function issuerSign (opts) { // TODO use opts.args.tag {{{1
   this.ws.send(t.toXDR())
   this.ws.close()
 }
-function put_txid_pos (opts) { // {{{1
-  this.ws.send('Hello from put_txid_pos!')
+function put_txid_pos (opts = {}) { // {{{1
+  this.ws.send('put_txid_pos opts', opts)
   this.ws.close()
 }
 
