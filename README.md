@@ -7,14 +7,14 @@
 These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, **jF** enables global access to the **hX + jF** proof of concept demo from [kloudoftrust.org](https://kloudoftrust.org):
 
 ```
-+-- Stellar --+         +-- Browser ---------------+        +-- Cloudflare --+
++-- Stellar --+         +-- Browser (jF user4hX) --+        +-- Cloudflare --+
 |             |<--------| https://kloudoftrust.org |------->|                |
 |      hX     | streams +--------------------------+ WS w/H |       jF       |
 |             |                                             |                |
 +-------------+                                             +----------------+
-       A                                                            A
-       |                                                            |
-       \                +-----------------+                         /
+       A                          +----------------+                A
+       |<-------------------------| jF user for hX |--------------->|
+       \                +-----------------+ -------+                /
         \---------------| jF agent for hX |------------------------/
                 streams +-----------------+ WebSockets with Hibernate
 ```
