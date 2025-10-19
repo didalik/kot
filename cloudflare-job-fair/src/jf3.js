@@ -25,24 +25,17 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
 
     let jobs4ad = ad => (ad.topKit ? hxTopKit : hxKit)[ad.kitId]?.jobs
     let jobs = jobs4ad(this)
-    //console.log('Ad.match this', this, 'jobs', jobs)
-    if (this.offer) { // this is Reqst
-      Ad.wsId2ad.forEach(ad => {
-        console.log('Ad.match Reqst ad', ad)
-        let adjobs = jobs4ad(ad)
-        if (!adjobs || jobs === adjobs) {
-          return;
-        }
-      })
-    } else {          // this is Offer
-      Ad.wsId2ad.forEach(ad => {
-        let adjobs = jobs4ad(ad)
-        if (!adjobs || jobs === adjobs) {
-          return;
-        }
-        console.log('Ad.match Offer ad', ad)
-      })
-    }
+    Ad.wsId2ad.forEach(ad => {
+      let adjobs = jobs4ad(ad)
+      if (!adjobs || jobs !== adjobs || this.job.name == ad.job.name) {
+        return;
+      }
+      if (this.offer) { // this is Reqst, ad.isOpen => reject(ad)
+        console.log('Ad.match Reqst this', this, 'ad', ad, 'jobs', jobs)
+      } else {          // this is Offer, !ad.isOpen => mark ad.toReject = true
+        console.log('Ad.match Offer this', this, 'ad', ad, 'jobs', jobs)
+      }
+    })
   }
 
   onclose (...args) { // {{{2
@@ -57,6 +50,9 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
   onmessage (message, match) { // {{{2
     console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
     this.isOpen ??= Date.now()
+    if (this.toClose) {
+      return websocket(this[match].wsId).close();
+    }
     switch (this.state) {
       case Ad.OPENING:
         return this[match] && this[match].state == Ad.OPENING ? this.make(this[match]) && this[match].make(this): null;
