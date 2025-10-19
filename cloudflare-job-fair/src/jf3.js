@@ -31,9 +31,9 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
         return;
       }
       if (this.offer) { // this is Reqst, ad.isOpen => reject(ad)
-        console.log('Ad.match Reqst this', this, 'ad', ad, 'jobs', jobs)
+        ad.reject()
       } else {          // this is Offer, !ad.isOpen => mark ad.toReject = true
-        console.log('Ad.match Offer this', this, 'ad', ad, 'jobs', jobs)
+        ad.toReject = true
       }
     })
   }
@@ -48,10 +48,10 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
   }
 
   onmessage (message, match) { // {{{2
-    console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match)
+    console.log('Ad.onmessage this.state', this.state, 'this.job.name', this.job.name, 'message', message, 'match', match, 'this.toReject', this.toReject)
     this.isOpen ??= Date.now()
-    if (this.toClose) {
-      return websocket(this[match].wsId).close();
+    if (this.toReject) {
+      return this.reject();
     }
     switch (this.state) {
       case Ad.OPENING:
@@ -73,6 +73,11 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
       default:
         throw Error('Ad onmessage this.state ' + this.state);
     }
+  }
+
+  reject () { // {{{2
+    console.log('Ad.reject this', this)
+    //websocket(this.wsId).close();
   }
 
   verify (jso, match = null) { // {{{2
