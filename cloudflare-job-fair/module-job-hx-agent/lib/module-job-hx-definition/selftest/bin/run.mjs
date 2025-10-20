@@ -4,13 +4,21 @@ import { // {{{1
   addStream, cbEffect,
 } from '../../../../../../public/lib/aux.mjs' // FIXME
 import {
-  loadKeys, secdVm,
+  issuerSign, 
+  loadKeys, 
+  put_txid_pos,
+  secdVm,
 } from '../../../../../../public/lib/sdk.mjs' // FIXME
 import { 
   HEX_FEE,
+  offerTakeDeal,
 } from '../../../../../../public/lib/api.mjs' // FIXME
 import * as fs from "node:fs"
 import { MemoHash, MemoText, } from '@stellar/stellar-sdk'
+
+global.config = { userKeys: process.env.REPLY } // {{{1
+global.location = { protocol: 'http:' }
+console.log('selftest/bin/run.mjs global', global, 'process.argv', process.argv)
 
 const _onSIGTERM = vm => { // {{{1
   process.on('SIGTERM', _ => {
@@ -36,7 +44,6 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     && opts.data.offer == false
     && d.tXs_mapped.find(v => v.tx.id == opts.data.memo2str)
 
-  let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
   cbEffect.call(this, { effect, issuerSign, }).then(o => {
     e.log('cbcc o', o)
 

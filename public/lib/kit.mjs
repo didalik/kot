@@ -11,13 +11,14 @@ import { // {{{1
 } from './api.mjs'
 import {
   clawback,
-  createAccount, secdVm, storeKeys, takeClaimableBalance,
+  createAccount, 
+  issuerSign, put_txid_pos,
+  secdVm, storeKeys, takeClaimableBalance,
   trustAssets, updateTrustlineAndPay,
 } from './sdk.mjs'
 import { addStream, cbEffect, postBody, } from './aux.mjs'
 import { addLine, retrieveItem, storeItem, } from './util.mjs'
 import { JobChannel, Channel, Model, Test, } from './jc.mjs'
-import { post_job, post_job_args, } from './jf3.mjs'
 import {
   Keypair, MemoHash, MemoText, TransactionBuilder,
 } from '@stellar/stellar-sdk'
@@ -396,7 +397,6 @@ class ModalPane { // {{{1
         'Closing Deal...'
       updateInfoWindow(tX.infoWindow, iwc, tX.marker)
       let make = vm.d.tXs_mapped.find(x => x.txid == tX.memo2str)
-      //let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
       toHEXA.call(vm, make.amount, issuerSign).then(_ => {
         iwc = iwc.slice(0, iwc.indexOf('Closing Deal...')) +
           'Deal closed. You got HEXA ' + make.amount
@@ -524,7 +524,6 @@ class User { // {{{1
     let make = d.tXs_mapped.find(v => v.txid == tX.memo2str)
     e.log('User breakDeal tX', tX, 'c.latest', c.latest)
 
-    //let issuerSign = (body, tag) => postBody(_originCFW, '/' + tag, body)
     let amount = make ? make.amount : tX.amount
     return clawback.call(this.vm,
       d.user.account, Keypair.fromSecret(d.user.keys[0]), 
@@ -592,7 +591,7 @@ class User { // {{{1
   openDeal (tX) { // {{{2
     let { s, e, c, d } = this.vm
     let make = d.tXs_mapped.find(v => v.txid == tX.memo2str)
-    tX.opts.issuerSign = issuerSign //(body, tag) => postBody(_originCFW, '/' + tag, body)
+    tX.opts.issuerSign = issuerSign 
     e.log('User openDeal tX', tX, 'make', make)
 
     let f = tX.offer ? offerTakeDeal : requestTakeDeal
@@ -1075,18 +1074,6 @@ function initView (config, resolve, reject) { // {{{1
   .catch(e => { console.error(e); }); 
 }
 
-function issuerSign (txXDR, tag) { // {{{1
-  return Promise.resolve(post_job(
-    post_job_args(
-      'hx',
-      'HX_KIT',
-      'issuerSign',
-      decodeURIComponent(config.userKeys), // using window.config
-    ),
-    { args: { txXDR, tag } }
-  ).then(r => Promise.resolve(r)));
-}
-
 function makeX (offer, content, x, secret, keep) { // {{{1
   let { s, e, c, d } = this // {{{2
   x.style.display = 'none'
@@ -1195,18 +1182,6 @@ async function onUserEffect (effect) { // claimable_balance_claimant_created {{{
   let { s, e, c, d } = this
   e.log('onUserEffect effect', effect)
 
-}
-
-function put_txid_pos (txid, pos) { // {{{1
-  return Promise.resolve(post_job(
-    post_job_args(
-      'hx',
-      'HX_KIT',
-      'put_txid_pos',
-      decodeURIComponent(config.userKeys), // using window.config
-    ),
-    { args: { txid, pos } }
-  ).then(r => Promise.resolve(r)));
 }
 
 function pushDeal (make, take, deal) { // {{{1

@@ -11,6 +11,7 @@ _.seed
 \*.pid.lock
 **/build
 public/hx.html
+public/stellar_test_monitor.html
 
 # wrangler project {{{1
 .dev.vars

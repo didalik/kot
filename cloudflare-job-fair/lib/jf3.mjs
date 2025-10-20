@@ -122,18 +122,20 @@ class Agent extends Connection { // {{{1
 
   dispatch (data) { // {{{2
     super.dispatch(data)
+    //console.log('Agent.dispatch this', this)
     let agent = this.topKit ? tjAg : jAg
     switch (this.state) {
       case Connection.READY:
         if (this.ready) {
           delete this.ready
+        }
+        if (!this.args) {
           return;
         }
         agent[this.kitId][this.jobname].call({ ws: this.ws }, 
           { args: this.args }
         )
         this.state = Connection.JOB_STARTED
-        //console.log('Agent.dispatch this', this)
         break
     }
   }

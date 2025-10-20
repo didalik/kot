@@ -22,7 +22,7 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
   match (ad, adPropertyName, thisPropertyName) { // {{{2
     this[adPropertyName] = ad
     ad[thisPropertyName] = this
-
+/*
     let jobs4ad = ad => (ad.topKit ? hxTopKit : hxKit)[ad.kitId]?.jobs
     let jobs = jobs4ad(this)
     Ad.wsId2ad.forEach(ad => {
@@ -36,6 +36,7 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
         ad.toReject = true
       }
     })
+*/
   }
 
   onclose (...args) { // {{{2
@@ -75,9 +76,15 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
     }
   }
 
-  reject () { // {{{2
-    console.log('Ad.reject this', this)
-    //websocket(this.wsId).close();
+  reject () { // TODO move method to Offer {{{2
+    //console.log('Ad.reject this', this)
+    //!!this.job?.requestQueue && this.job.requestQueue.shift() // FIXME
+    !!this.job?.offerQueue && this.job.offerQueue.shift() // FIXME
+    try {
+      websocket(this.wsId).close()
+    } catch(err) {
+      console.log('Ad.reject err', err, 'this', this)
+    }
   }
 
   verify (jso, match = null) { // {{{2

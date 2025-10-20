@@ -17,6 +17,7 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
+  read < $HOME/.cloudflare-job-fair/OWNER.keys; export REPLY
   bin/run.mjs $@
   tree $2
 }

@@ -36,8 +36,10 @@ function issuerSign (opts = {}) { // TODO use opts.args.tag {{{1
   this.ws.send(t.toXDR())
   this.ws.close()
 }
+
 function put_txid_pos (opts = {}) { // {{{1
-  this.ws.send('put_txid_pos opts', opts)
+  console.log('put_txid_pos opts', opts)
+  this.ws.send('put_txid_pos opts ' + JSON.stringify(opts))
   this.ws.close()
 }
 

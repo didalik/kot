@@ -12,6 +12,7 @@ import { // {{{1
   Operation,
   TransactionBuilder, xdr, 
 } from '@stellar/stellar-sdk'
+import { post_job, post_job_args, } from './jf3.mjs'
 
 async function addHEX_CREATOR (server = null, doLoad = false) { // {{{1
   let { s, e, c, d } = this
@@ -330,6 +331,18 @@ function loadKeys (fs, dirname, basename = null) { // {{{1
   return [pair[0].trim(), pair[1].trim()];
 }
 
+function issuerSign (txXDR, tag) { // {{{1
+  return Promise.resolve(post_job(
+    post_job_args(
+      'hx',
+      'HX_KIT',
+      'issuerSign',
+      decodeURIComponent(config.userKeys), // using window.config | global.config
+    ),
+    { args: { txXDR, tag } }
+  ).then(r => Promise.resolve(r)));
+}
+
 async function makeBuyOffer( // {{{1
   kp, account, buying, selling, buyAmount, price, offerId = 0
 ) {
@@ -455,6 +468,18 @@ function offerMade (result_xdr, kind = 'manageBuyOfferResult') { // {{{1
   result = { offer: { id, price_r, }, offersClaimedLength: offersClaimed.length, }
   //console.dir(result, { depth: null })
   return result;
+}
+
+function put_txid_pos (txid, pos) { // {{{1
+  return Promise.resolve(post_job(
+    post_job_args(
+      'hx',
+      'HX_KIT',
+      'put_txid_pos',
+      decodeURIComponent(config.userKeys), // using window.config | global.config
+    ),
+    { args: { txid, pos } }
+  ).then(r => Promise.resolve(r)));
 }
 
 async function secdVm ( // {{{1
@@ -596,8 +621,10 @@ export { // {{{1
   addMA_Agent, addMA_CREATOR, addMA_Issuer,
   clawback, clawbackOffer, clawbackRequest,
   convertClawableHexa, createAccount,
+  issuerSign, 
   loadKeys,
   makeBuyOffer, makeClaimableBalance, makeSellOffer, memo2str,
+  put_txid_pos,
   secdVm,
   storeKeys, takeClaimableBalance,
   trustAssets, updateTrustline, updateTrustlineAndPay,
