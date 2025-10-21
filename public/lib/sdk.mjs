@@ -337,7 +337,7 @@ function issuerSign (txXDR, tag) { // {{{1
       'hx',
       'HX_KIT',
       'issuerSign',
-      decodeURIComponent(config.userKeys), // using window.config | global.config
+      decodeURIComponent(config.userKeys), // using window.config
     ),
     { args: { txXDR, tag } }
   ).then(r => Promise.resolve(r)));
@@ -476,7 +476,7 @@ function put_txid_pos (txid, pos) { // {{{1
       'hx',
       'HX_KIT',
       'put_txid_pos',
-      decodeURIComponent(config.userKeys), // using window.config | global.config
+      decodeURIComponent(config.userKeys), // using window.config
     ),
     { args: { txid, pos } }
   ).then(r => Promise.resolve(r)));

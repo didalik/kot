@@ -208,16 +208,10 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
 }
 
 function post_job (node, run, cmd, ...args) { // {{{1
-/* {{{2
-- post_job args [
-  'n0EMjrNk4jO/35/1d+kthvycSUm/+Sjy89Ux2ZGRNV0=',
-  'hx',
-  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',
-  'selftest',
-  'browser=http://ko:8787/hx'
-]
-*/ // }}}2
+  console.log('+ post_job args', args)
+
   configuration.promise.then(opts => {
+    console.log('+ post_job opts', opts)
     let path = '/' + args[1] + '/' + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])
     let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'

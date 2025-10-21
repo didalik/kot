@@ -4,21 +4,21 @@ import { // {{{1
   addStream, cbEffect,
 } from '../../../../../../public/lib/aux.mjs' // FIXME
 import {
-  issuerSign, 
   loadKeys, 
-  put_txid_pos,
   secdVm,
 } from '../../../../../../public/lib/sdk.mjs' // FIXME
 import { 
   HEX_FEE,
   offerTakeDeal,
 } from '../../../../../../public/lib/api.mjs' // FIXME
+import {
+  configuration, post_job, promiseWithResolvers,
+} from '../../../../../lib/jf3.mjs'
 import * as fs from "node:fs"
 import { MemoHash, MemoText, } from '@stellar/stellar-sdk'
 
-global.config = { userKeys: process.env.REPLY } // {{{1
-global.location = { protocol: 'http:' }
-console.log('selftest/bin/run.mjs global', global, 'process.argv', process.argv)
+let config = { userKeys: process.env.REPLY } // {{{1
+Object.assign(configuration, promiseWithResolvers())
 
 const _onSIGTERM = vm => { // {{{1
   process.on('SIGTERM', _ => {
@@ -67,6 +67,16 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     : userTakingRequest(o) ? requestTakeDeal.call(this, o)
     :  e.log('cbcc d.tXs_mapped.length', d.tXs_mapped.push(o))
     }).catch(err => console.error('cbcc UNEXPECTED', err))
+}
+function issuerSign (txXDR, tag) { // {{{1
+  console.log('issuerSign tag', tag, 'txXDR', txXDR)
+
+  let [sk, pk] = config.userKeys.split(' ')
+  return Promise.resolve(
+    post_job(null, null, null, // node, run, cmd,
+      pk, 'hx', 'HX_KIT', 'issuerSign', sk, { args: { txXDR, tag } }
+    )
+  ).then(r => Promise.resolve(r));
 }
 
 function onClawback (effect) { // account_debited {{{1
