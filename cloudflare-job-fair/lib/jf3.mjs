@@ -21,6 +21,8 @@ class Connection { // {{{1
     let tag = _ => {
       return this.name + '.connect';
     }
+    //log('Connection.connect this', this)
+
     this.ws.on('error', err => { // {{{3
       err.message.endsWith('401') || err.message.endsWith('404') ||
         log(`${tag()} error`, err)
@@ -46,7 +48,7 @@ class Connection { // {{{1
       }
       //this.state != Connection.JOB_STARTED && log(`${tag()} message data`, data)
     }) // }}}3
-    promise.then(loop => loop ? this.connect() : this.done()).
+    return promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
         console.error('UNEXPECTED', e); process.exit(1)
       })
@@ -70,10 +72,7 @@ class Connection { // {{{1
   }
 
   done () { // {{{2
-    let tag = _ => {
-      return this.name + '.done';
-    }
-    log(`${tag()}`, 'DONE')
+    console.log('Connection.done this', this)
     process.exit() // TODO exit code
   }
 
@@ -153,12 +152,12 @@ class User extends Connection { // {{{1
       case Connection.JOB_STARTED:
         configuration.browser && spawn('bin/test-browser', [configuration.browser])
         delete configuration.browser
-        return log(data);
+        return log(this.result = data);
     }
     super.dispatch(data)
     switch (this.state) {
       case Connection.READY:
-        this.ws.send(JSON.stringify(opts))
+        this.ws.send(JSON.stringify(this.opts))
         this.state = Connection.JOB_STARTED
         break
     }
@@ -198,7 +197,7 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
     let url = `${urlJob}${path}`
     log('- post_jcl args', args, 'opts', opts, 'url', url, 'configuration', configuration)
     new User({
-      kitId: args[1],
+      //kitId: args[1],
       name: 'user',
       opts,
       sk: process.env.JOBUSER_SK,
@@ -210,8 +209,8 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
 function post_job (node, run, cmd, ...args) { // {{{1
   console.log('+ post_job args', args)
 
-  configuration.promise.then(opts => {
-    console.log('+ post_job opts', opts)
+  let handleOpts = opts => {
+    console.log('+ handleOpts opts', opts)
     let path = '/' + args[1] + '/' + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])
     let urlJob = configuration.fetch_options ? 'wss://job.kloudoftrust.org/job'
@@ -221,14 +220,19 @@ function post_job (node, run, cmd, ...args) { // {{{1
       configuration.browser = args[4].slice(8)
     }
     log('- post_job args', args, 'opts', opts, 'url', url, 'configuration', configuration)
-    new User({
-      kitId: args[1],
+    return new User({
       name: 'user',
       opts,
       sk: process.env.JOBUSER_SK,
       url
     }).connect()
-  })
+  }
+
+  if (!cmd) {
+    process.env.JOBUSER_SK = args[4]
+    return Promise.resolve(handleOpts(args[5]));
+  }
+  configuration.promise.then(opts => handleOpts(opts))
 }
 
 function promiseWithResolvers () { // {{{1

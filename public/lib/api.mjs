@@ -310,6 +310,8 @@ function offerTakeDeal (opts) { // {{{1
   tx = tx.setTimeout(30).build() // {{{2
   tx.sign(kp)
   return signDeal.call(this, tx.toXDR(), 'offerTakeDeal').then(txXdr => {
+    console.log('offerTakeDeal signDeal.call then txXdr', txXdr)
+
     let tx = TransactionBuilder.fromXDR(txXdr, e.nw)
     return e.server.submitTransaction(tx).then(txR => ({
       done: 'offerTakeDeal',

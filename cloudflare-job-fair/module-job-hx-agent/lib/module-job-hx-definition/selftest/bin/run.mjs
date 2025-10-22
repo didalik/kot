@@ -12,13 +12,12 @@ import {
   offerTakeDeal,
 } from '../../../../../../public/lib/api.mjs' // FIXME
 import {
-  configuration, post_job, promiseWithResolvers,
+  post_job,
 } from '../../../../../lib/jf3.mjs'
 import * as fs from "node:fs"
 import { MemoHash, MemoText, } from '@stellar/stellar-sdk'
 
 let config = { userKeys: process.env.REPLY } // {{{1
-Object.assign(configuration, promiseWithResolvers())
 
 const _onSIGTERM = vm => { // {{{1
   process.on('SIGTERM', _ => {
@@ -46,8 +45,7 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
 
   cbEffect.call(this, { effect, issuerSign, }).then(o => {
     e.log('cbcc o', o)
-
-    userMakingOffer(o) ? takeOffer.call(this, ...takeOfferArgs(this, o))
+    return userMakingOffer(o) ? takeOffer.call(this, ...takeOfferArgs(this, o))
       .then(r => {
         let body = JSON.stringify([
           r.txId, [8.7961073, -79.5552843],   // Tagoba

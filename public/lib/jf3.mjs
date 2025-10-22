@@ -198,7 +198,6 @@ function post_job (args, opts = {args:[]}) { // no client certificate required {
   }
   log('post_job url', url, 'args', args, 'opts', opts)
   return new User({
-    kitId: args[1],
     name: 'user',
     opts,
     sk: args[4],
