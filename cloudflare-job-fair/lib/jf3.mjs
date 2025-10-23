@@ -73,7 +73,10 @@ class Connection { // {{{1
 
   done () { // {{{2
     console.log('Connection.done this', this)
-    process.exit() // TODO exit code
+    if (this.result) { // this is User
+      return Promise.resolve(this.result);
+    }
+    process.exit()     // this is Agent    TODO exit code
   }
 
   sign (data) { // {{{2
