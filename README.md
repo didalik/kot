@@ -22,3 +22,7 @@ These are my hobby projects. Combined, they make it possible for me and you to u
 The **hX + jF** concept is applicable to both the real world and the Internet. Some real-world examples could be open-source (AirBnb | Uber)-like applications. The digital world applications look more promising, as delivering both help and jobs over the Internet minimizes logistics. An open-source YouTube-like app, anybody?
 
 The issue I want to address here is basic - I need you to join me in order to make the **hX + jF** more than hobby projects one runs for fun. Can we make them run for profit together? I think yes, if you enjoy coding like I do. With some luck, we'll make a better Internet for you and me!
+
+## The Cogs
+
+Having run the demo, you might have noticed its icon, the rotating cogs: ![foo bar](/public/static/favicon.ico). Those are **hX** and **jF**, working together.
