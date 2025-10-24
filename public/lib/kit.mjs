@@ -45,7 +45,7 @@ let _wait4jobs = _ => {
 }
 let [_wait4jobsResolve, _wait4jobsReject] = _wait4jobs()
 
-const _originCFW = location.origin.startsWith('https:') ? // {{{1
+const _originCFW = location.origin.startsWith('https:') ? // FIXME do not use _originCFW {{{1
   'https:/svc-hex.didalik.workers.dev'
 : 'http://u22:8788'
 
@@ -80,13 +80,13 @@ let _test_steps = [ // {{{1
   // Test step 3: click the Take button (confirm Take Offer). {{{2
   [lns => {
     let button = document.getElementById('confirm-take')
-    setTimeout(_ => { button.click(); lns.resolve(false) }, 500)
+    setTimeout(_ => { button.click(); lns.resolve(false); console.log('Test step 3 lns', lns) }, 500)
   }, ],
 
   // Test step 4: having taken Offer, wait 5 seconds and close the modal pane. {{{2
   [lns => {
     let button = document.getElementById('takeXX')
-    setTimeout(_ => { button.click(); lns.resolve(true) }, 5000)
+    setTimeout(_ => { button.click(); lns.resolve(true); console.log('Test step 4 lns', lns) }, 5000)
   }, ],
 
   // Test step 5: click the take marker. {{{2
@@ -740,10 +740,7 @@ function breakX (tX, content, x) { // {{{1
 async function cbc (effect) { // claimable_balance_claimed {{{1
   let { s, e, c, d } = this
   cbEffect.call(this, { effect, }).then(deal => {
-    e.log(
-      'cbc cbEffect deal', deal, 'd.tXs_mapped', d.tXs_mapped,
-      'c.latest', c.latest
-    )
+    e.log('cbc cbEffect deal', deal, this)
 
     if (effect.balance_id != c?.latest?.take.balanceId) {
       return;

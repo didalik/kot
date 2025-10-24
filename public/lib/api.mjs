@@ -262,7 +262,7 @@ function offerTakeDeal (opts) { // {{{1
   let maker = d.user.account
   let signDeal = opts.issuerSign
   let source = d.keysIssuer[1]
-  let takeTxId = opts.tx.id
+  let takeTxId = opts.data.memo2str // NOT opts.tx.id
 
   let memo = Memo.return(takeTxId)
   let tx = new TransactionBuilder(maker, // increasing the maker's

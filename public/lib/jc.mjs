@@ -27,9 +27,10 @@ class JobChannel { // {{{1
 
   send (job) { // {{{2
     let self = job.shift()
-    let f = job.shift()
+    let f = job.shift() // f will send the job to this.#qOfJobs
+
     return Promise.resolve(f.call(self, this.#qOfJobs, ...job))
-    .then(sent => { // a job may need more than one send before it can be received
+    .then(sent => { // a job may need more than one send to be received
       sent && this.#lock.signal()
       return Promise.resolve(sent);
     });
