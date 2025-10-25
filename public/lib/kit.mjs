@@ -103,14 +103,19 @@ let _test_steps = [ // {{{1
         }),
         latLng: marker.position,
       })
-      lns.resolve(true); console.log('--- Test step 5 lns', lns)
+      lns.resolve(true)
+      console.log('--- Test step 5 lns', lns)
+      //_ns.test.resolve(window.vm.c.test)
     }, 500)
   }, ],
 
   // Test step 6: click the take marker InfoWindow Break button. {{{2
   [lns => {
     let button = document.getElementById(lns.txid)
-    setTimeout(_ => { button.click(); lns.resolve(true) }, 500)
+    setTimeout(_ => { 
+      button.click(); lns.resolve(true) 
+      console.log('--- Test step 6 lns', lns)
+    }, 500)
   }, ],
   
   // Test step 7: click the Break button (confirm Break Deal). {{{2
@@ -377,9 +382,9 @@ class ModalPane { // {{{1
       opts.memo2str == vm.c?.latest?.make?.txId
     let info = tX.infoWindow.getContent()
     let iwc = typeof info == 'string' ? info : info.innerHTML
-    vm.e.log('ModalPane.take tX', tX, 'info', info)
+    vm.e.log('ModalPane.take tX', tX, 'info', info, 'iwc', iwc)
 
-    if (iwc.includes('>Break</button>') && typeof info == 'string') { // FIXME {{{3
+    if (iwc.includes('>Break</button>') && typeof info != 'string') { // {{{3
       let [buttonConfirm, content, x, secret, keep] = resetPane('Break')
       keep.disabled = true
       secret.disabled = true
@@ -1294,7 +1299,7 @@ async function runTest (resolve, reject) { // {{{1
 
   let lns = {} // local name space
   for (let step of _test_steps) {
-    //e.log('runTest step', step)
+    e.log('runTest step', step, 'this', this)
     await c.test.lock.acquire().then(_ => new Promise((resolve, reject) => {
       step.push(Object.assign(lns, { resolve }))
       c.test.channel.send(step).receive()
