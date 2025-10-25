@@ -103,7 +103,7 @@ let _test_steps = [ // {{{1
         }),
         latLng: marker.position,
       })
-      lns.resolve(true)
+      lns.resolve(true); console.log('--- Test step 5 lns', lns)
     }, 500)
   }, ],
 
@@ -680,11 +680,12 @@ class User { // {{{1
       ]
       let f = job.shift()
       return f.call(this.vm, ...job).then(r => {
-        e.log('User take f.call r', r)
-
         let pos = [d.user.position.lat, d.user.position.lng]
+        e.log('User take f.call r', r, 'pos', pos)
+
         _jc.send([this.vm, push_txid_pos, r.txId, pos])
         c.latest ??= {}
+        c.latest.txidPos = [r.txId, pos]
         c.latest.take ??= {}
         c.latest.take.balanceId = r.balanceId
         put_txid_pos(r.txId, pos).
@@ -871,7 +872,6 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     d.tXs.push(tX = [txId, [+latitude, +longitude], opts])
     if (++d.tXs_read == d.txids_count) { // Model is initialized.
       if (!c.view.initialized) {
-        //e.log('cbcc wait for View.init')
         let { promise, resolve, reject } = Promise.withResolvers()
         let result = true
         _ns.view = { resolve, result }
@@ -882,10 +882,11 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       }
       c.model.initialized = true
       c.model.channel.receive()
-      //e.log('cbcc model initialized this', this)
       _ns.model.resolve(_ns.model.result)
     }
     if (d.tXs_read > d.txids_count) {
+      d.tXs.pop()
+      tX = c.latest.txidPos; tX.push(opts)
       e.log('cbcc cbEffect.call tX', tX)
       map_tX(tX)
     }
