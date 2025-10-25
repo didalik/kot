@@ -23,6 +23,6 @@ The **hX + jF** concept is applicable to both the real world and the Internet. S
 
 The issue I want to address here is basic - I need you to join me in order to make the **hX + jF** more than hobby projects one runs for fun. Can we make them run for profit together? I think yes, if you enjoy coding like I do. With some luck, we'll make a better Internet for you and me!
 
-## The Cogs
+## The Cogs of the Demo
 
 Having run the demo, you might have noticed its icon, the rotating cogs: ![foo bar](/public/static/favicon.ico). Those are **hX** and **jF**, working together.
