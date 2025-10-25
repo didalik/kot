@@ -9,13 +9,13 @@ import {
 } from '../../../../../../public/lib/sdk.mjs' // FIXME
 import { 
   HEX_FEE,
-  offerTakeDeal,
+  offerTakeDeal, requestTakeDeal, takeOffer, takeRequest,
 } from '../../../../../../public/lib/api.mjs' // FIXME
 import {
   post_job,
 } from '../../../../../lib/jf3.mjs'
 import * as fs from "node:fs"
-import { MemoHash, MemoText, } from '@stellar/stellar-sdk'
+import { Keypair, MemoHash, MemoText, } from '@stellar/stellar-sdk'
 
 let config = { userKeys: process.env.REPLY } // {{{1
 
@@ -116,6 +116,25 @@ async function selftest (limit, nwdir) { // {{{1
     "issuer's effects", [['claimable_balance_claimant_created', cbcc]]
   )
   _onSIGTERM(vm)
+}
+
+function takeOfferArgs (vm, opts) { // {{{1
+  let { s, e, c, d } = vm
+  return [
+    d.user.account,
+    Keypair.fromSecret(d.user.keys[0]),
+    opts.tx.id,
+    opts.data.amount
+  ];
+}
+
+function takeRequestArgs (vm, opts) { // {{{1
+  let { s, e, c, d } = vm
+  return [
+    d.user.account,
+    Keypair.fromSecret(d.user.keys[0]),
+    opts.tx.id,
+  ];
 }
 
 await selftest(process.argv[2], process.argv[3]).//then(_ => process.exit(0)). // {{{1
