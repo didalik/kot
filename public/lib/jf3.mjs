@@ -3,7 +3,10 @@ const payload = payload64 => base64ToUint8(payload64).toString().split(',').redu
   (s, c)  => s + String.fromCodePoint(c), ''
 )
 const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
-let log = console.log
+
+let log = (...args) => { // {{{1
+  //console.log(...args)
+}
 
 class Connection { // {{{1
   constructor (base) { // {{{2

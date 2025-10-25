@@ -80,13 +80,13 @@ let _test_steps = [ // {{{1
   // Test step 3: click the Take button (confirm Take Offer). {{{2
   [lns => {
     let button = document.getElementById('confirm-take')
-    setTimeout(_ => { button.click(); lns.resolve(false); console.log('Test step 3 lns', lns) }, 500)
+    setTimeout(_ => { button.click(); lns.resolve(false); console.log('--- Test step 3 lns', lns) }, 500)
   }, ],
 
   // Test step 4: having taken Offer, wait 5 seconds and close the modal pane. {{{2
   [lns => {
     let button = document.getElementById('takeXX')
-    setTimeout(_ => { button.click(); lns.resolve(true); console.log('Test step 4 lns', lns) }, 5000)
+    setTimeout(_ => { button.click(); lns.resolve(true); console.log('--- Test step 4 lns', lns) }, 5000)
   }, ],
 
   // Test step 5: click the take marker. {{{2
@@ -688,7 +688,7 @@ class User { // {{{1
         c.latest.take ??= {}
         c.latest.take.balanceId = r.balanceId
         put_txid_pos(r.txId, pos).
-          then(text => e.log('User take put_txid_pos', text))
+          then(text => e.log('User take put_txid_pos DONE', text))
         d.user.balanceIds ??= []
         d.user.balanceIds.push(r.balanceId)
         return Promise.resolve('in progress.');
@@ -815,7 +815,8 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
 
   // }}}2
   cbEffect.call(this, { effect, }).then(async opts => {
-    opts.data.memo_type = opts.tx.memo_type // FIXME what? why?
+    e.log('cbcc cbEffect.call this', this, 'effect', effect, 'opts', opts)
+    //opts.data.memo_type = opts.tx.memo_type // FIXME what? why?
     if (effect.amount == HEXA_DISPUTE) { // {{{2
       //e.log('cbcc effect.amount == HEXA_DISPUTE cbEffect opts', opts)
 
@@ -865,10 +866,10 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
 
     // }}}2
     let txidIdx = d.HEX_Agent_make2map_txids.findIndex(e => e == opts.tx.id)
-    let [txId, latitude, longitude] = 
+    let tX, [txId, latitude, longitude] = 
       d.HEX_Agent_make2map_txids.slice(txidIdx, txidIdx + 3)
-    d.tXs.push([txId, [+latitude, +longitude], opts])
-    if (++d.tXs_read == vm.d.txids_count) { // Model is initialized.
+    d.tXs.push(tX = [txId, [+latitude, +longitude], opts])
+    if (++d.tXs_read == d.txids_count) { // Model is initialized.
       if (!c.view.initialized) {
         //e.log('cbcc wait for View.init')
         let { promise, resolve, reject } = Promise.withResolvers()
@@ -883,6 +884,10 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       c.model.channel.receive()
       //e.log('cbcc model initialized this', this)
       _ns.model.resolve(_ns.model.result)
+    }
+    if (d.tXs_read > d.txids_count) {
+      e.log('cbcc cbEffect.call tX', tX)
+      map_tX(tX)
     }
   })
 }

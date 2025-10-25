@@ -6,7 +6,7 @@
 
 import { Model, Test, View, } from './lib/jc.mjs' // {{{1
 import * as kit from './lib/kit.mjs'
-import { post_job, post_job_args, } from './lib/jf3.mjs'
+//import { post_job, post_job_args, } from './lib/jf3.mjs'
 
 let user = {
   position: { lat: LATITUDE, lng: LONGITUDE },
