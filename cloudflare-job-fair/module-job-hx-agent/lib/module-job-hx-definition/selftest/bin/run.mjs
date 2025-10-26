@@ -47,18 +47,12 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     e.log('cbcc o', o)
     return userMakingOffer(o) ? takeOffer.call(this, ...takeOfferArgs(this, o))
       .then(r => {
-        let body = JSON.stringify([
-          r.txId, [8.7961073, -79.5552843],   // Tagoba
-        ])
-        return postBody(_originCFW, '/put_txid_pos', body)
+        return put_txid_pos(r.txId, [8.7961073, -79.5552843])   // Tagoba
           .then(text => e.log('cbcc userMakingOffer text', text));
       })
     : userMakingRequest(o) ? takeRequest.call(this, ...takeRequestArgs(this, o))
       .then(r => {
-        let body = JSON.stringify([
-          r.txId, [26.4668328, 127.8232348],  // Onna
-        ])
-        return postBody(_originCFW, '/put_txid_pos', body)
+        return put_txid_pos(r.txId, [26.4668328, 127.8232348])  // Onna
           .then(text => e.log('cbcc userMakingRequest text', text));
       })
     : userTakingOffer(o) ? offerTakeDeal.call(this, o)
@@ -66,6 +60,7 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     :  e.log('cbcc d.tXs_mapped.length', d.tXs_mapped.push(o))
     }).catch(err => console.error('cbcc UNEXPECTED', err))
 }
+
 function issuerSign (txXDR, tag) { // {{{1
   console.log('issuerSign tag', tag, 'txXDR', txXDR)
 
@@ -88,6 +83,16 @@ function onClawback (effect) { // account_debited {{{1
   ))
   .then(r => e.log('onClawback disputeBrokenDeal r', r))
   .catch(err => console.error('onClawback UNEXPECTED', err))
+}
+
+function put_txid_pos (txid, pos) { // {{{1
+  let [sk, pk] = config.userKeys.split(' ')
+
+  return Promise.resolve(
+    post_job(null, null, null, // node, run, cmd,
+      pk, 'hx', 'HX_KIT', 'put_txid_pos', sk, { args: { txid, pos } }
+    )
+  ).then(r => Promise.resolve(r));
 }
 
 async function selftest (limit, nwdir) { // {{{1

@@ -200,7 +200,10 @@ let _test_steps = [ // {{{1
       fieldset.lastElementChild.innerHTML = requestCODE_REVIEW_WANTED()
     }, 1000)
     let button = document.getElementById('confirm-take')
-    setTimeout(_ => { button.click(); lns.resolve(false) }, 1500)
+    setTimeout(_ => { 
+      button.click(); lns.resolve(false)
+      console.log('--- Test step 15 lns', lns)
+    }, 1500)
   }, ],
 
   // Test step 16: having made Request, wait 9 seconds and close the modal pane. {{{2
@@ -209,6 +212,7 @@ let _test_steps = [ // {{{1
     setTimeout(_ => { 
       button.click(); 
       lns.resolve(true) 
+      console.log('--- Test step 16 lns', lns)
     }, 9000)
   }, ],
 
@@ -229,6 +233,7 @@ let _test_steps = [ // {{{1
         latLng: marker.position,
       })
       lns.resolve(false)
+      console.log('--- Test step 17 lns', lns)
     }, 500)
   }, ],
 
@@ -817,12 +822,11 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
 
     d.tXs_mapped.push(x)
   }
-  let takingMyMake = opts => opts.data.memo_type == MemoHash && opts.data.memo2str == c?.latest?.make?.txId // {{{2
+  let takingMyMake = opts => opts.tx.memo_type == MemoHash && opts.data.memo2str == c?.latest?.make?.txId // {{{2
 
   // }}}2
   cbEffect.call(this, { effect, }).then(async opts => {
     e.log('cbcc cbEffect.call this', this, 'effect', effect, 'opts', opts)
-    //opts.data.memo_type = opts.tx.memo_type // FIXME what? why?
     if (effect.amount == HEXA_DISPUTE) { // {{{2
       //e.log('cbcc effect.amount == HEXA_DISPUTE cbEffect opts', opts)
 
@@ -871,29 +875,31 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
     }
 
     // }}}2
-    let txidIdx = d.HEX_Agent_make2map_txids.findIndex(e => e == opts.tx.id)
-    let tX, [txId, latitude, longitude] = 
-      d.HEX_Agent_make2map_txids.slice(txidIdx, txidIdx + 3)
-    d.tXs.push(tX = [txId, [+latitude, +longitude], opts])
-    if (++d.tXs_read == d.txids_count) { // Model is initialized.
-      if (!c.view.initialized) {
-        let { promise, resolve, reject } = Promise.withResolvers()
-        let result = true
-        _ns.view = { resolve, result }
-        await promise // wait for View.init
-      }
-      for (let tX of d.tXs) {
-        map_tX(tX)
-      }
-      c.model.initialized = true
-      c.model.channel.receive()
-      _ns.model.resolve(_ns.model.result)
-    }
+
+    ++d.tXs_read
     if (d.tXs_read > d.txids_count) {
-      d.tXs.pop()
-      tX = c.latest.txidPos; tX.push(opts)
-      e.log('cbcc cbEffect.call tX', tX)
-      map_tX(tX)
+        let tX = Array.from(c.latest.txidPos)
+        e.log('cbcc cbEffect.call tX', tX, 'opts', opts)
+        tX.push(opts)
+        map_tX(tX)
+    } else {
+      let txidIdx = d.HEX_Agent_make2map_txids.findIndex(e => e == opts.tx.id)
+      let tX, [txId, latitude, longitude] = d.HEX_Agent_make2map_txids.slice(txidIdx, txidIdx + 3)
+      d.tXs.push(tX = [txId, [+latitude, +longitude], opts])
+      if (d.tXs_read == d.txids_count) { // Model is initialized.
+        if (!c.view.initialized) {
+          let { promise, resolve, reject } = Promise.withResolvers()
+          let result = true
+          _ns.view = { resolve, result }
+          await promise // wait for View.init
+        }
+        for (let tX of d.tXs) {
+          map_tX(tX)
+        }
+        c.model.initialized = true
+        c.model.channel.receive()
+        _ns.model.resolve(_ns.model.result)
+      }
     }
   })
 }
@@ -1220,7 +1226,7 @@ function push_opts (queue, opts) { // {{{1
 function push_txid_pos (queue, txid, pos) { // {{{1
   let { s, e, c, d } = this
   let index = queue.findIndex(v => v.data[0] == txid)
-  e.log('push_txid_pos queue', queue, 'txid', txid, 'pos', pos)
+  e.log('push_txid_pos index', index, 'queue', queue, 'txid', txid, 'pos', pos)
 
   if (index == -1) {
     queue.push({ data: [txid, pos] })
