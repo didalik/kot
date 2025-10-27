@@ -6,6 +6,7 @@ import { loadKeys, } from '../../../public/lib/sdk.mjs'
 import { Keypair, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
+const nwdir = `${process.env.PWD}/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet`
 
 export const DEV_KIT = { // {{{1
   test_sign: function (opts) { return test_sign.call(this, opts); },
@@ -23,7 +24,8 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
 }
 
 function get_txid_pos (opts) { // {{{1
-  this.ws.send('Hello from get_txid_pos!')
+  let txidPos = JSON.parse(fs.readFileSync(`${nwdir}/txidPos`))
+  this.ws.send(JSON.stringify(txidPos[opts.args.txid]))
   this.ws.close()
 }
 function issuerSign (opts = {}) { // TODO use opts.args.tag {{{1
@@ -39,7 +41,15 @@ function issuerSign (opts = {}) { // TODO use opts.args.tag {{{1
 
 function put_txid_pos (opts = {}) { // {{{1
   console.log('put_txid_pos opts', opts)
-  this.ws.send('put_txid_pos opts ' + JSON.stringify(opts))
+  let txidPos
+  try {
+    txidPos = JSON.parse(fs.readFileSync(`${nwdir}/txidPos`))
+  } catch(err) {
+    txidPos = {}
+  }
+  txidPos[opts.args.txid] = opts.args.pos
+  fs.writeFileSync(`${nwdir}/txidPos`, JSON.stringify(txidPos))
+  this.ws.send('put_txid_pos txidPos ' + JSON.stringify(txidPos))
   this.ws.close()
 }
 

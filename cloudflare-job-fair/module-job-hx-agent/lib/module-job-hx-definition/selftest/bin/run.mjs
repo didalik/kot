@@ -4,7 +4,7 @@ import { // {{{1
   addStream, cbEffect,
 } from '../../../../../../public/lib/aux.mjs' // FIXME
 import {
-  loadKeys, 
+  loadKeys,
   secdVm,
 } from '../../../../../../public/lib/sdk.mjs' // FIXME
 import { 
@@ -113,9 +113,8 @@ async function selftest (limit, nwdir) { // {{{1
   addStream.call(vm, 
     "agent's effects", [
       ['account_debited', onClawback],
-      //['claimable_balance_claimant_created', onAgentEffect] 
     ],
-    vm.d.agent.id //, true
+    vm.d.agent.id
   )
   addStream.call(vm, 
     "issuer's effects", [['claimable_balance_claimant_created', cbcc]]

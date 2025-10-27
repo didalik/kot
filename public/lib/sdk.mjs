@@ -323,6 +323,18 @@ function getClaimableBalanceId (result_xdr, index = 0) { // {{{1
   return balanceId;
 }
 
+function get_txid_pos (txid) { // {{{1
+  return Promise.resolve(post_job(
+    post_job_args(
+      'hx',
+      'HX_KIT',
+      'get_txid_pos',
+      decodeURIComponent(config.userKeys), // using window.config
+    ),
+    { args: { txid } }
+  ).then(r => Promise.resolve(JSON.parse(r))));
+}
+
 function loadKeys (fs, dirname, basename = null) { // {{{1
   let SK_PK = fs.readFileSync(
     basename ? `${dirname}/${basename}.keys` : dirname
@@ -621,6 +633,7 @@ export { // {{{1
   addMA_Agent, addMA_CREATOR, addMA_Issuer,
   clawback, clawbackOffer, clawbackRequest,
   convertClawableHexa, createAccount,
+  get_txid_pos,
   issuerSign, 
   loadKeys,
   makeBuyOffer, makeClaimableBalance, makeSellOffer, memo2str,

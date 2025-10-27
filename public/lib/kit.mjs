@@ -11,7 +11,7 @@ import { // {{{1
 } from './api.mjs'
 import {
   clawback,
-  createAccount, 
+  createAccount, get_txid_pos,
   issuerSign, put_txid_pos,
   secdVm, storeKeys, takeClaimableBalance,
   trustAssets, updateTrustlineAndPay,
@@ -863,9 +863,7 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       e.log('cbcc cbEffect takingMyMake(opts) opts', opts)
 
       let txid = opts.tx.id
-      fetch(_originCFW + '/get_txid_pos', { method: 'POST', body: txid, })
-      .then(response => response.json())
-      .then(pos => _jc.send([this, push_txid_pos, txid, pos]))
+      get_txid_pos(txid).then(pos => _jc.send([this, push_txid_pos, txid, pos]))
       .then(sent => e.log('cbcc cbEffect takingMyMake fetch pos sent', sent))
 
       _jc.send([this, push_opts, opts])
