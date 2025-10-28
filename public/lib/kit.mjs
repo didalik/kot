@@ -249,7 +249,8 @@ let _test_steps = [ // {{{1
   // Test step 19: click the Deal button (confirm Deal). {{{2
   [lns => {
     let button = document.getElementById('confirm-take')
-    setTimeout(_ => { 
+    setTimeout(_ => {
+      window.vm.c.teststep19 = true
       button.click(); lns.resolve(false) 
       console.log('--- Test step 19 lns', lns)
     }, 500)
@@ -258,12 +259,12 @@ let _test_steps = [ // {{{1
   // Test step 20: close the modal pane, {{{2
   // click the make marker InfoWindow Break button,
   [lns => {
-    setTimeout(_ => document.getElementById('takeXX').click(), 1000)
-    setTimeout(
-      _ => document.getElementById(`${window.vm.c.latest.make.txId}`).click() || lns.resolve(false), 
+    setTimeout(_ => document.getElementById('takeXX').click(), 1952)
+    setTimeout(_ => {
+      document.getElementById(`${window.vm.c.latest.make.txId}`).click()
+      lns.resolve(false)
       console.log('--- Test step 20 lns', lns)
-      2000
-    )
+    }, 2000)
   }, ],
 
   // Test step 21: click the Break button (confirm Break Deal). {{{2
@@ -390,8 +391,8 @@ class ModalPane { // {{{1
     if (!tX) { // TODO warning?
       return;
     }
-    let takingMyMake = opts => opts.memo_type == MemoHash &&
-      opts.memo2str == vm.c?.latest?.make?.txId
+    let takingMyMake = opts => opts.tx.memo_type == MemoHash &&
+      opts.data.memo2str == vm.c?.latest?.make?.txId
     let info = tX.infoWindow.getContent()
     let iwc = typeof info == 'string' ? info : info.innerHTML
     vm.e.log('ModalPane.take tX', tX, 'info', info, 'iwc', iwc)
@@ -426,8 +427,8 @@ class ModalPane { // {{{1
       return;
     }
 
-    if (tX.memo_type == MemoHash) { // Break or Deal {{{3
-      let tmm = takingMyMake(tX)
+    if (tX.opts.tx.memo_type == MemoHash) { // Break or Deal {{{3
+      let tmm = takingMyMake(tX.opts)
       let tag = tmm ? 'Deal' : 'Break'
       let f = tmm ? dealX : breakX
       let [buttonConfirm, content, x, secret, keep] = resetPane(tag)
@@ -607,7 +608,7 @@ class User { // {{{1
 
   openDeal (tX) { // {{{2
     let { s, e, c, d } = this.vm
-    let make = d.tXs_mapped.find(v => v.txid == tX.memo2str)
+    let make = d.tXs_mapped.find(v => v.opts.tx.id == tX.memo2str || v.txid == tX.memo2str)
     tX.opts.issuerSign = issuerSign 
     e.log('User openDeal tX', tX, 'make', make)
 
@@ -618,9 +619,12 @@ class User { // {{{1
       if (tX.offer) {
         return Promise.resolve('done.');
       }
-      let content = make.infoWindow.getContent() //.innerHTML FIXME
+      let content = make.infoWindow.getContent()
       e.log('User openDeal r', r, 'content', content)
- 
+
+      if (c.teststep19) {
+        c.latest.make.txId = make.txid
+      }
       content = content.slice(0, content.indexOf('<button')) +
         'Deal. You paid HEXA ' + make.amount + ' for your request.' +
         `<button class='take' id='${make.txid}'>Break</button>`
