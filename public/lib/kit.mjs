@@ -240,13 +240,19 @@ let _test_steps = [ // {{{1
   // Test step 18: click the taker's take marker InfoWindow Deal button. {{{2
   [lns => {
     let button = document.getElementById(window.vm.c.test.txid)
-    setTimeout(_ => { button.click(); lns.resolve(true) }, 500)
+    setTimeout(_ => { 
+      button.click(); lns.resolve(true) 
+      console.log('--- Test step 18 lns', lns)
+    }, 500)
   }, ],
   
   // Test step 19: click the Deal button (confirm Deal). {{{2
   [lns => {
     let button = document.getElementById('confirm-take')
-    setTimeout(_ => { button.click(); lns.resolve(false) }, 500)
+    setTimeout(_ => { 
+      button.click(); lns.resolve(false) 
+      console.log('--- Test step 19 lns', lns)
+    }, 500)
   }, ],
 
   // Test step 20: close the modal pane, {{{2
@@ -255,6 +261,7 @@ let _test_steps = [ // {{{1
     setTimeout(_ => document.getElementById('takeXX').click(), 1000)
     setTimeout(
       _ => document.getElementById(`${window.vm.c.latest.make.txId}`).click() || lns.resolve(false), 
+      console.log('--- Test step 20 lns', lns)
       2000
     )
   }, ],
@@ -818,7 +825,6 @@ function cbcc (effect) { // claimable_balance_claimant_created {{{1
       : markRequestMade
       : markTaking
     f.call(this, x)
-    //e.log('cbcc map_tX x', x)
 
     d.tXs_mapped.push(x)
   }
@@ -1078,8 +1084,8 @@ function initView (config, resolve, reject) { // {{{1
 
     c.view.initialized = true
     _ns.view && _ns.view.resolve(_ns.view.result)
-    /*_ns.view || */ c.model.channel.receive()
-    //e.log('initView _ns', _ns)
+    _ns.view || c.model.channel.receive()
+    ///*_ns.view || */ c.model.channel.receive()
 
     resolve(ModalPane.init(this))
   })
@@ -1151,10 +1157,10 @@ function markRequestMade (x) { // {{{1
 
 function markTaking (x) { // {{{1
   let { s, e, c, d } = this
-  let make = d.tXs_mapped.find(v => v.txid == x.memo2str)
+  let make = d.tXs_mapped.find(v => v.opts.tx.id == x.memo2str || v.txid == x.memo2str)
   let takerIsMe = pos => 
     pos.lat == d.user.position.lat && pos.lng == d.user.position.lng
-  e.log('markTaking x', x, 'make', make)
+  e.log('markTaking x', x, 'make', make, 'this', this)
 
   //c.countTakes ??= 1
   let pe = new c.marker.PinElement({ // {{{2
@@ -1396,8 +1402,8 @@ function userX (type, resolve, content, secret, keep, tX = null) { // {{{1
 
 async function uxMapTx (job) { // {{{1
   let { s, e, c, d } = this // {{{2
-
-  e.log('uxMapTx job', job)
+  let view = _ns.view
+  e.log('uxMapTx job', job, 'view', view)
 
   let data = async job => { // {{{2
     let [pos, opts] = job.data[1].length == 2 ? [job.data[1], job.data[2]]
@@ -1405,6 +1411,7 @@ async function uxMapTx (job) { // {{{1
     if (pos.length == 0) {
       return [false, false];
     }
+    /*
     if (_ns.view) {
       delete _ns.view
     } else {
@@ -1413,6 +1420,7 @@ async function uxMapTx (job) { // {{{1
       _ns.view = { resolve, result }
       await promise // wait for View.init
     }
+    */
     let x = opts.data ? opts.data : {}
     x.opts = opts
     x.txid = job.data[0]
@@ -1428,8 +1436,8 @@ async function uxMapTx (job) { // {{{1
   if (!x) {
     return; // closing
   }
-  f.call(this, x)
   d.tXs_mapped.push(x)
+  f.call(this, x)
   e.log('uxMapTx d', d)
 
   // }}}2
