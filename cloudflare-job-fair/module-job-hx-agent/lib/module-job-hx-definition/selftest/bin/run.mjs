@@ -74,9 +74,11 @@ function issuerSign (txXDR, tag) { // {{{1
 
 function onClawback (effect) { // account_debited {{{1
   let { s, e, c, d } = this
-  if (effect.asset_code != 'ClawableHexa') { // not clawback
+  if (effect.asset_code != 'ClawableHexa') { // || effect.amount == '10.0000000') {
     return;
   }
+  e.log('onClawback effect', effect)
+
   cbEffect.call(this, { effect })
   .then(o => disputeBrokenDeal.call(this,
     d.agent, Keypair.fromSecret(d.keysAgent[0]), o.tx.id
