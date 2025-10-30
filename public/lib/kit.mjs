@@ -244,7 +244,7 @@ let _test_steps = [ // {{{1
     let button = document.getElementById(window.vm.c.test.txid)
     setTimeout(_ => { 
       button.click(); lns.resolve(true) 
-      console.log('--- Test step 18 lns', lns)
+      console.log('--- Test step 18 lns', lns, 'button txid', window.vm.c.test.txid)
     }, 500)
   }, ],
   
@@ -271,7 +271,6 @@ let _test_steps = [ // {{{1
 
   // Test step 21: click the Break button (confirm Break Deal). {{{2
   [lns => {
-      console.log('--- Test step 21 started')
     let button = document.getElementById('confirm-take')
     setTimeout(_ => { 
       button.click(); lns.resolve(false) 
@@ -283,6 +282,7 @@ let _test_steps = [ // {{{1
   [lns => {
     setTimeout(_ => document.getElementById('takeXX').click(), 2000)
     lns.resolve(true)
+    console.log('--- Test step 22 lns', lns)
   }, ],
 
   // Test step FINAL: teardown. {{{2
@@ -436,6 +436,14 @@ class ModalPane { // {{{1
     if (tX.opts.tx.memo_type == MemoHash) { // Break or Deal {{{3
       let tmm = takingMyMake(tX.opts)
       let tag = tmm ? 'Deal' : 'Break'
+      if (tag == 'Break') { // FIXME
+        let tX_my_request = vm.d.tXs_mapped.find(x => x.amount == '5000')
+        tX = vm.d.tXs_mapped.find(x => x.txid == tX_my_request.deals[0].txid)
+        tX.amount = '5000'
+        tX.memo2str = tX_my_request
+      }
+      vm.e.log('take Break or Deal tX', tX, 'tag', tag, 'vm.d', vm.d)
+
       let f = tmm ? dealX : breakX
       let [buttonConfirm, content, x, secret, keep] = resetPane(tag)
       keep.disabled = true
