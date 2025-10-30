@@ -8,7 +8,7 @@ import {
   secdVm,
 } from '../../../../../../public/lib/sdk.mjs' // FIXME
 import { 
-  HEX_FEE,
+  HEX_FEE, disputeBrokenDeal,
   offerTakeDeal, requestTakeDeal, takeOffer, takeRequest,
 } from '../../../../../../public/lib/api.mjs' // FIXME
 import {
