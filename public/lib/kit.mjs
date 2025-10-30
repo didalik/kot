@@ -440,7 +440,7 @@ class ModalPane { // {{{1
         let tX_my_request = vm.d.tXs_mapped.find(x => x.amount == '5000')
         tX = vm.d.tXs_mapped.find(x => x.txid == tX_my_request.deals[0].txid)
         tX.amount = '5000'
-        tX.memo2str = tX_my_request
+        tX.memo2str = tX.deal.txid
       }
       vm.e.log('take Break or Deal tX', tX, 'tag', tag, 'vm.d', vm.d)
 
@@ -554,7 +554,7 @@ class User { // {{{1
   breakDeal (tX) { // {{{2
     let { s, e, c, d } = this.vm
     let make = d.tXs_mapped.find(v => v.txid == tX.memo2str)
-    e.log('User breakDeal tX', tX, 'c.latest', c.latest)
+    e.log('User breakDeal tX', tX, 'c.latest', c.latest, 'make', make)
 
     let amount = make ? make.amount : tX.amount
     return clawback.call(this.vm,
