@@ -114,7 +114,6 @@ let _test_steps = [ // {{{1
     let button = document.getElementById(lns.txid)
     setTimeout(_ => { 
       button.click(); lns.resolve(true) 
-      console.log('--- Test step 6 lns', lns)
     }, 500)
   }, ],
   
@@ -129,14 +128,17 @@ let _test_steps = [ // {{{1
   [lns => {
     setTimeout(_ => document.getElementById('takeXX').click(), 2000)
     setTimeout(_ => { 
-      window.vm.c.latest.deal.infoWindow.close()
       lns.resolve(false) 
+      lns.infoWindow = window.vm.c.latest.deal.infoWindow
+      console.log('--- Test step 8 lns', lns)
     }, 3000)
   }, ],
 
-  // Test step 9: having seen Broken Deal disputed, wait 2 seconds and click {{{2
-  // the Aukland marker.
+  // Test step 9: having seen Broken Deal in the make marker InfoWindow, {{{2
+  // close the take marker InfoWindow, wait 2 seconds and click the Aukland marker.
   [lns => { // local name space
+    console.log('--- Test step 9 started lns', lns)
+    lns.infoWindow.close()
     let tx = window.vm.d.tXs_mapped.find(
       v => v.amount == '10' && v.memo == 'Request 0'
     )
@@ -256,21 +258,25 @@ let _test_steps = [ // {{{1
     }, 500)
   }, ],
 
-  // Test step 20: close the modal pane, {{{2
+  // Test step 20: close the modal pane, and {{{2
   // click the make marker InfoWindow Break button,
   [lns => {
     setTimeout(_ => document.getElementById('takeXX').click(), 1952)
     setTimeout(_ => {
       document.getElementById(`${window.vm.c.latest.make.txId}`).click()
-      lns.resolve(false)
+      lns.resolve(true)
       console.log('--- Test step 20 lns', lns)
     }, 2000)
   }, ],
 
   // Test step 21: click the Break button (confirm Break Deal). {{{2
   [lns => {
+      console.log('--- Test step 21 started')
     let button = document.getElementById('confirm-take')
-    setTimeout(_ => { button.click(); lns.resolve(false) }, 500)
+    setTimeout(_ => { 
+      button.click(); lns.resolve(false) 
+      console.log('--- Test step 21 lns', lns)
+    }, 500)
   }, ],
 
   // Test step 22: having broken Deal, wait 2 seconds, then close the modal pane. {{{2
