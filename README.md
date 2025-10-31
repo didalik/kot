@@ -25,6 +25,8 @@ The issue I want to address here is basic - I need you to join me in order to ma
 
 ## The Cogs of the Demo
 
-Having run the demo (or having watched [this recording](https://youtu.be/heVR2FzZNag)), you might have noticed its icon, the rotating cogs: ![foo bar](/public/static/favicon.ico). Those are **hX** and **jF**, working together: **hX** tests the marketplace basic API (make/take offers/requests, break/close deals, dispute broken deals), **jF** provides for the setup and execution - resetting the Stellar testnet, supporting the (not test-related) marketplace internals and simulating test-related marketplace participants.
+Having run the demo (or having watched [this recording](https://youtu.be/heVR2FzZNag)), you might have noticed its icon, the rotating cogs: ![foo bar](/public/static/favicon.ico). Those are **hX** and **jF**, working together: **hX** tests the marketplace basic API (make/take offers/requests, break/close deals, dispute broken deals), **jF** provides for the setup and execution - resetting the Stellar testnet, supporting the (not test-related) marketplace internals and simulating test-related marketplace participants. Thus, **hX** depends on **jF**.
+
+But **jF** does not necessarily have to make all its Jobs the **hX** items. In fact, the concept of Job User and Job Agent, connecting with each other over Cloudflare WebSockets with Hibernate, can be applied to many more other use cases. For example, consider the browser restriction on use of the `SubtleCrypto` interface in secure connections only. While perfectly valid in terms of the overall safety of the net, it surely does not simplify the development process.
 
 <i>Coders, COME TOGETHER!</i>
