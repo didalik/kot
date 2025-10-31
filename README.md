@@ -25,6 +25,6 @@ The issue I want to address here is basic - I need you to join me in order to ma
 
 ## The Cogs of the Demo
 
-Having run the demo, you might have noticed its icon, the rotating cogs: ![foo bar](/public/static/favicon.ico). Those are **hX** and **jF**, working together: **hX** provides the marketplace functionality (make/take offers/requests, break/close deals, dispute broken deals), **jF** provides for the demo setup and execution - resetting the Stellar testnet, supporting the (not demo-related) marketplace internals and simulating demo-related marketplace participants.
+Having run the demo, you might have noticed its icon, the rotating cogs: ![foo bar](/public/static/favicon.ico). Those are **hX** and **jF**, working together: **hX** tests the marketplace basic API (make/take offers/requests, break/close deals, dispute broken deals), **jF** provides for the setup and execution - resetting the Stellar testnet, supporting the (not test-related) marketplace internals and simulating test-related marketplace participants.
 
 <i>Coders, COME TOGETHER!</i>
