@@ -29,4 +29,10 @@ Having run the demo (or having watched [this recording](https://youtu.be/heVR2Fz
 
 But **jF** does not necessarily have to make all its Jobs the **hX** items. In fact, the concept of Job User and Job Agent, connecting with each other over Cloudflare Durable Objects using WebSockets with Hibernate, can be applied to many more other use cases. For example, consider the browser restriction on use of the `SubtleCrypto` interface to secure connections only. While perfectly valid in terms of the overall safety of the net, it surely does not simplify the development process. I use this interface to sign/verify Job Users/Agents - a Job User in the browser must sign their request to proceed. In dev, I delegate the job of signing a request to a local Job Agent. Since the agent runs outside of the browser, it signs the payload using the `SubtleCrypto` interface and returns the result back to the browser.
 
+One final note about the Cogs icon. I found it on the Interner more than 10 years ago. Presently, I have no contact info of its author(s), but am prepared to pay them in HEXA for its use. If you are the author, please contact me!
+
+## Known Limitations
+
+The demo has been successfully tested with Mozilla Firefox Developer Edition 141.0b3 (aarch64): on MacBook Air M1, and on iPhone 14.
+
 <i>Coders, COME TOGETHER!</i>
