@@ -33,6 +33,6 @@ One final note about the Cogs icon. I found it on the Interner more than 10 year
 
 ## Known Limitations
 
-The demo has been successfully tested with Mozilla Firefox Developer Edition 141.0b3 (aarch64): on MacBook Air M1, and on iPhone 14.
+The demo has been successfully tested with Mozilla Firefox Developer Edition 141.0b3 (aarch64): on MacBook Air M1, and on iPhone 14. It fails on Google Chrome Version 142.0.7444.60 (Official Build) (arm64), older iPhones and iPads.
 
 <i>Coders, COME TOGETHER!</i>
