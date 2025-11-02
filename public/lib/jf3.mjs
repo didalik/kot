@@ -26,7 +26,7 @@ class Connection { // {{{1
     }
     let { promise, resolve, reject } = Promise.withResolvers()
     this.ws.onerror = err => { // {{{3
-      err.message.endsWith('401') || err.message.endsWith('404') ||
+      err.message?.endsWith('401') || err.message?.endsWith('404') ||
         log(`${tag()} error`, err)
       reject(err)
     }

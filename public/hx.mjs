@@ -24,20 +24,6 @@ let config = { // {{{1
 window.config = config
 console.log(config, location)
 
-/*
-if (config.test) {
-  for (let i = 0; i < 3; i++) {
-    post_job(
-      post_job_args(
-        'hx',
-        'DEV_KIT',
-        'test_sign',
-        decodeURIComponent(config.userKeys)
-      )
-    )
-  }
-}
-*/
 kit.initVm(config).then(vm => Promise.all([
   Model.init(vm, config), 
   Test.init(vm, config),
