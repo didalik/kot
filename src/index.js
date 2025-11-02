@@ -93,17 +93,23 @@ export default { // {{{1
 	 * @returns {Promise<Response>} The response to be sent back to the client
 	 */
 	async fetch(request, env, ctx) {
-    env.KOT_DO_ID ??= env.KOT_DO.idFromName('/kot_do')
-    env.KOT_DO_WSH_ID ??= env.KOT_DO.idFromName('/JobFair webSocket with Hibernation')
-    let pathname = new URL(request.url).pathname
-    switch (true) {
-      case pathname.startsWith('/hack'):
-      case pathname.startsWith('/jag'):
-      case pathname.startsWith('/jcl'):
-      case pathname.startsWith('/job'):
-        return JobFair.dispatch(request, env, ctx);
-      default:
-        return await dispatch.call(pathname, request, env, ctx);
+    try {
+      env.KOT_DO_ID ??= env.KOT_DO.idFromName('/kot_do')
+      env.KOT_DO_WSH_ID ??= env.KOT_DO.idFromName('/JobFair webSocket with Hibernation')
+      let pathname = new URL(request.url).pathname
+      //return new Response('fetch ** pathname ' + pathname)
+
+      switch (true) {
+        case pathname.startsWith('/hack'):
+        case pathname.startsWith('/jag'):
+        case pathname.startsWith('/jcl'):
+        case pathname.startsWith('/job'):
+          return JobFair.dispatch(request, env, ctx);
+        default:
+          return await dispatch.call(pathname, request, env, ctx);
+      }
+    } catch(err) {
+      return new Response('fetch * ' + err.message, { status: 500 });
     }
 	},
 };

@@ -224,9 +224,11 @@ const JobFairImpl = { // {{{1
       }
     }
     Ad.durableObject ??= this // {{{3
+    /*
     console.log('-----------------------------', 
       this.ctx.id.equals(this.env.KOT_DO_WSH_ID)
     )
+    */
     let path = url.pathname.split('/')
     let parms = new URLSearchParams(url.search)
     console.log('JobFairImpl.dispatch path', path, 'parms', parms)

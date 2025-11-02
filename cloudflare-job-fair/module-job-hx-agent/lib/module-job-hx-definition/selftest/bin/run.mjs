@@ -12,10 +12,28 @@ import {
   offerTakeDeal, requestTakeDeal, takeOffer, takeRequest,
 } from '../../../../../../public/lib/api.mjs' // FIXME
 import {
-  post_job,
+  configuration,
+  post_job, 
 } from '../../../../../lib/jf3.mjs'
 import * as fs from "node:fs"
+import os from 'os'
+import https from 'https';
 import { Keypair, MemoHash, MemoText, } from '@stellar/stellar-sdk'
+
+const mTLS_private_key // {{{1
+  = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.key`
+const mTLS_public_cert_pem 
+  = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.pem`
+
+const options = {
+  cert: fs.readFileSync(mTLS_public_cert_pem, 'utf-8',),
+  key: fs.readFileSync(mTLS_private_key, 'utf-8',),
+  keepAlive: false,
+};
+
+Object.assign(configuration, {
+  fetch_options: { agent: new https.Agent(options), },
+}) //, promiseWithResolvers())
 
 let config = { userKeys: process.env.REPLY } // {{{1
 

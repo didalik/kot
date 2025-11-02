@@ -15,12 +15,19 @@ read JOBAGENT_SK JOBAGENT_PK < $HOME/.cloudflare-job-fair/CREATOR.keys # {{{1
 export JOBAGENT_SK JOBAGENT_PK
 read JOBUSER_SK JOBUSER_PK < $HOME/.cloudflare-job-fair/CREATOR.keys
 export JOBUSER_SK JOBUSER_PK
-export HX_SERVICES_ID=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
+export HX_QA_KIT=GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
 
-bin/run.mjs put_agent $JOBAGENT_PK $HX_SERVICES_ID '*selftest' hx &
+echo '{"jobs":["selftest"],"top":false}' | bin/run.mjs put_agent $JOBAGENT_PK hx $HX_QA_KIT &
 CHILD_SELFTEST=$!
-echo SELFTEST $CHILD_SELFTEST DEV_KIT $CHILD_DEV_KIT_LOOP
+#while echo '{"jobs":["test_sign"]}' | bin/run.mjs put_agent $JOBAGENT_PK hx DEV_KIT; do date; done &
+#CHILD_DEV_KIT_LOOP=$!
+while echo '{"jobs":["get_txid_pos","issuerSign","put_txid_pos"]}' | bin/run.mjs put_agent $JOBAGENT_PK hx HX_KIT; do date; done &
+CHILD_HX_KIT_LOOP=$!
+#echo SELFTEST $CHILD_SELFTEST HX_KIT $CHILD_HX_KIT_LOOP DEV_KIT $CHILD_DEV_KIT_LOOP
+echo SELFTEST $CHILD_SELFTEST HX_KIT $CHILD_HX_KIT_LOOP DEV_KIT
 
-trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP" SIGINT
-echo '{"args":[100000]}' | bin/run.mjs post_job $JOBUSER_PK $HX_SERVICES_ID 'hx/selftest' browser=https://kloudoftrust.org/hx
+#trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP $CHILD_HX_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_DEV_KIT_LOOP $CHILD_HX_KIT_LOOP" SIGINT
+trap "echo -e '\n- killing $CHILD_SELFTEST $CHILD_HX_KIT_LOOP'; kill $CHILD_SELFTEST $CHILD_HX_KIT_LOOP" SIGINT
+
+echo '{"args":[100000]}' | bin/run.mjs post_job $JOBUSER_PK hx $HX_QA_KIT selftest browser=https://kloudoftrust.org/hx
 wait

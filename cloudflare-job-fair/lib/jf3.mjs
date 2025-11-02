@@ -50,7 +50,7 @@ class Connection { // {{{1
     }) // }}}3
     return promise.then(loop => loop ? this.connect() : this.done()).
       catch(e => {
-        console.error('UNEXPECTED', e); process.exit(1)
+        console.error('Connection.connect UNEXPECTED', e); process.exit(1)
       })
   }
   
