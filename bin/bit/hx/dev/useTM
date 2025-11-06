@@ -1,6 +1,8 @@
 #!/bin/bash
 #
-# Set sign/verify keys for Cloudflare Job Fair Offer/Reqst
+# This bin/bit/hx/dev/useTM script requires 'npm run dev' in another terminal.
+# It starts the browser with the URL $1, and then communicates with it
+# using Stellar Test Monitor (TM).
 ##
 
 help () { # {{{1
@@ -8,7 +10,7 @@ help () { # {{{1
   local red=$(git config --get-color color.diff.whitespace "red")
   local reset=$(git config --get-color "" "reset")
   echo -n "${red}"
-	echo -e "ERROR $error\n\tRequired arguments are job side and PHASE. Usage examples:\n\n\t$0 user dev\n\t$0 agent qa\n"
+	echo -e "ERROR $error\n\tRequired argument: the URL. Usage example:\n\n\t$0 http://ko:8787/hx_use_tm\n"
   echo -n "${reset}"
 }
 
@@ -20,12 +22,13 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
-  echo '{"key":"value"}' | bin/${2}.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
+  ssh alec@mba open "$1"
+  #echo '{"key":"value"}' | bin/dev.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
 }
 
 validate () { # {{{1
 	log "$USER validate $# $@"
-  if [ $# -ne 2 ]; then
+  if [ $# -ne 1 ]; then
     return 1
   fi
   return 0

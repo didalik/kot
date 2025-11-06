@@ -9,7 +9,7 @@ let vm = { // {{{1
     server: new Horizon.Server("https://horizon-testnet.stellar.org"),
   }, 
   c: {}, 
-  d: { MA: new Asset('MA', 'hx_MA_Issuer_PK'), XLM: new Asset('XLM', null), } 
+  d: { MA: new Asset('MA', 'hx_MA_IssuerPK'), XLM: new Asset('XLM', null), } 
 }
 
 /*const _originCFW = location.origin.startsWith('https:') ? // {{{1
@@ -30,12 +30,12 @@ let c = document.body.firstElementChild; vm.c = c // <pre> {{{1
 let ma = vm.d.MA
 c.textContent += `    Presently using ${ma.getCode()}-${ma.getIssuer()}\n\n`
 c.textContent += 'Looking up your SK locally... '
-let secret = retrieveItem('secret')
+let secret = retrieveItem('hx_tm_secret')
 if (secret) {
   c.textContent += 'found.\n'
 } else {
   secret = Keypair.random().secret()
-  storeItem('secret', secret)
+  storeItem('hx_tm_secret', secret)
   c.textContent += 'new SK stored.\n'
 }
 console.log(secret)
@@ -87,20 +87,27 @@ function run (account) { // {{{1
   })
 }
 
-let ob = vm.e.server.orderbook(vm.d.MA, vm.d.XLM).cursor('now')
-let stop = _ => {
-  vm.c.textContent += 'Your offer has been matched.\n'
+let ob = vm.e.server.orderbook(vm.d.MA, vm.d.XLM).cursor('now') // {{{1
+let stop = text => {
+  vm.c.textContent += (text + '\n')
   vm.s[0].close()
-  vm.c.textContent += `Stream ${vm.s[0].tag} has been closed. DONE.\n`
+  vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed. DONE.\n`
 }
 vm.s.push({
   close: ob.stream({
     onerror:   e => { throw e; },
     onmessage: e => {
       console.dir(e, { depth: null })
-      vm.d.offerMade && e.bids.length == 0 && stop()
+      vm.d.offerMade && e.bids.length == 0 && stop('Your offer has been matched.')
     }
   }),
   tag: 'orderbook',
 })
 
+document.addEventListener("keydown", handleKeyboardEvent) // {{{1
+
+function handleKeyboardEvent (e) { // {{{1
+  if (e.ctrlKey && e.key == 'c') {
+    stop('You pressed Ctrl-C.')
+  }
+}

@@ -5,10 +5,11 @@ import dopad from '../public/dopad.html'
 import { generate_keypair, } from '../public/lib/util.mjs'
 import hx from '../public/hx.html'
 import hx_style from '../public/static/hx-style.css' // must be in assets.directory
+import hx_use_tm from '../public/stellar_test_monitor.html'
 import sandbox from '../public/sandbox.html'
 import style from '../public/static/style.css'
 import template from '../public/template.html'
-Page.use({ dopad, hx, hx_style, sandbox, style, template, })
+Page.use({ dopad, hx, hx_style, hx_use_tm, sandbox, style, template, })
 
 export class KoT_Do extends DurableObject { // {{{1
 	constructor(ctx, env) { // {{{2
@@ -115,9 +116,6 @@ export default { // {{{1
 };
 
 async function dispatch (request, env, ctx) { // {{{1
-  console.log('dispatch this', this)
-  console.log('dispatch style', style, 'hx_style', hx_style)
-
   let ip = request.headers.get('CF-Connecting-IP');
   let page = new Page(this, env)
   let stub = env.KOT_DO.get(env.KOT_DO_ID)
@@ -162,6 +160,20 @@ async function dispatch (request, env, ctx) { // {{{1
     }
     case this == '/hx-style.css': // {{{2
       return new Response(hx_style, { headers: { 'content-type': 'text/css' } });
+    case this == '/hx_use_tm': { // {{{2
+      let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
+      env.hx_STELLAR_NETWORK = await stub.get('hx_STELLAR_NETWORK')
+      env.hx_userKeys = encodeURIComponent(await generate_keypair.call(crypto.subtle, )) // TODO drop this line when ready
+      console.log('dispatch hx_use_tm env.hx_userKeys', env.hx_userKeys)
+
+      env.hx_MA_IssuerPK = await stub.get('hx_MA_IssuerPK')
+      let vars = [
+        'hx_STELLAR_NETWORK',
+        'hx_userKeys', // TODO drop this line when ready
+        'hx_MA_IssuerPK'
+      ]
+      return new Response(page.set(content, vars), { headers: { 'content-type': 'text/html;charset=UTF-8' } });
+    }
     case this == '/ip': // {{{2
       return new Response(JSON.stringify({ ip }, null, 2), {
         headers: {

@@ -324,7 +324,7 @@ function actorId (certSubjectDN) { // {{{1
 }
 
 function websocket (wsId) { // {{{1
-  console.log('websocket wsId', wsId, 'Ad.durableObject.ws2wsId', Ad.durableObject.ws2wsId)
+  //console.log('websocket wsId', wsId, 'Ad.durableObject.ws2wsId', Ad.durableObject.ws2wsId)
   let result
   Ad.durableObject.ws2wsId.forEach((attachment, connectedWs) => {
     if (attachment.wsId == wsId) {
