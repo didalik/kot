@@ -1,5 +1,5 @@
 import { makeBuyOffer, trustAssets, } from './lib/sdk.mjs' // {{{1
-import { postBody, } from './lib/aux.mjs'
+//import { postBody, } from './lib/aux.mjs'
 import { retrieveItem, storeItem, } from './lib/util.mjs' // XO
 import { Asset, Keypair, Horizon, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 
@@ -9,10 +9,10 @@ let vm = { // {{{1
     server: new Horizon.Server("https://horizon-testnet.stellar.org"),
   }, 
   c: {}, 
-  d: { MA: new Asset('MA', 'MA_Issuer_PK'), XLM: new Asset('XLM', null), } 
+  d: { MA: new Asset('MA', 'hx_MA_Issuer_PK'), XLM: new Asset('XLM', null), } 
 }
 
-const _originCFW = location.origin.startsWith('https:') ? // {{{1
+/*const _originCFW = location.origin.startsWith('https:') ? // {{{1
   'https:/svc-hex.didalik.workers.dev'
 : 'http://u22:8788'
 
@@ -25,7 +25,7 @@ vm.c.sign = (tx, result) => postBody(_originCFW, '/jc-worker', tx.toXDR())
         throw e;
       });
   })
-
+*/
 let c = document.body.firstElementChild; vm.c = c // <pre> {{{1
 let ma = vm.d.MA
 c.textContent += `    Presently using ${ma.getCode()}-${ma.getIssuer()}\n\n`

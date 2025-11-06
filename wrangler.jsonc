@@ -13,8 +13,7 @@
   /*
   */
   "build": { // browser=true
-    "command": "./bin/build"//,
-    //"watch_dir": [ "./lib", "./public", "./public/lib", "./src" ]
+    "command": "./bin/build"
   },
 	"durable_objects": {
 		"bindings": [

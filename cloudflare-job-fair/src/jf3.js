@@ -223,38 +223,19 @@ const JobFairImpl = { // {{{1
         return addReqst(request, env, ctx, url.pathname);
       }
     }
-    Ad.durableObject ??= this // {{{3
-    /*
+    Ad.durableObject = this // {{{3
+    /* this breaks deployment {{{4
     console.log('-----------------------------', 
       this.ctx.id.equals(this.env.KOT_DO_WSH_ID)
     )
-    */
+    */ // }}}4
     let path = url.pathname.split('/')
     let parms = new URLSearchParams(url.search)
-    console.log('JobFairImpl.dispatch path', path, 'parms', parms)
-/* {{{4
-JobFairImpl.dispatch path [
-  '',
-  'job',
-  'hx',
-  'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ',
-  'selftest',
-  'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
-] parms URLSearchParams(0) {}
----
-JobFairImpl.dispatch path [
-  '',
-  'jag',
-  'hx',
-  'HX_KIT',
-  'get_txid_pos',
-  'n0EMjrNk4jO%2F35%2F1d%2BkthvycSUm%2F%2BSjy89Ux2ZGRNV0%3D'
-] parms URLSearchParams(0) {}
-*/ // }}}4
     let ws = env_OR_ws
     const wsId = crypto.randomUUID()
     ws.serializeAttachment({ wsId })
     this.ws2wsId.set(ws, { wsId })
+    console.log('JobFairImpl.dispatch path', path, 'parms', parms, 'this.ws2wsId', this.ws2wsId)
 
     let actor_id = actorId(request.cf.tlsClientAuth.certSubjectDN) 
     if (agent) {
@@ -343,10 +324,12 @@ function actorId (certSubjectDN) { // {{{1
 }
 
 function websocket (wsId) { // {{{1
+  console.log('websocket wsId', wsId, 'Ad.durableObject.ws2wsId', Ad.durableObject.ws2wsId)
   let result
   Ad.durableObject.ws2wsId.forEach((attachment, connectedWs) => {
     if (attachment.wsId == wsId) {
       result = connectedWs
+      console.log('websocket wsId', wsId, 'result', result)
     }
   })
   return result;

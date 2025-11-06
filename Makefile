@@ -69,6 +69,13 @@ clean:
 	@rm -f ${TESTNET_KEYS} ${TXIDS}
 	@rm -rf ${TESTNET_DIR}
 
-.PHONY: reset_testnet_monitor # {{{1
-reset_testnet_monitor:
-	@cd ${RTM_DIR}; bin/job '10000' ../reset_testnet/build/testnet
+${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
+	@cd ${RTM_DIR}; bin/job '10000' ../reset_testnet/build/testnet; cd -;\
+		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
+		read SK PK < ${TESTNET_DIR}/monitor/Issuer.keys;\
+		export JOBUSER_SK=$$CREATOR_SK;\
+		echo '{"hx_MA_IssuerPK":"$$PK"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_MA_IssuerPK $$PK
+
+.PHONY: use_TM_${PHASE} # use testnet monitor {{{1
+use_TM_${PHASE}: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
+	@bin/bit/hx/${PHASE}/useTM; echo $@ DONE
