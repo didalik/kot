@@ -277,10 +277,6 @@ function setkeys() { // {{{1
   })
 }
 
-function start_testnet_monitor (node, run, cmd, nwdir, ...args) { // CLIENT {{{1
-  log('-', run, cmd, 'nwdir', nwdir)
-}
-
 process.stdin.resume(); // {{{1
 process.stdin.on("data", function (chunk) { return opts += chunk; });
 process.stdin.on("end", _ => configuration.resolve(
@@ -297,5 +293,5 @@ export { // {{{1
   configuration, hack, 
   post_jcl, post_job, 
   promiseWithResolvers,
-  put_agent, setkeys, start_testnet_monitor,
+  put_agent, setkeys, 
 }

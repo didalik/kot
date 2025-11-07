@@ -78,4 +78,4 @@ ${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
 
 .PHONY: use_TM_${PHASE} # use testnet monitor {{{1
 use_TM_${PHASE}: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
-	@bin/bit/hx/${PHASE}/useTM http://ko:8787/hx_use_tm; echo $@ DONE
+	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/${PHASE}/useTM http://ko:8787/hx_use_tm; echo $@ DONE

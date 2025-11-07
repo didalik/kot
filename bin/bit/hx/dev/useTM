@@ -22,8 +22,8 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
-  ssh alec@mba open "$1"
-  #echo '{"key":"value"}' | bin/dev.mjs setkeys | tail -n 1 | tee $HOME/.cloudflare-job-fair/$1.keys
+  #ssh alec@mba open "$1" # FIXME
+  echo '{"key":"value"}' | bin/dev.mjs hx_use_tm
 }
 
 validate () { # {{{1

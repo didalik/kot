@@ -7,7 +7,7 @@ import os from 'os'
 import {
   configuration, hack, post_jcl, post_job, 
   promiseWithResolvers,
-  put_agent, setkeys, start_testnet_monitor,
+  put_agent, setkeys,
 } from '../cloudflare-job-fair/lib/jf3.mjs'
 
 const mTLS_private_key // {{{1
@@ -26,7 +26,7 @@ Object.assign(configuration, {
 }, promiseWithResolvers())
 
 const execute = { // {{{1
-  hack, post_jcl, post_job, put_agent, setkeys, start_testnet_monitor,
+  hack, post_jcl, post_job, put_agent, setkeys,
 }
 
 switch (process.argv[2]) { // {{{1
