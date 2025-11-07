@@ -2,7 +2,7 @@
 
 **Stellar Help Exchange (hX)** is an equitable cloud-based marketplace where you exchange all kinds of help for HEXA - my Help EXchange Asset. If you don't get the help you paid for, you get your HEXA back, and the help provider's reputation suffers. Stellar Help Exchange runs on [Stellar](https://stellar.com/).
 
-**Cloudflare Job Fair (jF)** is a place where all types of Job Requests meet all kinds of Job Agents. When an Agent gets authorized to do a Job, the job becomes an **hX** item with a certain amount of HEXA assigned to it. It runs on [Cloudflare](https://www.cloudflare.com/).
+**Cloudflare Job Fair (jF)** is a place where all types of Job Requests meet all kinds of Job Agents. When an Agent gets authorized to do a Job, the job becomes an **hX** item with a certain amount of HEXA assigned to it. With **jF**, you use [Cloudflare](https://www.cloudflare.com/) to securely pass a Job Request to a Job Agent - a poor man's take on SaaS!
 
 These are my hobby projects. Combined, they make it possible for me and you to use the Internet for fun and profit. Presently, **jF** enables global access to the **hX + jF** proof of concept demo from [kloudoftrust.org/hx](https://kloudoftrust.org/hx):
 
