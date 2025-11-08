@@ -1,5 +1,4 @@
 import { makeBuyOffer, trustAssets, } from './lib/sdk.mjs' // {{{1
-import { retrieveItem, storeItem, } from './lib/util.mjs' // XO
 import { Asset, Keypair, Horizon, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 
 let vm = { // {{{1
@@ -14,35 +13,31 @@ let vm = { // {{{1
 let c = document.body.firstElementChild; vm.c = c // <pre> {{{1
 let ma = vm.d.MA
 c.textContent += `    Presently using ${ma.getCode()}-${ma.getIssuer()}\n\n`
-c.textContent += 'Looking up your SK locally... '
-let secret = retrieveItem('hx_tm_secret')
-if (secret) {
-  c.textContent += 'found.\n'
-} else {
-  secret = Keypair.random().secret()
-  storeItem('hx_tm_secret', secret)
-  c.textContent += 'new SK stored.\n'
-}
+let secret = Keypair.random().secret()
 console.log(secret)
 
 let kp = Keypair.fromSecret(secret); vm.d.kp = kp // {{{1
 let pk = kp.publicKey()
-c.textContent += 'Loading your Stellar TESTNET account... '
-vm.e.server.loadAccount(pk).then(account => loaded.call(vm, account))
-.catch(error => {
-  c.textContent += `${error.message}.\n`
-  if (error.message == 'Not Found') {
-    c.textContent += 'Creating your Stellar TESTNET account... '
-    fetch(`https://friendbot.stellar.org?addr=${encodeURIComponent(pk)}`).
-    then(response => response.json()).then(json => {
-      console.log('new TESTNET account created: txId', json.id)
-      c.textContent += 'new account created.\n'
-      c.textContent += 'Loading your Stellar TESTNET account... '
-    }).then(_ => vm.e.server.loadAccount(pk)).
-    then(account => loaded.call(vm, account)).
-    catch(error => console.error(error))
-  }
-})
+if (!vm.c.done) {
+  c.textContent += 'Loading your Stellar TESTNET account... '
+  vm.e.server.loadAccount(pk).then(account => loaded.call(vm, account))
+  .catch(error => {
+    if (!vm.c.done) {
+      c.textContent += `${error.message}.\n`
+      if (error.message == 'Not Found') {
+        c.textContent += 'Creating your Stellar TESTNET account... '
+        fetch(`https://friendbot.stellar.org?addr=${encodeURIComponent(pk)}`).
+        then(response => response.json()).then(json => {
+          console.log('new TESTNET account created: txId', json.id)
+          c.textContent += 'new account created.\n'
+          c.textContent += 'Loading your Stellar TESTNET account... '
+        }).then(_ => vm.e.server.loadAccount(pk)).
+        then(account => loaded.call(vm, account)).
+        catch(error => console.error(error))
+      }
+    }
+  })
+}
 
 function loaded (account) { // {{{1
   let { s, e, c, d } = this
@@ -64,12 +59,6 @@ function run (account) { // {{{1
   let { s, e, c, d } = this
   e.log(account)
   d.account = account
-  c.textContent += 'Making a buy offer... '
-  makeBuyOffer.call(this, d.kp, account, d.MA, d.XLM, '1', '1')
-  .then((txId, offerId) => {
-    d.offerMade = true
-    c.textContent += 'offer made.\n\n'
-  })
 }
 
 let ob = vm.e.server.orderbook(vm.d.MA, vm.d.XLM).cursor('now') // {{{1
@@ -77,13 +66,28 @@ let stop = text => {
   vm.c.textContent += (text + '\n')
   vm.s[0].close()
   vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed. DONE.\n`
+  vm.c.done = true
 }
 vm.s.push({
   close: ob.stream({
     onerror:   e => { throw e; },
     onmessage: e => {
       console.dir(e, { depth: null })
-      vm.d.offerMade && e.bids.length == 0 && stop('Your offer has been matched.')
+      vm.e.log(vm)
+      if (vm.d.account && e.bids.length == 0) {
+        vm.c.textContent += 'Trying to start the demo... '
+        makeBuyOffer.call(vm, vm.d.kp, vm.d.account, vm.d.MA, vm.d.XLM, '2', '1').then(_ => {
+          vm.d.offerMade = true
+        })
+      } else if (e.bids.length > 0) {
+        if (vm.d.offerMade && e.bids[0].amount != '2.0000000') {
+          stop('Request to start the demo granted.')
+        } else if (!vm.d.offerMade) {
+          stop('Someone is running the demo now, please try again in a minute.')
+        } else if (e.bids[0].amount != '2.0000000') { // keep looping when e.bids[0].amount == '2.0000000'
+          stop('UNEXPECTED')
+        }
+      }
     }
   }),
   tag: 'orderbook',

@@ -22,7 +22,8 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
-  #ssh alec@mba open "$1" # FIXME
+  ssh alec@mba open "$1"
+  #ssh alec@mba open "$1" FIXME
   echo '{"key":"value"}' | bin/dev.mjs hx_use_tm
 }
 

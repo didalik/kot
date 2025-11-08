@@ -69,6 +69,10 @@ clean:
 	@rm -f ${TESTNET_KEYS} ${TXIDS}
 	@rm -rf ${TESTNET_DIR}
 
+.PHONY: clean_tm # {{{1
+clean_tm:
+	@rm -f ${TESTNET_DIR}/monitor/*.keys
+
 ${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
 	@cd ${RTM_DIR}; bin/job '10000' ../reset_testnet/build/testnet; cd -;\
 		read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\

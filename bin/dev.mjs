@@ -42,8 +42,11 @@ function hx_use_tm (...args) { // {{{1
       onerror:   e => { throw e; },
       onmessage: e => {
         console.dir(e, { depth: null })
-        //vm.d.offerMade && 
-          e.bids.length == 0 && stop('Your offer has been matched.')
+        if (vm.d.account && e.bids.length > 0 && !vm.d.granted) {
+          vm.d.granted = true
+          makeSellOffer.call(vm, vm.d.kp, vm.d.account, vm.d.MA, vm.d.XLM, '1', '1')
+          stop('Request to start the demo granted.')
+        }
       }
     }),
     tag: 'orderbook',
@@ -54,11 +57,7 @@ function hx_use_tm (...args) { // {{{1
 
 function loaded (account) { // {{{1
   let { s, e, c, d } = this
-  /*
-  */
-  makeSellOffer.call(this, d.kp, account, d.MA, d.XLM, '1', '1').then((txId, offerId) => {
-    e.log('loaded makeSellOffer txId', txId, 'offerId', offerId)
-  })
+  d.account = account
 } 
   
 Object.assign(configuration, promiseWithResolvers()) // {{{1
