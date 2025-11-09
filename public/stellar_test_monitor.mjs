@@ -59,7 +59,7 @@ function loaded (account) { // {{{1
 let stop = text => { // {{{1
   vm.c.textContent += (text + '\n')
   vm.s[0].close()
-  if (vm.c.length > 1) {
+  if (vm.s.length > 1) {
     vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed.\n`
   } else {
     vm.c.done = true
@@ -104,7 +104,7 @@ vm.s.push({
           stop('Someone is running the demo now, please try again in a minute.')
         } else if (!vm.d.offerMade) {
           stop('Someone is running the demo now, please try again in a minute.')
-        } else if (remainder > 0) { // keep looping when e.bids[0].amount == '2.0000000' || e.bids[0].amount == '4.0000000'
+        } else if (remainder > 0) { // keep looping when e.bids[0].amount == '2.0000000' || e.bids[0].amount == '4.0000000' || ...
           stop('UNEXPECTED')
         }
       }
