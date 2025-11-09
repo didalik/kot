@@ -1,4 +1,5 @@
 import { makeBuyOffer, trustAssets, } from './lib/sdk.mjs' // {{{1
+import { addStream, } from './lib/aux.mjs'
 import { Asset, Keypair, Horizon, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 
 let vm = { // {{{1
@@ -55,19 +56,37 @@ function loaded (account) { // {{{1
   }
 }
 
+let stop = text => { // {{{1
+  vm.c.textContent += (text + '\n')
+  vm.s[0].close()
+  if (vm.c.length > 1) {
+    vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed.\n`
+  } else {
+    vm.c.done = true
+    vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed. DONE\n`
+    return;
+  }
+  vm.s[1].close()
+  vm.c.textContent += `Stream "${vm.s[1].tag}" has been closed. DONE\n`
+}
+
 function run (account) { // {{{1
   let { s, e, c, d } = this
-  e.log(account)
+  let trade = effect => {
+    e.log('run trade effect', effect)
+    stop('Request to start the demo granted.')
+  }
   d.account = account
+  addStream.call(this, 
+    "user's trading effects", 
+    [
+      ['trade', trade]
+    ],
+    account.id //, true
+  )
 }
 
 let ob = vm.e.server.orderbook(vm.d.MA, vm.d.XLM).cursor('now') // {{{1
-let stop = text => {
-  vm.c.textContent += (text + '\n')
-  vm.s[0].close()
-  vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed. DONE.\n`
-  vm.c.done = true
-}
 vm.s.push({
   close: ob.stream({
     onerror:   e => { throw e; },
@@ -80,11 +99,11 @@ vm.s.push({
           vm.d.offerMade = true
         })
       } else if (e.bids.length > 0) {
-        if (vm.d.offerMade && e.bids[0].amount != '2.0000000') {
-          stop('Request to start the demo granted.')
+        if (vm.d.offerMade && e.bids[0].amount != '2.0000000' && e.bids[0].amount != '4.0000000') {
+          stop('Someone is running the demo now, please try again in a minute.')
         } else if (!vm.d.offerMade) {
           stop('Someone is running the demo now, please try again in a minute.')
-        } else if (e.bids[0].amount != '2.0000000') { // keep looping when e.bids[0].amount == '2.0000000'
+        } else if (e.bids[0].amount != '2.0000000' && e.bids[0].amount != '4.0000000') { // keep looping when e.bids[0].amount == '2.0000000' || e.bids[0].amount == '4.0000000'
           stop('UNEXPECTED')
         }
       }
