@@ -24,6 +24,7 @@ run () { # {{{1
 	log "run $# $@"
   ssh alec@mba open "$1"
   #ssh alec@mba open "$1"
+  #ssh alec@mba open "$1" # ...
   echo '{"key":"value"}' | bin/dev.mjs hx_use_tm
 }
 

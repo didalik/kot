@@ -99,11 +99,12 @@ vm.s.push({
           vm.d.offerMade = true
         })
       } else if (e.bids.length > 0) {
-        if (vm.d.offerMade && e.bids[0].amount != '2.0000000' && e.bids[0].amount != '4.0000000') {
+        let remainder = +e.bids[0].amount % 2
+        if (vm.d.offerMade && remainder > 0) {
           stop('Someone is running the demo now, please try again in a minute.')
         } else if (!vm.d.offerMade) {
           stop('Someone is running the demo now, please try again in a minute.')
-        } else if (e.bids[0].amount != '2.0000000' && e.bids[0].amount != '4.0000000') { // keep looping when e.bids[0].amount == '2.0000000' || e.bids[0].amount == '4.0000000'
+        } else if (remainder > 0) { // keep looping when e.bids[0].amount == '2.0000000' || e.bids[0].amount == '4.0000000'
           stop('UNEXPECTED')
         }
       }
