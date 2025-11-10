@@ -121,3 +121,22 @@ alik@ko:~/project/kot/cloudflare-job-fair$ tree
 32 directories, 12 files
 alik@ko:~/project/kot/cloudflare-job-fair$ 
 ```
+
+## QA on w10
+
+```
+npm i
+npm uninstall wrangler
+npm install ws
+```
+```
+alik@DESKTOP-4JIOE6A:~$ tree .cloudflare-job-fair/
+.cloudflare-job-fair/
+├── CREATOR.keys
+└── jag
+    ├── certificate.key
+    └── certificate.pem
+
+1 directory, 3 files
+alik@DESKTOP-4JIOE6A:~$ 
+```
