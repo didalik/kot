@@ -80,6 +80,10 @@ ${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
 		export JOBUSER_SK=$$CREATOR_SK;\
 		echo '{"hx_MA_IssuerPK":"$$PK"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_MA_IssuerPK $$PK
 
-.PHONY: use_TM_${PHASE} # use testnet monitor {{{1
-use_TM_${PHASE}: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
-	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/${PHASE}/useTM http://ko:8787/hx_use_tm; echo $@ DONE
+.PHONY: use_TM_dev # use testnet monitor {{{1
+use_TM_dev: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
+	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/dev/useTM http://ko:8787/hx_use_tm; echo $@ DONE
+
+.PHONY: use_TM_qa # use testnet monitor {{{1
+use_TM_qa: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
+	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/qa/useTM https://kloudoftrust.org/hx_use_tm; echo $@ DONE

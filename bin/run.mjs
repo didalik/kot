@@ -9,6 +9,7 @@ import {
   promiseWithResolvers,
   put_agent, setkeys,
 } from '../cloudflare-job-fair/lib/jf3.mjs'
+import { hx_use_tm, } from '../lib/util.mjs'
 
 const mTLS_private_key // {{{1
   = `${os.homedir()}/.cloudflare-job-fair/jag/certificate.key`
@@ -26,7 +27,7 @@ Object.assign(configuration, {
 }, promiseWithResolvers())
 
 const execute = { // {{{1
-  hack, post_jcl, post_job, put_agent, setkeys,
+  hack, hx_use_tm, post_jcl, post_job, put_agent, setkeys,
 }
 
 switch (process.argv[2]) { // {{{1

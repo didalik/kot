@@ -98,7 +98,7 @@ vm.s.push({
         makeBuyOffer.call(vm, vm.d.kp, vm.d.account, vm.d.MA, vm.d.XLM, '2', '1').then(_ => {
           vm.d.offerMade = true
         })
-      } else if (e.bids.length > 0) {
+      } else if (e.bids.length > 0) { // TODO improve
         let remainder = +e.bids[0].amount % 2
         if (vm.d.offerMade && remainder > 0) {
           stop('Someone is running the demo now, please try again in a minute.')
