@@ -122,7 +122,7 @@ alik@ko:~/project/kot/cloudflare-job-fair$ tree
 alik@ko:~/project/kot/cloudflare-job-fair$ 
 ```
 
-## QA on w10
+## QA on w10 and pi4
 
 ```
 npm i
