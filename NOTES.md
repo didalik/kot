@@ -122,7 +122,7 @@ alik@ko:~/project/kot/cloudflare-job-fair$ tree
 alik@ko:~/project/kot/cloudflare-job-fair$ 
 ```
 
-## QA on w10
+## QA on w10 and pi4
 
 ```
 npm i
@@ -140,3 +140,10 @@ alik@DESKTOP-4JIOE6A:~$ tree .cloudflare-job-fair/
 1 directory, 3 files
 alik@DESKTOP-4JIOE6A:~$ 
 ```
+```
+  569  rm run.log 
+  570  make clean_tm
+  571  history
+  572  while true; do echo "started on $(date)" >> run.log; PHASE=qa make use_TM_qa > /dev/null; echo "- exit code $?" >> run.log; done &
+```
+
