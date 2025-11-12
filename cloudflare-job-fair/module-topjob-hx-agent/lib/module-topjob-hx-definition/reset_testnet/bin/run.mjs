@@ -9,8 +9,8 @@ function reset (amountHEXA) { // {{{1
   let s = {}, e = { log: console.log }, c = { fs }, d = {}
   let vm = { s, e, c, d }
   return addHEX_CREATOR.call(vm).
-    then(_ => addHEX_Issuer.call(vm, 'hx.kloudoftrust.org')).
-    then(_ => addHEX_Agent.call(vm, amountHEXA));
+    then(_ => addHEX_Issuer.call(vm, 'hx.kloudoftrust.org')) //.
+    //then(_ => addHEX_Agent.call(vm, amountHEXA));
 }
 
 await reset(process.argv[2]).then(_ => process.exit(0)). // {{{1

@@ -17,6 +17,11 @@ RTM_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
 SHELL = bash
 
 AUTH_KEYS := $$HOME/.cloudflare-job-fair/${AUTH}.keys
+ifeq (${PHASE},dev)
+	HX_USE_TM_URL := http://ko:8787/hx_use_tm
+else
+	HX_USE_TM_URL := https://kloudoftrust.org/hx_use_tm
+endif
 TESTNET_DIR := ${BUILD_DIR}/testnet
 TESTNET_KEYS := ${TESTNET_DIR}.keys
 TXIDS := ${TESTNET_DIR}/HEX_Agent_make2map.txids
@@ -66,7 +71,6 @@ ${TXIDS}: # setup_selftest {{{1
 
 .PHONY: clean # rm /home/alik/.cloudflare-job-fair/OWNER.keys to start from scratch {{{1
 clean:
-	@rm -f ${TESTNET_KEYS} ${TXIDS}
 	@rm -rf ${TESTNET_DIR}
 
 .PHONY: clean_tm # {{{1
@@ -80,10 +84,6 @@ ${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
 		export JOBUSER_SK=$$CREATOR_SK;\
 		echo '{"hx_MA_IssuerPK":"$$PK"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_MA_IssuerPK $$PK
 
-.PHONY: use_TM_dev # use testnet monitor {{{1
-use_TM_dev: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
-	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/dev/useTM http://ko:8787/hx_use_tm; echo $@ DONE
-
-.PHONY: use_TM_qa # use testnet monitor {{{1
-use_TM_qa: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
-	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/qa/useTM https://kloudoftrust.org/hx_use_tm; echo $@ DONE
+.PHONY: useTM # use testnet monitor {{{1
+useTM: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
+	@TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/${PHASE}/useTM ${HX_USE_TM_URL}; echo $@ DONE

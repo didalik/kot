@@ -40,12 +40,12 @@ class Ad { // handshake: match -> open -> make -> claim -> take -> pipe {{{1
   }
 
   onclose (...args) { // {{{2
-    console.log('Ad.onclose this', this, 'args', args)
     !!this.offer?.wsId && websocket(this.offer.wsId)?.close()
     !!this.reqst?.wsId && websocket(this.reqst.wsId)?.close()
     !!this.job?.requestQueue && this.job.requestQueue.shift() // FIXME
     !!this.job?.offerQueue && this.job.offerQueue.shift() // FIXME
     Ad.wsId2ad.delete(this.wsId)
+    console.log('Ad.onclose this', this, 'args', args, Ad.durableObject.ctx.getWebSockets().length)
   }
 
   onmessage (message, match) { // {{{2
