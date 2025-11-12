@@ -141,9 +141,8 @@ alik@DESKTOP-4JIOE6A:~$ tree .cloudflare-job-fair/
 alik@DESKTOP-4JIOE6A:~$ 
 ```
 ```
-  569  rm run.log 
-  570  make clean_tm
-  571  history
-  572  while true; do echo "started on $(date)" >> run.log; PHASE=qa make use_TM_qa > /dev/null; echo "- exit code $?" >> run.log; done &
+rm run.log 
+make clean
+while true;do echo "started on $(date)" >> run.log;PHASE=qa make useTM >> run.log;echo "- exit code $?" >> run.log;sleep 2;done &
 ```
 
