@@ -9,11 +9,11 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
   reset_testnet_monitor: function (opts) { return reset_testnet_monitor.call(this, opts); },
 }
 
-function reset_testnet (opts = { args: ['10000'] }) { // TODO drop default value? {{{1
-  let amountHEXA = opts.args[0].toString()
+function reset_testnet (opts) { // {{{1
+  //let amountHEXA = opts.args[0].toString()
   let job = spawn(
     `${__dirname}/module-topjob-hx-definition/reset_testnet/bin/job`,
-    [amountHEXA],
+    [], //[amountHEXA],
     { cwd: `${__dirname}/module-topjob-hx-definition/reset_testnet` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))

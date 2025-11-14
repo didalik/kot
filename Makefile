@@ -12,6 +12,8 @@ BUILD_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
 						 module-topjob-hx-definition/reset_testnet/build
 HX_QA_KIT ?= GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ # FIXME
 PHASE ?= dev
+RT_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
+					module-topjob-hx-definition/reset_testnet
 RTM_DIR := cloudflare-job-fair/module-topjob-hx-agent/lib/$\
 					 module-topjob-hx-definition/reset_testnet_monitor
 SHELL = bash
@@ -27,7 +29,7 @@ TESTNET_KEYS := ${TESTNET_DIR}.keys
 TXIDS := ${TESTNET_DIR}/HEX_Agent_make2map.txids
 
 .PHONY: bit_hx_${PHASE} # {{{1
-bit_hx_${PHASE}: ${AUTH_KEYS} ${TESTNET_DIR} ${TXIDS}
+bit_hx_${PHASE}: ${AUTH_KEYS} ${TESTNET_DIR} ${TESTNET_DIR}/HEX_Agent.keys ${TXIDS}
 	@bin/bit/hx/${PHASE}/selftest; echo $@ DONE
 
 ## TODO remove these lines when done testing prerequisites {{{1
@@ -73,9 +75,8 @@ ${TXIDS}: # setup_selftest {{{1
 clean:
 	@rm -rf ${TESTNET_DIR}
 
-.PHONY: clean_tm # {{{1
-clean_tm:
-	@rm -f ${TESTNET_DIR}/monitor/*.keys
+${TESTNET_DIR}/HEX_Agent.keys: # reset_testnet_agent {{{1
+	@cd ${RT_DIR}; bin/job '100000' ./build/testnet
 
 ${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
 	@cd ${RTM_DIR}; bin/job '10000' ../reset_testnet/build/testnet; cd -;\

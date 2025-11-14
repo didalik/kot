@@ -23,9 +23,9 @@ run () { # {{{1
 
 validate () { # {{{1
 	log "$USER validate $# $@"
-  if [ $# -ne 1 ]; then
-    return 1
-  fi
+  #if [ $# -ne 1 ]; then
+    #return 1
+  #fi
   return 0
 }
 
