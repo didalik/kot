@@ -21,7 +21,7 @@ log () { # {{{1
 
 run () { # {{{1
 	log "run $# $@"
-  echo '{"key":"value"}' | bin/run.mjs hx_use_tm
+  echo '{"jobs":["delegate"],"top":false}' | bin/run.mjs hx_use_tm
 }
 
 validate () { # {{{1

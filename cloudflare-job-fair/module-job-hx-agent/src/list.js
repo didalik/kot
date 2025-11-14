@@ -81,6 +81,18 @@ export const DEV_KIT = { // {{{1
         });
       }, // }}}3
     },
+    { name: 'delegate', // {{{2
+      agentAuth: (pk, env) => {
+        console.log('DEV_KIT delegate agentAuth pk', pk)
+        if (pk != env.hx_ownerPK) {
+          throw Error('Not Authorized')
+        }
+      },
+      userAuth: (pk, env) => {
+        console.log('DEV_KIT delegate userAuth pk', pk)
+        return true;
+      },
+    },
     { name: 'test_sign', // {{{2
       agentAuth: (pk, env) => {
         console.log('DEV_KIT test_sign agentAuth pk', pk)
@@ -93,6 +105,7 @@ export const DEV_KIT = { // {{{1
         return true;
       },
     },
+
     // }}}2
   ],
 }

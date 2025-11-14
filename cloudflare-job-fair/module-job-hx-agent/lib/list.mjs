@@ -9,6 +9,7 @@ const __dirname = dirname(__filename)
 const nwdir = `${process.env.PWD}/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet`
 
 export const DEV_KIT = { // {{{1
+  delegate: function (opts) { return delegate.call(this, opts); },
   test_sign: function (opts) { return test_sign.call(this, opts); },
 }
 
@@ -21,6 +22,11 @@ export const HX_KIT = { // {{{1
 export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{1
   selftest: function (opts) { return selftest.call(this, opts); },
   setup_selftest: function (opts) { return setup_selftest.call(this, opts); },
+}
+
+function delegate (opts) { // {{{1
+  this.ws.send('delegate opts', opts)
+  this.ws.close()
 }
 
 function get_txid_pos (opts) { // {{{1
