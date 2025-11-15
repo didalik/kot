@@ -25,7 +25,7 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
 }
 
 function delegate (opts) { // {{{1
-  this.ws.send('delegate opts', opts)
+  this.ws.send(JSON.stringify({ job: 'delegate', opts }))
   this.ws.close()
 }
 

@@ -1,4 +1,5 @@
 import { makeBuyOffer, trustAssets, } from './lib/sdk.mjs' // {{{1
+import { post_job, post_job_args, } from './lib/jf3.mjs'
 import { addStream, } from './lib/aux.mjs'
 import { Asset, Keypair, Horizon, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 
@@ -9,6 +10,9 @@ let vm = { // {{{1
   }, 
   c: {}, 
   d: { MA: new Asset('MA', 'hx_MA_IssuerPK'), XLM: new Asset('XLM', null), } 
+}
+window.config = {
+  userKeys: 'hx_userKeys', // TODO generate job fair sk & pk in the browser
 }
 
 let c = document.body.firstElementChild; vm.c = c // <pre> {{{1
@@ -67,13 +71,32 @@ let stop = text => { // {{{1
     return;
   }
   vm.s[1].close()
-  vm.c.textContent += `Stream "${vm.s[1].tag}" has been closed. DONE\n`
+  vm.c.textContent += `Stream "${vm.s[1].tag}" has been closed. DONE\n_____________________________________________________\n\n`
+  if (vm.e.granted) {
+    vm.e.log('stop window.config', window.config)
+    granted.call(vm).then(r => {
+      vm.c.textContent += `${JSON.stringify(r)} *** \n`
+    })
+  }
+}
+
+function granted () { // {{{1
+  return Promise.resolve(post_job(
+    post_job_args(
+      'hx',
+      'DEV_KIT',
+      'delegate',
+      decodeURIComponent(config.userKeys), // using window.config
+    ),
+    { opt1: 'TBD', args: { arg1: 'TBD' } }
+  )); //.then(r => Promise.resolve(JSON.parse(r))));
 }
 
 function run (account) { // {{{1
   let { s, e, c, d } = this
   let trade = effect => {
     e.log('run trade effect', effect)
+    e.granted = true
     stop('Request to start the demo granted.')
   }
   d.account = account
