@@ -19,7 +19,7 @@ let config = { // {{{1
   kit, 
   test: true, 
   user,
-  userKeys: 'hx_userKeys', // TODO generate job fair sk & pk in the browser
+  userKeys: 'hx_userKeys',
 }
 window.config = config
 console.log(config, location)

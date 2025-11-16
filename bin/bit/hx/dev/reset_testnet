@@ -24,5 +24,5 @@ CHILD_RESET_TESTNET=$!
 echo RESET_TESTNET $CHILD_RESET_TESTNET
 
 trap "echo -e '\n- killing $CHILD_RESET_TESTNET'; kill $CHILD_RESET_TESTNET" SIGINT
-echo '{"args":[100000]}' | bin/dev.mjs post_jcl $JOBUSER_PK hx $HX_QA_KIT reset_testnet
+echo '{"args":[]}' | bin/dev.mjs post_jcl $JOBUSER_PK hx $HX_QA_KIT reset_testnet
 wait

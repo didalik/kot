@@ -163,7 +163,9 @@ async function dispatch (request, env, ctx) { // {{{1
     case this == '/hx_use_tm': { // {{{2
       let stub = env.KOT_DO.get(env.KOT_DO_WSH_ID)
       env.hx_STELLAR_NETWORK = await stub.get('hx_STELLAR_NETWORK')
-      env.hx_userKeys = encodeURIComponent(await generate_keypair.call(crypto.subtle, )) // TODO drop this line when ready
+      env.hx_userKeys = encodeURIComponent(
+        await generate_keypair.call(crypto.subtle, )
+      )
       console.log('dispatch hx_use_tm env.hx_userKeys', env.hx_userKeys)
 
       env.hx_MA_IssuerPK = await stub.get('hx_MA_IssuerPK')

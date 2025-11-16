@@ -88,8 +88,16 @@ function granted () { // {{{1
       'delegate',
       decodeURIComponent(config.userKeys), // using window.config
     ),
-    { opt1: 'TBD', args: { arg1: 'TBD' } }
-  )); //.then(r => Promise.resolve(JSON.parse(r))));
+    {
+      post: 'jcl',
+      args: [
+        'hx', 
+        'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ', 
+        'reset_testnet',
+        { opts: { args: [ 100000 ] } },
+      ]
+    }
+  ));
 }
 
 function run (account) { // {{{1

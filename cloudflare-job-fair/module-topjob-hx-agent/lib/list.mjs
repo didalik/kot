@@ -10,10 +10,10 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
 }
 
 function reset_testnet (opts) { // {{{1
-  //let amountHEXA = opts.args[0].toString()
+  let amountHEXA = opts.args[0] ? opts.args[0].toString() : null
   let job = spawn(
     `${__dirname}/module-topjob-hx-definition/reset_testnet/bin/job`,
-    [], //[amountHEXA],
+    amountHEXA ? [amountHEXA] : [],
     { cwd: `${__dirname}/module-topjob-hx-definition/reset_testnet` }
   )
   job.on('error', err => console.error(`E R R O R  ${err}`))

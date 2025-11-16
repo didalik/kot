@@ -89,7 +89,13 @@ export const DEV_KIT = { // {{{1
         }
       },
       userAuth: (pk, env) => {
-        console.log('DEV_KIT delegate userAuth pk', pk)
+        let userKeys = decodeURIComponent(env.hx_userKeys)
+        console.log(
+          'DEV_KIT delegate userAuth pk', pk, 'userKeys', userKeys
+        )
+        if (pk != userKeys.split(' ')[1]) { // FIXME this is better than nothing, but not enough
+          throw Error('Not Authorized')
+        }
         return true;
       },
     },
