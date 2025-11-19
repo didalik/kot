@@ -6,6 +6,15 @@ const uint8ToBase64 = (arr) => Buffer.from(arr).toString('base64')
 
 let log = (...args) => { // {{{1
   //console.log(...args)
+  if (!window?.secd?.c?.textContent) {
+    return;
+  }
+  let result = ''
+  for (let arg of args) {
+    result += (arg + ' ')
+  }
+  result = result.slice(0, -1)
+  window.secd.c.textContent += (result + '\n')
 }
 
 class Connection { // {{{1

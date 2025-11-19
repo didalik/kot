@@ -45,14 +45,15 @@ async function addHEX_CREATOR (server = null, doLoad = false) { // {{{1
 
 async function addHEX_Agent (limit) { // {{{1
   let { s, e, c, d } = this
-  e.log('addHEX_Agent...')
-
+  limit = limit.toString()
+  e.log('addHEX_Agent limit', limit)
   let [HEX_Agent_SK, HEX_Agent_PK] = storeKeys.call(this,
     'build/testnet', 'HEX_Agent'
   )
   let txId = await createAccount.call(this, HEX_Agent_PK, '9', {}, d.kp)
   e.log('addHEX_Agent', HEX_Agent_PK, 'txId', txId)
 
+  d.keysIssuer ??= loadKeys(c.fs, 'build/testnet', 'HEX_Issuer')
   let [HEX_Issuer_SK, HEX_Issuer_PK] = d.keysIssuer
   const ClawableHexa = new Asset('ClawableHexa', HEX_Issuer_PK)
   const HEXA = new Asset('HEXA', HEX_Issuer_PK)
@@ -494,6 +495,16 @@ function put_txid_pos (txid, pos) { // {{{1
   ).then(r => Promise.resolve(r)));
 }
 
+function reset (amountHEXA) { // {{{1
+  let { s, e, c, d } = this
+  e.log('reset amountHEXA', amountHEXA)
+  return addHEX_CREATOR.call(this).then(
+    _ => amountHEXA ? 
+      addHEX_Agent.call(this, amountHEXA) :
+      addHEX_Issuer.call(this, 'hx.kloudoftrust.org')
+  );
+}
+
 async function secdVm ( // {{{1
   keysIssuer, keysAgent, log, limit, HEX_FEE, PUBLIC = false, kit = null, fs = null
 ) {
@@ -638,6 +649,7 @@ export { // {{{1
   loadKeys,
   makeBuyOffer, makeClaimableBalance, makeSellOffer, memo2str,
   put_txid_pos,
+  reset,
   secdVm,
   storeKeys, takeClaimableBalance,
   trustAssets, updateTrustline, updateTrustlineAndPay,

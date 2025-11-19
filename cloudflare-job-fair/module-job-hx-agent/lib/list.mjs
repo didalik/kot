@@ -2,7 +2,8 @@ import { fileURLToPath } from 'url' // {{{1
 import { dirname } from 'path'
 import { spawn } from 'node:child_process'
 import * as fs from "node:fs"
-import { loadKeys, } from '../../../public/lib/sdk.mjs'
+import * as tja from '../../module-topjob-hx-agent/lib/list.mjs'
+import { loadKeys, reset, } from '../../../public/lib/sdk.mjs'
 import { Keypair, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -25,8 +26,39 @@ export const GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ = { // {{{
 }
 
 function delegate (opts) { // {{{1
-  this.ws.send(JSON.stringify({ job: 'delegate', opts }))
-  this.ws.close()
+  let amount = opts.args[3].opts.args[0]
+  let log = (...args) => {
+    let result = ''
+    for (let arg of args) {
+      result += (arg + ' ')
+    }
+    this.ws.send(result.slice(0, -1))
+  }
+  let s = {}, e = { log }, c = { fs }, d = {} // {{{1
+  let vm = { s, e, c, d }
+  let rtDir = process.env.PWD + '/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet'
+  process.chdir(rtDir)
+  try {
+    fs.unlinkSync('build/testnet.keys') // HEX_CREATOR
+    fs.unlinkSync('build/testnet/HEX_Agent.keys') // might not exist
+  } catch(err) {
+    console.error('delegate err', err)
+  }
+  e.log('delegate process.cwd()', process.cwd())
+  reset.call(vm, amount).then(_ => this.ws.close()). // {{{1
+    catch(err => {
+      console.error(err)
+    });
+  /*
+  this.ws.send(JSON.stringify({ job: 'delegate', reset_testnet_opts}))
+  import('../../../cloudflare-job-fair/lib/jf3.mjs').then(jf => {
+    console.log('delegate jf', jf)
+    this.ws.close()
+  })
+  tja.GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ.reset_testnet.call(
+    this, reset_testnet_opts
+  );
+  */
 }
 
 function get_txid_pos (opts) { // {{{1

@@ -1,21 +1,13 @@
 #!/usr/bin/env node
 
-import { addHEX_Agent, addHEX_CREATOR, addHEX_Issuer, } // {{{1
+import { reset, } // {{{1
 from '../../../../../../public/lib/sdk.mjs' // FIXME
 import * as fs from "node:fs"
 
-function reset (amountHEXA) { // {{{1
-  console.log('reset amountHEXA', amountHEXA)
-  let s = {}, e = { log: console.log }, c = { fs }, d = {}
-  let vm = { s, e, c, d }
-  return addHEX_CREATOR.call(vm).then(
-    _ => amountHEXA ? 
-      addHEX_Agent.call(vm, amountHEXA) :
-      addHEX_Issuer.call(vm, 'hx.kloudoftrust.org')
-  );
-}
+let s = {}, e = { log: console.log }, c = { fs }, d = {} // {{{1
+let vm = { s, e, c, d }
 
-await reset(process.argv[2]).then(_ => process.exit(0)). // {{{1
+await reset.call(vm, process.argv[2]).then(_ => process.exit(0)). // {{{1
   catch(err => {
     console.error(err)
     process.exit(1)

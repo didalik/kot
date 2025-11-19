@@ -11,6 +11,7 @@ let vm = { // {{{1
   c: {}, 
   d: { MA: new Asset('MA', 'hx_MA_IssuerPK'), XLM: new Asset('XLM', null), } 
 }
+window.secd = vm
 window.config = {
   userKeys: 'hx_userKeys', // TODO generate job fair sk & pk in the browser
 }
@@ -89,12 +90,11 @@ function granted () { // {{{1
       decodeURIComponent(config.userKeys), // using window.config
     ),
     {
-      post: 'jcl',
       args: [
         'hx', 
         'GD5J36GTTAOV3ZD3KLLEEY5WES5VHRWMUTHN3YYTOLA2YR3P3KPGXGAQ', 
         'reset_testnet',
-        { opts: { args: [ 100000 ] } },
+        { opts: { args: [ 100000 ], post: 'jcl' } },
       ]
     }
   ));
