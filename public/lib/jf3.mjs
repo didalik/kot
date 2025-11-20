@@ -15,6 +15,7 @@ let log = (...args) => { // {{{1
   }
   result = result.slice(0, -1)
   window.secd.c.textContent += (result + '\n')
+  window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
 }
 
 class Connection { // {{{1
