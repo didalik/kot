@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process'
 import * as fs from "node:fs"
 import * as tja from '../../module-topjob-hx-agent/lib/list.mjs'
 import { loadKeys, reset, } from '../../../public/lib/sdk.mjs'
-import { setup_selftest as s_s, } from '../../../lib/util.mjs'
+import { dopad, setup_selftest as s_s, } from '../../../lib/util.mjs'
 import { Keypair, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -51,6 +51,10 @@ function delegate (opts) { // {{{1
     then(_ => {
       log('_____________________________________________________'); log('')
       return s_s('10000', nwdir, log);
+    }).
+    then(makeIds => {
+      log('_____________________________________________________'); log('')
+      return dopad(makeIds, log);
     }).
     then(_ => this.ws.close()).
     catch(err => {

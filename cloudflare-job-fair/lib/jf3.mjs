@@ -189,7 +189,10 @@ function log (...args) { // CLIENT {{{1
 }
 
 function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
-  configuration.promise.then(opts => {
+  console.log('+ post_jcl args', args)
+
+  let handleOpts = opts => {
+    console.log('+ handleOpts opts', opts)
     let path = '/' + args[1] + '/' + args[2] + '/' +
       args[3] + '/' + encodeURIComponent(args[0])
     if (args[1] == 'hx' && args[3] == 'dopad') {
@@ -200,13 +203,18 @@ function post_jcl (node, run, cmd, ...args) { // CLIENT {{{1
     let url = `${urlJob}${path}`
     log('- post_jcl args', args, 'opts', opts, 'url', url, 'configuration', configuration)
     new User({
-      //kitId: args[1],
       name: 'user',
       opts,
       sk: process.env.JOBUSER_SK,
       url
     }).connect()
-  })
+  }
+
+  if (!cmd) { // delegate dopad
+    process.env.JOBUSER_SK = args[7]
+    return Promise.resolve(handleOpts(args[8]));
+  }
+  configuration.promise.then(opts => handleOpts(opts))
 }
 
 function post_job (node, run, cmd, ...args) { // {{{1
