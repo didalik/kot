@@ -336,14 +336,6 @@ function get_txid_pos (txid) { // {{{1
   ).then(r => Promise.resolve(JSON.parse(r))));
 }
 
-function loadKeys (fs, dirname, basename = null) { // {{{1
-  let SK_PK = fs.readFileSync(
-    basename ? `${dirname}/${basename}.keys` : dirname
-  )
-  let pair = SK_PK.toString().split(' ')
-  return [pair[0].trim(), pair[1].trim()];
-}
-
 function issuerSign (txXDR, tag) { // {{{1
   return Promise.resolve(post_job(
     post_job_args(
@@ -354,6 +346,14 @@ function issuerSign (txXDR, tag) { // {{{1
     ),
     { args: { txXDR, tag } }
   ).then(r => Promise.resolve(r)));
+}
+
+function loadKeys (fs, dirname, basename = null) { // {{{1
+  let SK_PK = fs.readFileSync(
+    basename ? `${dirname}/${basename}.keys` : dirname
+  )
+  let pair = SK_PK.toString().split(' ')
+  return [pair[0].trim(), pair[1].trim()];
 }
 
 async function makeBuyOffer( // {{{1

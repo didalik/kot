@@ -4,7 +4,9 @@ import { spawn } from 'node:child_process'
 import * as fs from "node:fs"
 import * as tja from '../../module-topjob-hx-agent/lib/list.mjs'
 import { loadKeys, reset, } from '../../../public/lib/sdk.mjs'
-import { dopad, setup_selftest as s_s, } from '../../../lib/util.mjs'
+import { 
+  dopad, selftest as _st, setup_selftest as _s_st, 
+} from '../../../lib/util.mjs'
 import { Keypair, Networks, TransactionBuilder, } from '@stellar/stellar-sdk'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
@@ -41,25 +43,29 @@ function delegate (opts) { // {{{1
   process.chdir(rtDir)
   try {
     fs.unlinkSync('build/testnet.keys')           // HEX_CREATOR
-    fs.unlinkSync('build/testnet/HEX_Agent.keys') // might not exist
+    fs.unlinkSync('build/testnet/HEX_Agent.keys') // agent might not exist
   } catch(err) {
     console.error('delegate err', err)
   }
   e.log('delegate process.cwd()', process.cwd())
 
   reset.call(vm, amount). // {{{2
-    then(_ => {
+    then(_ => { // _s_st {{{3
       log('_____________________________________________________'); log('')
-      return s_s('10000', nwdir, log);
+      return _s_st('10000', nwdir, log);
     }).
-    then(makeIds => {
+    then(makeIds => { // dopad {{{3
       log('_____________________________________________________'); log('')
       return dopad(makeIds, log);
     }).
+    then(_ => { // _st {{{3
+      log('_____________________________________________________'); log('')
+      return _st('10000', nwdir, log, true);
+    }). // }}}3
     then(_ => this.ws.close()).
     catch(err => {
       console.error(err)
-    });
+    }); // }}}2
 }
 
 function get_txid_pos (opts) { // {{{1
@@ -68,7 +74,7 @@ function get_txid_pos (opts) { // {{{1
   this.ws.close()
 }
 function issuerSign (opts = {}) { // TODO use opts.args.tag {{{1
-  let nwdir = '/home/alik/project/kot/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet' // FIXME
+  //let nwdir = '/home/alik/project/kot/cloudflare-job-fair/module-topjob-hx-agent/lib/module-topjob-hx-definition/reset_testnet/build/testnet' // FIXME
   let keysIssuer = loadKeys(fs, nwdir + '/HEX_Issuer.keys')
   let keypair = Keypair.fromSecret(keysIssuer[0])
   console.log('issuerSign opts', opts, 'keysIssuer', keysIssuer)
@@ -88,9 +94,14 @@ function put_txid_pos (opts = {}) { // {{{1
   }
   txidPos[opts.args.txid] = opts.args.pos
   fs.writeFileSync(`${nwdir}/txidPos`, JSON.stringify(txidPos))
+  if (opts.delegate) {
+    return;
+  }
   this.ws.send('put_txid_pos txidPos ' + JSON.stringify(txidPos))
   this.ws.close()
 }
+
+global.put_txid_pos = put_txid_pos // ref in lib/util.mjs {{{1
 
 function selftest () { // {{{1
   let job = spawn(
