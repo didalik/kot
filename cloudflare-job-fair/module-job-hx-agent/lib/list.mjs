@@ -50,19 +50,22 @@ function delegate (opts) { // {{{1
   e.log('delegate process.cwd()', process.cwd())
 
   reset.call(vm, amount). // {{{2
-    then(_ => { // _s_st {{{3
+    then(r => { // _s_st {{{3
       log('_____________________________________________________'); log('')
       return _s_st('10000', nwdir, log);
     }).
     then(makeIds => { // dopad {{{3
-      log('_____________________________________________________'); log('')
       return dopad(makeIds, log);
     }).
-    then(_ => { // _st {{{3
+    then(r => { // _st {{{3
       log('_____________________________________________________'); log('')
       return _st('10000', nwdir, log, true);
+    }).
+    then(r => { // this.ws.close {{{3
+      log('_____________________________________________________'); log('')
+      log(r)
+      this.ws.close()
     }). // }}}3
-    then(_ => this.ws.close()).
     catch(err => {
       console.error(err)
     }); // }}}2

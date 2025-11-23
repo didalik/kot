@@ -32,7 +32,7 @@ function addStream (tag, types, id = null, now = false) { // {{{1
   if (now) {
     effects4account = effects4account.cursor('now')
   }
-  e.log('addStream tag', tag, 'types', types, 'id', id, 'now', now)
+  //e.log('addStream tag', tag, 'types', types, 'id', id, 'now', now)
 
   let close = effects4account.stream({
     onerror:   e => { close(); throw e; },
