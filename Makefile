@@ -86,7 +86,7 @@ ${TESTNET_DIR}/monitor/Issuer.keys: # reset_testnet_monitor {{{1
 		echo '{"hx_MA_IssuerPK":"$$PK"}' | bin/${PHASE}.mjs post_jcl $$CREATOR_PK hx ${HX_QA_KIT} dopad put hx_MA_IssuerPK $$PK
 
 .PHONY: useTM # use testnet monitor {{{1
-useTM: ${TESTNET_DIR} ${TESTNET_DIR}/monitor/Issuer.keys
+useTM: ${TESTNET_DIR}/monitor/Issuer.keys # ${TESTNET_DIR} - reset_testnet delegated
 	@read CREATOR_SK CREATOR_PK < $$HOME/.cloudflare-job-fair/CREATOR.keys;\
 		export JOBAGENT_SK=$$CREATOR_SK;export JOBAGENT_PK=$$CREATOR_PK;\
 		TESTNET_DIR=${TESTNET_DIR} bin/bit/hx/${PHASE}/useTM ${HX_USE_TM_URL}; echo $@ DONE

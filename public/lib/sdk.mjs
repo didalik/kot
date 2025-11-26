@@ -498,11 +498,15 @@ function put_txid_pos (txid, pos) { // {{{1
 function reset (amountHEXA) { // {{{1
   let { s, e, c, d } = this
   e.log('reset amountHEXA', amountHEXA)
-  return addHEX_CREATOR.call(this).then(
-    _ => amountHEXA ? 
+  /*
+  return addHEX_CREATOR.call(this).then(_ => amountHEXA ? 
       addHEX_Agent.call(this, amountHEXA) :
       addHEX_Issuer.call(this, 'hx.kloudoftrust.org')
   );
+  */
+  return addHEX_CREATOR.call(this).
+    then(_ => addHEX_Issuer.call(this, 'hx.kloudoftrust.org')).
+    then(_ => addHEX_Agent.call(this, amountHEXA));
 }
 
 async function secdVm ( // {{{1

@@ -43,19 +43,24 @@ function delegate (opts) { // {{{1
   process.chdir(rtDir)
   try {
     fs.unlinkSync('build/testnet.keys')           // HEX_CREATOR
-    fs.unlinkSync('build/testnet/HEX_Agent.keys') // agent might not exist
+    //fs.unlinkSync('build/testnet/HEX_Agent.keys') // agent might not exist
   } catch(err) {
     console.error('delegate err', err)
   }
   e.log('delegate process.cwd()', process.cwd())
 
   reset.call(vm, amount). // {{{2
+    then(_ => { // dopad {{{3
+      let [sk, pk] = loadKeys(fs, nwdir + '/HEX_Issuer.keys')
+      return dopad('hx_testnet_IssuerPK', pk, log).
+        then(_ => dopad('hx_STELLAR_NETWORK', 'testnet', log));
+    }).
     then(r => { // _s_st {{{3
       log('_____________________________________________________'); log('')
       return _s_st('10000', nwdir, log);
     }).
     then(makeIds => { // dopad {{{3
-      return dopad(makeIds, log);
+      return dopad('hx_Agent_make2map_txids', makeIds, log);
     }).
     then(r => { // _st {{{3
       log('_____________________________________________________'); log('')
@@ -66,9 +71,7 @@ function delegate (opts) { // {{{1
       log(r)
       this.ws.close()
     }). // }}}3
-    catch(err => {
-      console.error(err)
-    }); // }}}2
+    catch(err => console.error(err)); // }}}2
 }
 
 function get_txid_pos (opts) { // {{{1
