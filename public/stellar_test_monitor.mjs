@@ -22,6 +22,28 @@ c.textContent += `    Presently using ${ma.getCode()}-${ma.getIssuer()}\n\n`
 let secret = Keypair.random().secret()
 console.log(secret)
 
+let info = text => { // {{{1
+  vm.c.textContent += (text + '\n')
+  /*
+  vm.s[0].close()
+  if (vm.s.length > 1) {
+    vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed.\n`
+  } else {
+    vm.c.done = true
+    vm.c.textContent += `Stream "${vm.s[0].tag}" has been closed. DONE\n`
+    return;
+  }
+  vm.s[1].close()
+  vm.c.textContent += `Stream "${vm.s[1].tag}" has been closed. DONE\n_____________________________________________________\n\n`
+  */
+  if (vm.e.granted) {
+    vm.e.log('info window.config', window.config)
+    granted.call(vm).then(r => {
+      vm.c.textContent += `${JSON.stringify(r)} *** \n`
+    })
+  }
+}
+
 let kp = Keypair.fromSecret(secret); vm.d.kp = kp // {{{1
 let pk = kp.publicKey()
 if (!vm.c.done) {
@@ -45,22 +67,6 @@ if (!vm.c.done) {
   })
 }
 
-function loaded (account) { // {{{1
-  let { s, e, c, d } = this
-  c.textContent += 'loaded.\n'
-  if (account.balances.length == 1) {
-    c.textContent += 'Updating your trustline... '
-    trustAssets.call(this, account, d.kp, '10000', d.MA).then(txId => {
-      e.log('trustline updated: txId', txId)
-    }).then(_ => e.server.loadAccount(d.kp.publicKey())).then(account => {
-      c.textContent += 'updated.\n'
-      run.call(this, account)
-    })
-  } else {
-    run.call(this, account)
-  }
-}
-
 let stop = text => { // {{{1
   vm.c.textContent += (text + '\n')
   vm.s[0].close()
@@ -78,6 +84,22 @@ let stop = text => { // {{{1
     granted.call(vm).then(r => {
       vm.c.textContent += `${JSON.stringify(r)} *** \n`
     })
+  }
+}
+
+function loaded (account) { // {{{1
+  let { s, e, c, d } = this
+  c.textContent += 'loaded.\n'
+  if (account.balances.length == 1) {
+    c.textContent += 'Updating your trustline... '
+    trustAssets.call(this, account, d.kp, '10000', d.MA).then(txId => {
+      e.log('trustline updated: txId', txId)
+    }).then(_ => e.server.loadAccount(d.kp.publicKey())).then(account => {
+      c.textContent += 'updated.\n'
+      run.call(this, account)
+    })
+  } else {
+    run.call(this, account)
   }
 }
 
@@ -132,9 +154,12 @@ vm.s.push({
       } else if (e.bids.length > 0) { // TODO improve
         let remainder = +e.bids[0].amount % 2
         if (vm.d.offerMade && remainder > 0) {
-          stop('Someone is running the demo now, please try again in a minute.')
+          info('Someone is running the demo now, please wait.')
+          vm.e.notGranted = true
         } else if (!vm.d.offerMade) {
           stop('Someone is running the demo now, please try again in a minute.')
+        } else if (vm.e.notGranted && remainder == 0) {
+          info("Someone's demo DONE")
         } else if (remainder > 0) { // keep looping when e.bids[0].amount == '2.0000000' || e.bids[0].amount == '4.0000000' || ...
           stop('UNEXPECTED')
         }
