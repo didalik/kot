@@ -15,6 +15,10 @@ let log = (...args) => { // {{{1
   }
   result = result.slice(0, -1)
   window.secd.c.textContent += (result + '\n')
+  let index = result.indexOf('cbcc d.tXs_mapped.length 5')
+  if (index > -1) {
+    let d = window.secd.c.nextElementSibling; d.style = 'display:block'
+  }
   window.scrollTo({ left: 0, top: document.body.scrollHeight, behavior: "smooth" })
 }
 

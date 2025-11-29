@@ -43,7 +43,6 @@ function delegate (opts) { // {{{1
   process.chdir(rtDir)
   try {
     fs.unlinkSync('build/testnet.keys')           // HEX_CREATOR
-    //fs.unlinkSync('build/testnet/HEX_Agent.keys') // agent might not exist
   } catch(err) {
     console.error('delegate err', err)
   }

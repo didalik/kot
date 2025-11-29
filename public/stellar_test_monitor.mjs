@@ -17,6 +17,8 @@ window.config = {
 }
 
 let c = document.body.firstElementChild; vm.c = c // <pre> {{{1
+let d = c.nextElementSibling; d.style = 'display:none'
+let link = d.firstElementChild; link.onclick = _ => { d.style = 'display:none' }
 let ma = vm.d.MA
 c.textContent += `    Presently using ${ma.getCode()}-${ma.getIssuer()}\n\n`
 let secret = Keypair.random().secret()
