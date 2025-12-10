@@ -145,4 +145,21 @@ rm run.log
 make clean
 while true;do echo "started on $(date)" >> run.log;PHASE=qa make useTM >> run.log;echo "- exit code $?" >> run.log;sleep 2;done &
 ```
+```
+alik@ko:~/project/kot/cfssl/bin$ D=$PWD; for file in *; do cd /usr/local/bin; sudo ln -s $D/$file $file; cd -; done
+...
+alik@ko:~/project/kot/cfssl/bin$ tree /usr/local/bin
+/usr/local/bin
+├── cfssl -> /home/alik/project/kot/cfssl/bin/cfssl
+├── cfssl-bundle -> /home/alik/project/kot/cfssl/bin/cfssl-bundle
+├── cfssl-certinfo -> /home/alik/project/kot/cfssl/bin/cfssl-certinfo
+├── cfssljson -> /home/alik/project/kot/cfssl/bin/cfssljson
+├── cfssl-newkey -> /home/alik/project/kot/cfssl/bin/cfssl-newkey
+├── cfssl-scan -> /home/alik/project/kot/cfssl/bin/cfssl-scan
+├── mkbundle -> /home/alik/project/kot/cfssl/bin/mkbundle
+├── multirootca -> /home/alik/project/kot/cfssl/bin/multirootca
+├── node
+└── npm -> /home/alik/.nvm/versions/node/v20.19.2/bin/npm
 
+1 directory, 10 files
+```
