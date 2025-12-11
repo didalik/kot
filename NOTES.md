@@ -171,7 +171,7 @@ Access root CA certificate:
 ```
 https://one.dash.cloudflare.com/<AccountID>/traffic-policies/traffic-settings
 ```
-Bundle certificate and its private key:
+Bundle client certificate and its private key:
 ```
 alec@MacBook-Air ~/sandbox/pages-common/csr $ openssl pkcs12 -export -out client.pfx -inkey certificate.key -in certificate.pem -certfile Gateway\ CA\ -\ Cloudflare\ Managed\ G1\ bdad930c09138487203077ef32b1ab7e.cer
 Enter Export Password:
