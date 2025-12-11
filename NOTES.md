@@ -167,3 +167,21 @@ Security rule:
 ```
 (not cf.tls_client_auth.cert_verified and http.request.full_uri wildcard r"https://pc.kloudoftrust.org/*")
 ```
+Access root CA certificate:
+```
+https://one.dash.cloudflare.com/<AccountID>/traffic-policies/traffic-settings
+```
+Bundle certificate and its private key:
+```
+alec@MacBook-Air ~/sandbox/pages-common/csr $ openssl pkcs12 -export -out client.pfx -inkey certificate.key -in certificate.pem -certfile Gateway\ CA\ -\ Cloudflare\ Managed\ G1\ bdad930c09138487203077ef32b1ab7e.cer
+Enter Export Password:
+Verifying - Enter Export Password:
+alec@MacBook-Air ~/sandbox/pages-common/csr $ tree
+.
+├── Gateway\ CA\ -\ Cloudflare\ Managed\ G1\ bdad930c09138487203077ef32b1ab7e.cer
+├── certificate.key
+├── certificate.pem
+└── client.pfx
+
+0 directories, 4 files
+```
