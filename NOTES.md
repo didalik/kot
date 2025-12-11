@@ -163,3 +163,7 @@ alik@ko:~/project/kot/cfssl/bin$ tree /usr/local/bin
 
 1 directory, 10 files
 ```
+Security rule:
+```
+(not cf.tls_client_auth.cert_verified and http.request.full_uri wildcard r"https://pc.kloudoftrust.org/*")
+```
